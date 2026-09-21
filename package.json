@@ -1,11 +1,22 @@
 {
   "name": "LSLib-tools",
   "displayName": "LSLib tools",
-  "version": "1.0.0",
+  "description": "Инструменты LSLib прямо в контекстном меню",
+  "publisher": "LeoBlock",
+  "version": "1.0.3",
+  "categories": [
+    "Other"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ldiellyoungl/lslib-vs-code-tools"
+  },
+  "license": "MIT",
   "engines": {
     "vscode": "^1.70.0"
   },
   "main": "./extension.js",
+  "activationEvents": [],
   "contributes": {
     "commands": [
       {
