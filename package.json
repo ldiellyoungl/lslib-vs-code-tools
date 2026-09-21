@@ -1,0 +1,37 @@
+{
+  "name": "LSLib-tools",
+  "displayName": "LSLib tools",
+  "version": "1.0.0",
+  "engines": {
+    "vscode": "^1.70.0"
+  },
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "LSLib.unpackPak",
+        "title": "LSLib: Распаковать PAK",
+        "icon": "$(unarchive)"
+      },
+      {
+        "command": "LSLib.packFolder",
+        "title": "LSLib: Запаковать в PAK",
+        "icon": "$(archive)"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "LSLib.unpackPak",
+          "when": "resourceExtname == .pak",
+          "group": "LSLib@1"
+        },
+        {
+          "command": "LSLib.packFolder",
+          "when": "explorerResourceIsFolder",
+          "group": "LSLib@2"
+        }
+      ]
+    }
+  }
+}
