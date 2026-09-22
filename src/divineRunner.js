@@ -6,7 +6,7 @@ const path = require("path");
  * Универсальная функция запуска divine.exe с прогресс-баром
  */
 async function runDivine(toolPath, args, title, outputChannel) {
-  outputChannel.show(true);
+  // Убираем outputChannel.show(true) — панель не будет открываться автоматически
   outputChannel.appendLine(`\n=== Запуск: ${title} ===`);
   outputChannel.appendLine(`Команда: "${toolPath}" ${args.join(" ")}`);
 
@@ -33,14 +33,17 @@ async function runDivine(toolPath, args, title, outputChannel) {
             vscode.window.showInformationMessage(`${title} успешно завершена!`);
             resolve();
           } else {
+            // При ошибке показываем Output, чтобы пользователь мог разобраться
+            outputChannel.show(true);
             vscode.window.showErrorMessage(
-              `${title} завершилась с кодом ошибки: ${code}. См. лог.`,
+              `${title} завершилась с кодом ошибки: ${code}. Подробности в Output.`,
             );
             reject(new Error(`Exit code ${code}`));
           }
         });
 
         child.on("error", (err) => {
+          outputChannel.show(true);
           vscode.window.showErrorMessage(
             `Не удалось запустить divine.exe: ${err.message}`,
           );
