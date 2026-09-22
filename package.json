@@ -1,9 +1,9 @@
 {
-  "name": "LSLib-tools",
-  "displayName": "LSLib tools",
-  "description": "Инструменты LSLib прямо в контекстном меню",
+  "name": "lslib-tools",
+  "displayName": "LSLib Tools",
+  "description": "Инструменты LSLib прямо в контекстном меню VS Code",
   "publisher": "LeoBlock",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "categories": [
     "Other"
   ],
@@ -18,6 +18,28 @@
   "main": "./extension.js",
   "activationEvents": [],
   "contributes": {
+    "configuration": {
+      "title": "LSLib Tools",
+      "properties": {
+        "lslib.game": {
+          "type": "string",
+          "default": "bg3",
+          "enum": [
+            "bg3",
+            "dos2",
+            "dos2ee",
+            "dos"
+          ],
+          "enumDescriptions": [
+            "Baldur's Gate 3",
+            "Divinity: Original Sin 2 (Definitive Edition)",
+            "Divinity: Original Sin 2 (Early Access)",
+            "Divinity: Original Sin (Enhanced Edition)"
+          ],
+          "description": "Игра, для которой выполняются операции с файлами"
+        }
+      }
+    },
     "commands": [
       {
         "command": "LSLib.unpackPak",
@@ -26,8 +48,13 @@
       },
       {
         "command": "LSLib.packFolder",
-        "title": "LSLib: Запаковать в PAK",
+        "title": "LSLib: Запаковать папку в PAK",
         "icon": "$(archive)"
+      },
+      {
+        "command": "LSLib.convertResource",
+        "title": "LSLib: Конвертировать ресурс (LSF/LSX/LSJ/LSB)",
+        "icon": "$(symbol-enum)"
       }
     ],
     "menus": {
@@ -41,6 +68,11 @@
           "command": "LSLib.packFolder",
           "when": "explorerResourceIsFolder",
           "group": "LSLib@2"
+        },
+        {
+          "command": "LSLib.convertResource",
+          "when": "resourceExtname == .lsf || resourceExtname == .lsx || resourceExtname == .lsj || resourceExtname == .lsb",
+          "group": "LSLib@3"
         }
       ]
     }

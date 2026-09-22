@@ -1,136 +1,64 @@
 const vscode = require("vscode");
-const { spawn } = require("child_process");
 const path = require("path");
 const fs = require("fs");
 
+// Импорт модулей
+const { unpackPak, packFolder } = require("./src/pakOperations");
+const { convertResource } = require("./src/resourceConverter");
+
 function getDivineToolPath(context) {
+  // Можно вынести "tools1.20.4" в настройки в будущем, пока оставляем как есть
   return path.join(context.extensionPath, "tools1.20.4", "divine.exe");
 }
 
 function activate(context) {
-  const outputChannel = vscode.window.createOutputChannel("BG3 PAK Tools");
+  const outputChannel = vscode.window.createOutputChannel("LSLib Tools");
   const toolPath = getDivineToolPath(context);
 
-  // 1. Команда распаковки
+  // Проверка наличия divine.exe при старте (опционально, но полезно)
+  if (!fs.existsSync(toolPath)) {
+    vscode.window.showWarningMessage(
+      `LSLib: Не найден divine.exe по пути: ${toolPath}. Проверьте папку расширения.`,
+    );
+  }
+
+  // Вспомогательная функция для получения текущей игры из настроек
+  const getGame = () =>
+    vscode.workspace.getConfiguration("lslib").get("game") || "bg3";
+
+  // 1. Распаковка PAK
   const unpackCmd = vscode.commands.registerCommand(
     "LSLib.unpackPak",
     async (uri) => {
-      if (!fs.existsSync(toolPath)) {
-        vscode.window.showErrorMessage(
-          `Не найден divine.exe по пути: ${toolPath}. Проверьте папку tools/`,
-        );
-        return;
-      }
-      await runDivineTool(uri, "unpack", outputChannel, toolPath);
+      if (!fs.existsSync(toolPath))
+        return vscode.window.showErrorMessage("Не найден divine.exe");
+      await unpackPak(uri, toolPath, getGame(), outputChannel);
     },
   );
 
-  // 2. Команда запаковки
+  // 2. Запаковка PAK
   const packCmd = vscode.commands.registerCommand(
     "LSLib.packFolder",
     async (uri) => {
-      if (!fs.existsSync(toolPath)) {
-        vscode.window.showErrorMessage(
-          `Не найден divine.exe по пути: ${toolPath}. Проверьте папку tools/`,
-        );
-        return;
-      }
-      await runDivineTool(uri, "pack", outputChannel, toolPath);
+      if (!fs.existsSync(toolPath))
+        return vscode.window.showErrorMessage("Не найден divine.exe");
+      await packFolder(uri, toolPath, getGame(), outputChannel);
     },
   );
 
-  context.subscriptions.push(unpackCmd, packCmd, outputChannel);
-}
-
-function runDivineTool(uri, mode, outputChannel, toolPath) {
-  const targetPath = uri.fsPath;
-
-  outputChannel.show(true);
-  outputChannel.appendLine(
-    `\n=== Запуск ${mode === "unpack" ? "распаковки" : "запаковки"} ===`,
-  );
-  outputChannel.appendLine(`Цель: ${targetPath}`);
-
-  let args = [];
-  if (mode === "unpack") {
-    // mod.pak -> mod (без суффиксов, просто убираем расширение)
-    const outputDir = path.join(
-      path.dirname(targetPath),
-      path.basename(targetPath, ".pak"),
-    );
-    args = [
-      "-g",
-      "bg3",
-      "-a",
-      "extract-package",
-      "-s",
-      targetPath,
-      "-d",
-      outputDir,
-    ];
-  } else {
-    // mod -> mod.pak
-    const outputPak = path.join(
-      path.dirname(targetPath),
-      path.basename(targetPath) + ".pak",
-    );
-    args = [
-      "-g",
-      "bg3",
-      "-a",
-      "create-package",
-      "-s",
-      targetPath,
-      "-d",
-      outputPak,
-    ];
-  }
-
-  outputChannel.appendLine(`Команда: "${toolPath}" ${args.join(" ")}`);
-
-  vscode.window.withProgress(
-    {
-      location: vscode.ProgressLocation.Notification,
-      title: `BG3: ${mode === "unpack" ? "Распаковка" : "Запаковка"}...`,
-      cancellable: false,
-    },
-    async () => {
-      return new Promise((resolve, reject) => {
-        // spawn с массивом аргументов автоматически и безопасно экранирует пробелы в Windows
-        const child = spawn(toolPath, args, {
-          cwd: path.dirname(toolPath),
-        });
-
-        child.stdout.on("data", (data) => {
-          outputChannel.append(data.toString());
-        });
-
-        child.stderr.on("data", (data) => {
-          outputChannel.append(`[DIVINE ОШИБКА] ${data.toString()}`);
-        });
-
-        child.on("close", (code) => {
-          if (code === 0) {
-            vscode.window.showInformationMessage(`Операция успешно завершена!`);
-            resolve();
-          } else {
-            vscode.window.showErrorMessage(
-              `divine.exe завершился с кодом ошибки: ${code}. См. лог.`,
-            );
-            reject(new Error(`Exit code ${code}`));
-          }
-        });
-
-        child.on("error", (err) => {
-          vscode.window.showErrorMessage(
-            `Не удалось запустить divine.exe: ${err.message}`,
-          );
-          reject(err);
-        });
-      });
+  // 3. Конвертация ресурсов (LSF/LSX/LSJ/LSB)
+  const convertCmd = vscode.commands.registerCommand(
+    "LSLib.convertResource",
+    async (uri) => {
+      if (!fs.existsSync(toolPath))
+        return vscode.window.showErrorMessage("Не найден divine.exe");
+      await convertResource(uri, toolPath, getGame(), outputChannel);
     },
   );
+
+  context.subscriptions.push(unpackCmd, packCmd, convertCmd, outputChannel);
 }
 
 function deactivate() {}
+
 module.exports = { activate, deactivate };

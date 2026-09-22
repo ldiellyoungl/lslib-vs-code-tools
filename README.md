@@ -1,3 +1,3 @@
-# bg3-pak-tools
+# LSLib VS Code Tools
 
-Расширение для VS Code для распаковки и запаковки PAK файлов Baldurs Gate 3
+Расширение для VS Code для распаковки/запаковки PAK файлов, конвертирование .lsx (XML) .lsj (JSON) .lsf (Бинарный) через контекстное меню
