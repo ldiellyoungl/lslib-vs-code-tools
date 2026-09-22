@@ -6,6 +6,9 @@ const fs = require("fs");
 const { unpackPak, packFolder } = require("./src/pakOperations");
 const { convertResource } = require("./src/resourceConverter");
 const { convertLoca } = require("./src/locaConverter");
+const {
+  VersionDecorationProvider,
+} = require("./src/versionDecorationProvider");
 
 function getDivineToolPath(context) {
   // Можно вынести "tools1.20.4" в настройки в будущем, пока оставляем как есть
@@ -66,12 +69,15 @@ function activate(context) {
     },
   );
 
+  const versionDecorationProvider = new VersionDecorationProvider();
+
   context.subscriptions.push(
     unpackCmd,
     packCmd,
     convertCmd,
     convertLocaCmd,
     outputChannel,
+    versionDecorationProvider,
   );
 }
 

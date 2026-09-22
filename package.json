@@ -21,7 +21,9 @@
     "vscode": "^1.70.0"
   },
   "main": "./extension.js",
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "contributes": {
     "configuration": {
       "title": "LSLib Tools",
@@ -65,6 +67,11 @@
         "command": "LSLib.convertLoca",
         "title": "LSLib: Конвертировать локализацию (LOCA/XML)",
         "icon": "$(globe)"
+      },
+      {
+        "command": "LSLib.generateUID",
+        "title": "LSLib: Сгенерировать UID",
+        "icon": "$(key)"
       }
     ],
     "menus": {
@@ -88,6 +95,12 @@
           "command": "LSLib.convertLoca",
           "when": "resourceExtname == .loca || resourceExtname == .locas || resourceExtname == .xml",
           "group": "LSLib@4"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "LSLib.generateUID",
+          "group": "LSLib@1"
         }
       ]
     }
