@@ -3,7 +3,7 @@
   "displayName": "LSLib Tools",
   "description": "Инструменты LSLib прямо в контекстном меню VS Code",
   "publisher": "LeoBlock",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "categories": [
     "Other"
   ],
