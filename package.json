@@ -3,7 +3,7 @@
   "displayName": "LSLib Tools",
   "description": "Инструменты LSLib прямо в контекстном меню VS Code",
   "publisher": "LeoBlock",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "categories": [
     "Other"
   ],
@@ -60,6 +60,11 @@
         "command": "LSLib.convertResource",
         "title": "LSLib: Конвертировать ресурс (LSF/LSX/LSJ/LSB)",
         "icon": "$(symbol-enum)"
+      },
+      {
+        "command": "LSLib.convertLoca",
+        "title": "LSLib: Конвертировать локализацию (LOCA/XML)",
+        "icon": "$(globe)"
       }
     ],
     "menus": {
@@ -78,6 +83,11 @@
           "command": "LSLib.convertResource",
           "when": "resourceExtname == .lsf || resourceExtname == .lsx || resourceExtname == .lsj || resourceExtname == .lsb",
           "group": "LSLib@3"
+        },
+        {
+          "command": "LSLib.convertLoca",
+          "when": "resourceExtname == .loca || resourceExtname == .locas || resourceExtname == .xml",
+          "group": "LSLib@4"
         }
       ]
     }

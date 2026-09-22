@@ -5,6 +5,7 @@ const fs = require("fs");
 // Импорт модулей
 const { unpackPak, packFolder } = require("./src/pakOperations");
 const { convertResource } = require("./src/resourceConverter");
+const { convertLoca } = require("./src/locaConverter");
 
 function getDivineToolPath(context) {
   // Можно вынести "tools1.20.4" в настройки в будущем, пока оставляем как есть
@@ -56,7 +57,22 @@ function activate(context) {
     },
   );
 
-  context.subscriptions.push(unpackCmd, packCmd, convertCmd, outputChannel);
+  const convertLocaCmd = vscode.commands.registerCommand(
+    "LSLib.convertLoca",
+    async (uri) => {
+      if (!fs.existsSync(toolPath))
+        return vscode.window.showErrorMessage("Не найден divine.exe");
+      await convertLoca(uri, toolPath, getGame(), outputChannel);
+    },
+  );
+
+  context.subscriptions.push(
+    unpackCmd,
+    packCmd,
+    convertCmd,
+    convertLocaCmd,
+    outputChannel,
+  );
 }
 
 function deactivate() {}
