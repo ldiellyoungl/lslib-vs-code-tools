@@ -5,11 +5,14 @@ const fs = require("fs");
 const { unpackPak, packFolder } = require("./src/pakOperations");
 const { convertResource } = require("./src/resourceConverter");
 const { convertLoca } = require("./src/locaConverter");
+const { insertUUID } = require("./src/uuidGenerator");
+const { insertVersion64 } = require("./src/versionEncoder");
 const {
   VersionDecorationProvider,
 } = require("./src/versionDecorationProvider");
-const { insertUUID } = require("./src/uuidGenerator");
-const { insertVersion64 } = require("./src/versionEncoder");
+const { TranslationDecorator } = require("./src/translationDecorator");
+const { FileLinkProvider } = require("./src/fileLinkProvider");
+const { UuidValidationDecorator } = require("./src/uuidValidatorDecorator");
 
 function getDivineToolPath(context) {
   return path.join(context.extensionPath, "tools1.20.4", "divine.exe");
@@ -77,6 +80,86 @@ function activate(context) {
       await insertVersion64();
     },
   );
+
+  const goToTranslationCmd = vscode.commands.registerCommand(
+    "LSLib.goToTranslation",
+    async (target) => {
+      if (!target || !target.filePath) return;
+
+      try {
+        // 1. Открываем документ
+        const document = await vscode.workspace.openTextDocument(
+          target.filePath,
+        );
+        // 2. Показываем его в редакторе
+        const editor = await vscode.window.showTextDocument(document);
+
+        // 3. Вычисляем диапазон строки (lineNumber в JS начинается с 0, а мы сохранили с 1)
+        const lineIndex = target.lineNumber - 1;
+        const lineText = document.lineAt(lineIndex).text;
+
+        // 4. Создаем выделение всей строки
+        const range = new vscode.Range(
+          lineIndex,
+          0,
+          lineIndex,
+          lineText.length,
+        );
+        editor.selection = new vscode.Selection(range.start, range.end);
+
+        // 5. Прокручиваем редактор к этой строке (по центру)
+        editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
+      } catch (err) {
+        vscode.window.showErrorMessage(
+          `Не удалось открыть файл перевода: ${err.message}`,
+        );
+      }
+    },
+  );
+
+  const revealFileCmd = vscode.commands.registerCommand(
+    "LSLib.revealFileInExplorer",
+    async (uri) => {
+      if (!uri) {
+        vscode.window.showErrorMessage(
+          "Не удалось определить файл для навигации",
+        );
+        return;
+      }
+
+      try {
+        // Показываем файл в дереве проводника
+        await vscode.commands.executeCommand("revealInExplorer", uri);
+      } catch (err) {
+        vscode.window.showErrorMessage(
+          `Не удалось показать файл: ${err.message}`,
+        );
+      }
+    },
+  );
+
+  const copyUuidCmd = vscode.commands.registerCommand(
+    "LSLib.copyUuidToClipboard",
+    async (target) => {
+      if (target && target.uuid) {
+        await vscode.env.clipboard.writeText(target.uuid);
+        vscode.window.showInformationMessage(`UUID скопирован: ${target.uuid}`);
+      }
+    },
+  );
+
+  const fileLinkProvider = vscode.languages.registerDocumentLinkProvider(
+    { scheme: "file", language: "xml" },
+    new FileLinkProvider(context),
+  );
+
+  context.subscriptions.push(fileLinkProvider, revealFileCmd);
+
+  const uuuidValidatorDecorator = new UuidValidationDecorator();
+  context.subscriptions.push(uuuidValidatorDecorator, copyUuidCmd);
+
+  const translationDecorator = new TranslationDecorator();
+  context.subscriptions.push(translationDecorator, goToTranslationCmd);
 
   const versionDecorationProvider = new VersionDecorationProvider();
   context.subscriptions.push(versionDecorationProvider);

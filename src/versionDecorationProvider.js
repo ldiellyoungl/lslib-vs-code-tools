@@ -64,7 +64,7 @@ class VersionDecorationProvider {
           range: new vscode.Range(startPos, endPos),
           renderOptions: {
             after: {
-              contentText: `  ← ${decodedVersion}`,
+              contentText: `${decodedVersion}`,
             },
           },
         });
