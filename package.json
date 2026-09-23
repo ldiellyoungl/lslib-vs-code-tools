@@ -3,7 +3,7 @@
   "displayName": "LSLib Tools",
   "description": "Набор инструментов для моддинга Baldur's Gate 3 и Divinity: Original Sin 2 прямо в VS Code",
   "publisher": "LeoBlock",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "categories": [
     "Other"
   ],
