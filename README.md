@@ -7,6 +7,7 @@
 [![Version](https://img.shields.io/badge/version-1.4.0-blue.svg)](https://github.com/ldiellyoungl/lslib-vs-code-tools)
 [![VS Code](https://img.shields.io/badge/VS%20Code-1.70+-blue.svg)](https://code.visualstudio.com/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![GithubRepo](https://img.shields.io/badge/github-repo-blue?logo=github)](https://github.com/ldiellyoungl/lslib-vs-code-tools)
 
 </div>
 
