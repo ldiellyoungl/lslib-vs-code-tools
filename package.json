@@ -3,7 +3,7 @@
   "displayName": "LSLib Tools",
   "description": "Набор инструментов для моддинга Baldur's Gate 3 и Divinity: Original Sin 2 прямо в VS Code",
   "publisher": "LeoBlock",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "categories": [
     "Other"
   ],
@@ -50,32 +50,32 @@
     "commands": [
       {
         "command": "LSLib.unpackPak",
-        "title": "📦LSLib: Распаковать PAK",
+        "title": "LSLib: Распаковать PAK",
         "icon": "$(unarchive)"
       },
       {
         "command": "LSLib.packFolder",
-        "title": "📦LSLib: Запаковать папку в PAK",
+        "title": "LSLib: Запаковать папку в PAK",
         "icon": "$(archive)"
       },
       {
         "command": "LSLib.convertResource",
-        "title": "🔄LSLib: Конвертировать ресурс (LSF/LSX/LSJ/LSB)",
+        "title": "LSLib: Конвертировать ресурс (LSF/LSX/LSJ/LSB)",
         "icon": "$(symbol-enum)"
       },
       {
         "command": "LSLib.convertLoca",
-        "title": "🌍LSLib: Конвертировать локализацию (LOCA/XML)",
+        "title": "LSLib: Конвертировать локализацию (LOCA/XML)",
         "icon": "$(globe)"
       },
       {
         "command": "LSLib.generateUUID",
-        "title": "🆔LSLib: Сгенерировать UUID",
+        "title": "LSLib: Сгенерировать UUID",
         "icon": "$(key)"
       },
       {
         "command": "LSLib.encodeVersion",
-        "title": "🔢LSLib: Версия",
+        "title": "LSLib: Версия",
         "icon": "$(symbol-number)"
       }
     ],

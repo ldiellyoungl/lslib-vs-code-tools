@@ -4,7 +4,7 @@
 
 **Набор инструментов для моддинга Baldur's Gate 3 и Divinity: Original Sin 2 прямо в VS Code**
 
-[![Version](https://img.shields.io/badge/version-1.5.1-blue.svg?logo=github)](https://github.com/ldiellyoungl/lslib-vs-code-tools)
+[![Version](https://img.shields.io/badge/version-1.6.0-blue.svg?logo=github)](https://github.com/ldiellyoungl/lslib-vs-code-tools)
 [![VS Code](https://img.shields.io/badge/VS%20Code-1.70+-blue.svg)](https://code.visualstudio.com/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
@@ -31,9 +31,18 @@
   LSB ↔ LSX/LSJ — скриптовые бинарные форматы
 
 - **Поддержка ссылок на файлы** : найденные файлы будут ссылкой при нажатии на которую вы сразу перейдете к файлу
+
 <div align="center">
 
 ![Поддержка ссылок на файлы](screenshots/fileLinkProvider.png)
+
+</div>
+
+- **Работа с meta.lsx:** Добавлена возможность копировать `ModuleShortDesc` с `ModuleInfo`. Теперь у вас будет подсвечен `ModuleInfo` и вы с легкостью можете скопировать его как зависимость и вставить как зависимость.
+
+<div align="center">
+
+![Поддержка ссылок на файлы](screenshots/metaDependencyDecoratorCopy.png)
 
 </div>
 

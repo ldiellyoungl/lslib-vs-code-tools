@@ -13,6 +13,7 @@ const {
 const { TranslationDecorator } = require("./src/translationDecorator");
 const { FileLinkProvider } = require("./src/fileLinkProvider");
 const { UuidValidationDecorator } = require("./src/uuidValidatorDecorator");
+const { MetaDependencyDecorator } = require("./src/metaDependencyDecorator");
 
 function getDivineToolPath(context) {
   return path.join(context.extensionPath, "tools1.20.4", "divine.exe");
@@ -152,6 +153,22 @@ function activate(context) {
     { scheme: "file", language: "xml" },
     new FileLinkProvider(context),
   );
+
+  const copyDependencyCmd = vscode.commands.registerCommand(
+    "LSLib.copyDependency",
+    async (target) => {
+      if (target && target.text) {
+        await vscode.env.clipboard.writeText(target.text);
+        vscode.window.showInformationMessage(
+          "Блок зависимости скопирован в буфер обмена",
+        );
+      }
+    },
+  );
+
+  const metaDependencyDecorator = new MetaDependencyDecorator(context);
+
+  context.subscriptions.push(metaDependencyDecorator, copyDependencyCmd);
 
   context.subscriptions.push(fileLinkProvider, revealFileCmd);
 
