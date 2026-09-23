@@ -53,15 +53,9 @@
 - **Генерация UUID** и вставка в позицию курсора/выделенного текста
 - **Валидация UUID** через декоратор и копирование в подсказке:
 
-<div style="display: flex; gap: 10px; justify-content: space-between; justify-items: center">
-
-![Декоратор UUID Ошибка](screenshots/uuidValidDecoratorError.png)
-
-![Декоратор UUID Предупреждение](screenshots/uuidValidDecoratorWarning.png)
-
-![Декоратор UUID Намана](screenshots/uuidValidDecoratorSuccess.png)
-
-</div>
+|                          Ошибочный UUID                           |                         Отличная от v4 UUID версия                          |                           Версия UUID v4                            |
+| :---------------------------------------------------------------: | :-------------------------------------------------------------------------: | :-----------------------------------------------------------------: |
+| ![Декоратор UUID Ошибка](screenshots/uuidValidDecoratorError.png) | ![Декоратор UUID Предупреждение](screenshots/uuidValidDecoratorWarning.png) | ![Декоратор UUID Намана](screenshots/uuidValidDecoratorSuccess.png) |
 
 ### 🔢 Работа с версиями
 
