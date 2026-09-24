@@ -20,7 +20,7 @@
   "engines": {
     "vscode": "^1.70.0"
   },
-  "main": "./extension.js",
+  "main": "./out/extension.js",
   "activationEvents": [
     "onStartupFinished"
   ],
@@ -74,9 +74,9 @@
         "icon": "$(key)"
       },
       {
-        "command": "LSLib.encodeVersion",
+        "command": "LSLib.insertVersion",
         "title": "LSLib: Версия",
-        "icon": "$(symbol-number)"
+        "icon": "$(tag)"
       }
     ],
     "menus": {
@@ -108,10 +108,21 @@
           "group": "LSLib@1"
         },
         {
-          "command": "LSLib.encodeVersion",
+          "command": "LSLib.insertVersion",
           "group": "LSLib@2"
         }
       ]
     }
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.2",
+    "@types/vscode": "^1.138.0",
+    "typescript": "^7.0.2"
+  },
+  "scripts": {
+    "vscode:prepublish": "pnpm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts"
   }
 }
