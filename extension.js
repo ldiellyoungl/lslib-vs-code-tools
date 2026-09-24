@@ -16,7 +16,11 @@ const { UuidValidationDecorator } = require("./src/uuidValidatorDecorator");
 const { MetaDependencyDecorator } = require("./src/metaDependencyDecorator");
 
 function getDivineToolPath(context) {
-  return path.join(context.extensionPath, "tools1.20.4", "divine.exe");
+  return path.join(
+    context.extensionPath,
+    "./resources/lslibtools",
+    "divine.exe",
+  );
 }
 
 function activate(context) {
