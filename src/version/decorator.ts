@@ -56,7 +56,7 @@ export class VersionDecorator implements vscode.Disposable {
     const document = editor.document;
     const decorations: vscode.DecorationOptions[] = [];
 
-    // 🚀 МАГИЯ DRY: Ищем атрибут value в тегах attribute, где id="Version64"
+    // Ищем атрибут value в тегах attribute, где id="Version64"
     const versionAttributes = findXmlAttributeLocations(
       document,
       "attribute",
@@ -72,10 +72,10 @@ export class VersionDecorator implements vscode.Disposable {
 
         if (decoded) {
           decorations.push({
-            range: attr.range, // Подсказка появится сразу после значения
+            range: attr.fullTagRange,
             renderOptions: {
               after: {
-                contentText: `  →  ${decoded}`, // Стрелочка для наглядности
+                contentText: `${decoded}`,
               },
             },
           });

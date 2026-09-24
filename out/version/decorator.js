@@ -79,7 +79,7 @@ class VersionDecorator {
             return;
         const document = editor.document;
         const decorations = [];
-        // 🚀 МАГИЯ DRY: Ищем атрибут value в тегах attribute, где id="Version64"
+        // Ищем атрибут value в тегах attribute, где id="Version64"
         const versionAttributes = (0, xmlParser_1.findXmlAttributeLocations)(document, "attribute", "id", "Version64", "value");
         for (const attr of versionAttributes) {
             // Проверяем, что это валидное int64 число
@@ -87,10 +87,10 @@ class VersionDecorator {
                 const decoded = (0, decoder_1.decodeVersion64)(attr.value);
                 if (decoded) {
                     decorations.push({
-                        range: attr.range, // Подсказка появится сразу после значения
+                        range: attr.fullTagRange,
                         renderOptions: {
                             after: {
-                                contentText: `  →  ${decoded}`, // Стрелочка для наглядности
+                                contentText: `${decoded}`,
                             },
                         },
                     });
