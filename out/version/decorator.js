@@ -45,6 +45,8 @@ class VersionDecorator {
         // Стиль подсказки: цвет как у CodeLens, курсив, небольшой отступ
         this.versionHintDecoration = vscode.window.createTextEditorDecorationType({
             after: {
+                border: "2px",
+                borderColor: "red",
                 color: new vscode.ThemeColor("editorCodeLens.foreground"),
                 fontStyle: "italic",
                 margin: "0 0 0 1em",
