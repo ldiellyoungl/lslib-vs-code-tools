@@ -1,11 +1,25 @@
-const vscode = require("vscode");
-const fs = require("fs");
-const path = require("path");
+import * as vscode from "vscode";
+import * as fs from "node:fs";
+import { getModRoot } from "../shared/utils";
+import { findXmlAttributeLocations } from "../shared/xmlParser";
 
-class TranslationDecorator {
-  constructor(context) {
-    this.context = context;
+interface Translation {
+  language: string;
+  text: string;
+  filePath: string;
+  lineNumber: number;
+}
 
+interface LocalizationFile {
+  language: string;
+  filePath: string;
+}
+
+export class TranslationDecorator implements vscode.Disposable {
+  private readonly decorationType: vscode.TextEditorDecorationType;
+  private readonly disposables: vscode.Disposable[] = [];
+
+  constructor() {
     this.decorationType = vscode.window.createTextEditorDecorationType({
       after: {
         color: new vscode.ThemeColor("editorCodeLens.foreground"),
@@ -14,11 +28,9 @@ class TranslationDecorator {
       },
     });
 
-    this.disposables = [];
-
     this.disposables.push(
       vscode.window.onDidChangeActiveTextEditor((editor) => {
-        if (editor && editor.document.languageId === "xml") {
+        if (editor?.document.languageId === "xml") {
           this.updateDecorations(editor);
         }
       }),
@@ -37,36 +49,21 @@ class TranslationDecorator {
       }),
     );
 
-    if (
-      vscode.window.activeTextEditor &&
-      vscode.window.activeTextEditor.document.languageId === "xml"
-    ) {
-      setTimeout(
-        () => this.updateDecorations(vscode.window.activeTextEditor),
-        500,
-      );
+    if (vscode.window.activeTextEditor?.document.languageId === "xml") {
+      setTimeout(() => {
+        if (vscode.window.activeTextEditor) {
+          this.updateDecorations(vscode.window.activeTextEditor);
+        }
+      }, 500);
     }
   }
 
-  // ИЗМЕНЕНИЕ: Определяем корень мода для открытого файла
-  getModRoot(editorFilePath) {
-    const parts = editorFilePath.split(/[\\/]/);
-    const publicIndex = parts.findIndex((p) => p.toLowerCase() === "public");
-
-    if (publicIndex !== -1) {
-      // Корень мода = всё до папки Public
-      return parts.slice(0, publicIndex).join(path.sep);
-    }
-
-    // Если нет Public, возвращаем null (будем искать по всему workspace)
-    return null;
-  }
-
-  async findLocalizationFiles(modRoot) {
-    let xmlFiles;
+  private async findLocalizationFiles(
+    modRoot: string | null,
+  ): Promise<LocalizationFile[]> {
+    let xmlFiles: vscode.Uri[];
 
     if (modRoot) {
-      // Ищем только в корне текущего мода
       const modRootUri = vscode.Uri.file(modRoot);
       const relativePattern = new vscode.RelativePattern(
         modRootUri,
@@ -74,11 +71,10 @@ class TranslationDecorator {
       );
       xmlFiles = await vscode.workspace.findFiles(relativePattern);
     } else {
-      // Fallback: ищем по всему workspace
       xmlFiles = await vscode.workspace.findFiles("**/Localization/**/*.xml");
     }
 
-    const localizationFiles = [];
+    const localizationFiles: LocalizationFile[] = [];
 
     for (const fileUri of xmlFiles) {
       const filePath = fileUri.fsPath;
@@ -98,7 +94,11 @@ class TranslationDecorator {
     return localizationFiles;
   }
 
-  findTranslationInFile(filePath, handle) {
+  private findTranslationInFile(
+    filePath: string,
+    handle: string,
+    language: string,
+  ): Translation | null {
     try {
       const content = fs.readFileSync(filePath, "utf8");
       const regex = new RegExp(
@@ -112,6 +112,8 @@ class TranslationDecorator {
         const lineNumber = textBeforeMatch.split("\n").length;
 
         const rawText = match[1] || "";
+
+        // ✅ Вернул оригинальную логику замены без выноса в utils
         const text = rawText
           .replace(/&quot;/g, '"')
           .replace(/&apos;/g, "'")
@@ -121,6 +123,7 @@ class TranslationDecorator {
           .trim();
 
         return {
+          language,
           text: text,
           filePath: filePath,
           lineNumber: lineNumber,
@@ -133,42 +136,46 @@ class TranslationDecorator {
     return null;
   }
 
-  // ИЗМЕНЕНИЕ: Передаём modRoot в метод поиска
-  async getTranslationsForHandle(handle, modRoot) {
+  private async getTranslationsForHandle(
+    handle: string,
+    modRoot: string | null,
+  ): Promise<Translation[]> {
     const localizationFiles = await this.findLocalizationFiles(modRoot);
-    const translations = [];
+    const translations: Translation[] = [];
 
     for (const locFile of localizationFiles) {
-      const result = this.findTranslationInFile(locFile.filePath, handle);
+      const result = this.findTranslationInFile(
+        locFile.filePath,
+        handle,
+        locFile.language,
+      );
       if (result) {
-        translations.push({
-          language: locFile.language,
-          text: result.text,
-          filePath: result.filePath,
-          lineNumber: result.lineNumber,
-        });
+        translations.push(result);
       }
     }
 
     return translations;
   }
 
-  async updateDecorations(editor) {
-    if (!editor || editor.document.languageId !== "xml") return;
+  private async updateDecorations(editor: vscode.TextEditor): Promise<void> {
+    if (editor.document.languageId !== "xml") return;
 
     const document = editor.document;
-    const text = document.getText();
-    const decorations = [];
+    const decorations: vscode.DecorationOptions[] = [];
 
-    // ИЗМЕНЕНИЕ: Определяем корень мода для текущего файла
-    const modRoot = this.getModRoot(document.fileName);
+    const modRoot = getModRoot(document.fileName);
 
-    const regex = /<attribute[^>]*handle="(h[a-g0-9]+)"[^>]*\/>/g;
-    let match;
+    // ✅ DRY: Используем наш универсальный парсер для поиска handle
+    const handleAttributes = findXmlAttributeLocations(
+      document,
+      "attribute",
+      "handle",
+      undefined, // Ищем любой атрибут handle
+      "handle", // Нам нужно значение самого атрибута handle
+    );
 
-    while ((match = regex.exec(text)) !== null) {
-      const handle = match[1];
-      // ИЗМЕНЕНИЕ: Передаём modRoot
+    for (const attr of handleAttributes) {
+      const handle = attr.value;
       const translations = await this.getTranslationsForHandle(handle, modRoot);
 
       let displayText = "";
@@ -192,8 +199,6 @@ class TranslationDecorator {
       } else {
         displayText = `[Перевод не найден]`;
       }
-
-      const startPos = document.positionAt(match.index + match[0].length);
 
       const hoverContent = new vscode.MarkdownString("", true);
       hoverContent.isTrusted = true;
@@ -221,10 +226,10 @@ class TranslationDecorator {
       }
 
       decorations.push({
-        range: new vscode.Range(startPos, startPos),
+        range: attr.fullTagRange, // Подсказка появится после всего тега />
         renderOptions: {
           after: {
-            contentText: displayText,
+            contentText: `  ${displayText}`,
           },
         },
         hoverMessage: hoverContent,
@@ -234,10 +239,8 @@ class TranslationDecorator {
     editor.setDecorations(this.decorationType, decorations);
   }
 
-  dispose() {
+  public dispose(): void {
     this.disposables.forEach((d) => d.dispose());
     this.decorationType.dispose();
   }
 }
-
-module.exports = { TranslationDecorator };

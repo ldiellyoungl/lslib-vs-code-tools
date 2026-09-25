@@ -39,14 +39,16 @@ const decoder_1 = require("../version/decoder");
 const encoder_1 = require("../version/encoder");
 const xmlParser_1 = require("../shared/xmlParser");
 class VersionDecorator {
+    invalidDecorator;
     versionHintDecoration;
     disposables = [];
     constructor() {
+        this.invalidDecorator = vscode.window.createTextEditorDecorationType({
+            textDecoration: "underline wavy #ffa2a2",
+        });
         // Стиль подсказки: цвет как у CodeLens, курсив, небольшой отступ
         this.versionHintDecoration = vscode.window.createTextEditorDecorationType({
             after: {
-                border: "2px",
-                borderColor: "red",
                 color: new vscode.ThemeColor("editorCodeLens.foreground"),
                 fontStyle: "italic",
                 margin: "0 0 0 1em",
@@ -80,7 +82,8 @@ class VersionDecorator {
         if (editor.document.languageId !== "xml")
             return;
         const document = editor.document;
-        const decorations = [];
+        const hintDecorations = [];
+        const invalidDecorations = [];
         // Ищем атрибут value в тегах attribute, где id="Version64"
         const versionAttributes = (0, xmlParser_1.findXmlAttributeLocations)(document, "attribute", "id", "Version64", "value");
         for (const attr of versionAttributes) {
@@ -88,7 +91,7 @@ class VersionDecorator {
             if ((0, encoder_1.isValidInt64)(attr.value)) {
                 const decoded = (0, decoder_1.decodeVersion64)(attr.value);
                 if (decoded) {
-                    decorations.push({
+                    hintDecorations.push({
                         range: attr.fullTagRange,
                         renderOptions: {
                             after: {
@@ -98,13 +101,27 @@ class VersionDecorator {
                     });
                 }
             }
+            else {
+                const args = JSON.stringify(attr.value);
+                const copyLink = `[$(copy) Скопировать версию](command:LSLib.copyToClipboard?${args})`;
+                // const insert = `[$(diff-added) Ввести версию](command:LSLib.insertVersion64)`;
+                const hoverContent = `**Не соответствует Version64**\n\n\`${attr.value}\`\n\n${copyLink}\n`;
+                const hoverMessage = new vscode.MarkdownString(hoverContent, true);
+                hoverMessage.isTrusted = true;
+                invalidDecorations.push({
+                    range: attr.range,
+                    hoverMessage,
+                });
+            }
         }
         // Применяем декорации
-        editor.setDecorations(this.versionHintDecoration, decorations);
+        editor.setDecorations(this.versionHintDecoration, hintDecorations);
+        editor.setDecorations(this.invalidDecorator, invalidDecorations);
     }
     dispose() {
         this.disposables.forEach((d) => d.dispose());
         this.versionHintDecoration.dispose();
+        this.invalidDecorator.dispose();
     }
 }
 exports.VersionDecorator = VersionDecorator;

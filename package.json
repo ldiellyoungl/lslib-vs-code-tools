@@ -69,7 +69,17 @@
         "icon": "$(globe)"
       },
       {
-        "command": "LSLib.generateUUID",
+        "command": "LSLib.goToTranslation",
+        "title": "LSLib: Перейти к строке перевода",
+        "icon": "$(link-external)"
+      },
+      {
+        "command": "LSLib.copyToClipboard",
+        "title": "Скопировать",
+        "icon": "$(copy)"
+      },
+      {
+        "command": "LSLib.insertUUID",
         "title": "LSLib: Сгенерировать UUID",
         "icon": "$(key)"
       },
@@ -104,7 +114,7 @@
       ],
       "editor/context": [
         {
-          "command": "LSLib.generateUUID",
+          "command": "LSLib.insertUUID",
           "group": "LSLib@1"
         },
         {

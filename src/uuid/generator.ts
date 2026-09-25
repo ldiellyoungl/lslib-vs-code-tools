@@ -20,7 +20,7 @@ export function isValidUUID(str: string): boolean {
 /**
  * Генерирует UUID и вставляет/заменяет выделенный текст в редакторе
  */
-export async function insertUUID(): Promise<void> {
+export async function insertUUID(range?: vscode.Range): Promise<void> {
   const editor = vscode.window.activeTextEditor;
 
   if (!editor) {
@@ -31,10 +31,14 @@ export async function insertUUID(): Promise<void> {
   const uuid = generateUUID();
 
   await editor.edit((editBuilder) => {
-    if (editor.selection.isEmpty) {
-      editBuilder.insert(editor.selection.active, uuid);
+    if (range) {
+      editBuilder.replace(range, uuid);
     } else {
-      editBuilder.replace(editor.selection, uuid);
+      if (editor.selection.isEmpty) {
+        editBuilder.insert(editor.selection.active, uuid);
+      } else {
+        editBuilder.replace(editor.selection, uuid);
+      }
     }
   });
 

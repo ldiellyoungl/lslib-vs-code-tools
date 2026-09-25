@@ -67,3 +67,67 @@ export async function runDivine(
     },
   );
 }
+
+/**
+ * Определяет корневую папку мода по пути к файлу.
+ *
+ * Структура мода:
+ * - MyMod/mods/MyMod/  (файлы мода)
+ * - MyMod/public/      (публичные ассеты)
+ * - MyMod/generated/   (сгенерированные файлы)
+ *
+ * Функция возвращает путь к "MyMod" (верхний уровень).
+ *
+ * @param editorFilePath Абсолютный путь к файлу
+ * @returns Путь к корню мода или null
+ */
+export function getModRoot(editorFilePath: string): string | null {
+  const parts = editorFilePath.split(/[\\/]/);
+
+  // Приоритет 1: Ищем "public" или "generated"
+  const publicIndex = parts.findIndex(
+    (p) => p.toLowerCase() === "public" || p.toLowerCase() === "generated",
+  );
+
+  if (publicIndex !== -1) {
+    return parts.slice(0, publicIndex).join(path.sep);
+  }
+
+  // Приоритет 2: Ищем структуру "ModName/mods/ModName"
+  // Ищем "mods", перед которым есть папка, и после которого та же папка
+  for (let i = 1; i < parts.length - 1; i++) {
+    if (parts[i].toLowerCase() === "mods") {
+      const folderBefore = parts[i - 1]; // Папка перед "mods"
+      const folderAfter = parts[i + 1]; // Папка после "mods"
+
+      // Если имена совпадают (MyMod/mods/MyMod), то это корень мода
+      if (folderBefore.toLowerCase() === folderAfter.toLowerCase()) {
+        // Возвращаем путь до первого "ModName" (включительно)
+        return parts.slice(0, i).join(path.sep);
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Парсит массив координат из аргументов команды Markdown-ссылки
+ * и возвращает готовый vscode.Range.
+ *
+ * Ожидает формат: [{line, character}, {line, character}]
+ */
+export function parseRangeFromArgs(args: any): vscode.Range | undefined {
+  if (!args || !Array.isArray(args) || args.length !== 2) {
+    return undefined;
+  }
+
+  try {
+    const start = new vscode.Position(args[0].line, args[0].character);
+    const end = new vscode.Position(args[1].line, args[1].character);
+    return new vscode.Range(start, end);
+  } catch (error) {
+    console.error("Ошибка парсинга координат:", error);
+    return undefined;
+  }
+}

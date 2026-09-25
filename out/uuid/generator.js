@@ -56,7 +56,7 @@ function isValidUUID(str) {
 /**
  * Генерирует UUID и вставляет/заменяет выделенный текст в редакторе
  */
-async function insertUUID() {
+async function insertUUID(range) {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
         vscode.window.showWarningMessage("Откройте файл для вставки UUID");
@@ -64,11 +64,16 @@ async function insertUUID() {
     }
     const uuid = generateUUID();
     await editor.edit((editBuilder) => {
-        if (editor.selection.isEmpty) {
-            editBuilder.insert(editor.selection.active, uuid);
+        if (range) {
+            editBuilder.replace(range, uuid);
         }
         else {
-            editBuilder.replace(editor.selection, uuid);
+            if (editor.selection.isEmpty) {
+                editBuilder.insert(editor.selection.active, uuid);
+            }
+            else {
+                editBuilder.replace(editor.selection, uuid);
+            }
         }
     });
     vscode.window.showInformationMessage(`UUID сгенерирован: ${uuid}`);

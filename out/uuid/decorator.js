@@ -90,12 +90,12 @@ class UuidValidationDecorator {
             const result = (0, validator_1.validateUUID)(attr.value);
             if (result.level === "none")
                 continue;
-            const args = encodeURIComponent(JSON.stringify({ uuid: attr.value }));
-            const copyLink = `[$(copy) Скопировать UUID](command:LSLib.copyUuidToClipboard?${args})`;
-            const hoverText = result.level === "valid"
+            const copyLink = `[$(copy) Скопировать UUID](command:LSLib.copyToClipboard?${JSON.stringify(attr.value)})`;
+            // const insert = `[$(diff-added) Сгенерировать UUID](command:LSLib.insertUUID?${encodeURIComponent(JSON.stringify([attr.range]))})`;
+            const hoverContent = result.level === "valid"
                 ? `**Валидный UUID v4**\n\n\`${attr.value}\`\n\n${copyLink}`
-                : `**${result.reason}**\n\n\`${attr.value}\`\n\n${copyLink}`;
-            const hoverMessage = new vscode.MarkdownString(hoverText, true);
+                : `**${result.reason}**\n\n\`${attr.value}\`\n\n${copyLink}\n`;
+            const hoverMessage = new vscode.MarkdownString(hoverContent, true);
             hoverMessage.isTrusted = true;
             const decoration = {
                 range: attr.range, // Используем готовый range из парсера!

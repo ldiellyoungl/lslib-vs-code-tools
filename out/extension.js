@@ -42,9 +42,12 @@ const pak_1 = require("./converters/pak");
 const resources_1 = require("./converters/resources");
 const loca_1 = require("./converters/loca");
 const generator_1 = require("./uuid/generator");
-const encoder_1 = require("./version/encoder");
+const linkProvider_1 = require("./files/linkProvider");
 const decorator_1 = require("./uuid/decorator");
 const decorator_2 = require("./version/decorator");
+const decorator_3 = require("./translations/decorator");
+const metaDependencyDecorator_1 = require("./files/metaDependencyDecorator");
+const utils_1 = require("./shared/utils");
 /**
  * Определяет путь к divine.exe относительно корня расширения
  */
@@ -83,12 +86,52 @@ function activate(context) {
             return vscode.window.showErrorMessage("Выберите файл локализации (.loca или .xml)");
         await (0, loca_1.convertLoca)(targetUri, toolPath, getGame(), outputChannel);
     });
-    const generateUuidCmd = vscode.commands.registerCommand("LSLib.generateUUID", generator_1.insertUUID);
-    const insertVersionCmd = vscode.commands.registerCommand("LSLib.insertVersion", encoder_1.insertVersion64);
     const uuidValidationDecorator = new decorator_1.UuidValidationDecorator();
     const versionDecorator = new decorator_2.VersionDecorator();
+    const translationDecorator = new decorator_3.TranslationDecorator();
+    const goToTranslationCmd = vscode.commands.registerCommand("LSLib.goToTranslation", async (args) => {
+        // Проверяем, что аргументы переданы корректно
+        if (!args || !args.filePath) {
+            vscode.window.showErrorMessage("Не удалось определить путь к файлу перевода");
+            return;
+        }
+        try {
+            const uri = vscode.Uri.file(args.filePath);
+            const document = await vscode.workspace.openTextDocument(uri);
+            const editor = await vscode.window.showTextDocument(document);
+            const targetLine = Math.max(0, args.lineNumber - 1);
+            const range = new vscode.Range(targetLine, 0, targetLine, 0);
+            editor.selection = new vscode.Selection(range.start, range.end);
+            editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
+        }
+        catch (err) {
+            vscode.window.showErrorMessage(`Ошибка открытия файла перевода: ${err}`);
+        }
+    });
+    const fileLinkProvider = new linkProvider_1.FileLinkProvider(outputChannel);
+    const linkProviderDisposable = vscode.languages.registerDocumentLinkProvider({ scheme: "file", language: "xml" }, fileLinkProvider);
+    const metaDependencyDecorator = new metaDependencyDecorator_1.MetaDependencyDecorator();
+    const copyToClipboardCmd = vscode.commands.registerCommand("LSLib.copyToClipboard", async (contentArg) => {
+        if (!contentArg) {
+            vscode.window.showErrorMessage("Нет данных для копирования");
+            return;
+        }
+        await vscode.env.clipboard.writeText(contentArg);
+        vscode.window.showInformationMessage("Скопировано в буфер обмена");
+    });
+    const insertUuidCmd = vscode.commands.registerCommand("LSLib.insertUUID", async (rangeArg) => {
+        await (0, generator_1.insertUUID)((0, utils_1.parseRangeFromArgs)(rangeArg));
+    });
+    // const generateUuidCmd = vscode.commands.registerCommand(
+    //   "LSLib.generateUUID",
+    //   insertUUID,
+    // );
+    // const insertVersionCmd = vscode.commands.registerCommand(
+    //   "LSLib.insertVersion",
+    //   insertVersion64,
+    // );
     // Подписка на комманды
-    context.subscriptions.push(outputChannel, unpackPakCmd, packFolderCmd, convertResourceCmd, convertLocaCmd, generateUuidCmd, insertVersionCmd, uuidValidationDecorator, versionDecorator);
+    context.subscriptions.push(outputChannel, unpackPakCmd, packFolderCmd, convertResourceCmd, convertLocaCmd, uuidValidationDecorator, versionDecorator, translationDecorator, goToTranslationCmd, linkProviderDisposable, metaDependencyDecorator, copyToClipboardCmd, insertUuidCmd);
     outputChannel.appendLine("LSLib Tools успешно активирован!");
 }
 function deactivate() {
