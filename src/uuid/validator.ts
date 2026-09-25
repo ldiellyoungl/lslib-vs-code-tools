@@ -1,19 +1,11 @@
 import { isValidUUID } from "./generator";
 import { UUID_FORMAT_REGEX, UUID_LIKE_REGEX } from "./constants";
-
-/**
- * Типизированный результат валидации
- */
-export interface UUIDValidationResult {
-  valid: boolean;
-  level: "valid" | "invalid" | "warning" | "none";
-  reason: string;
-}
+import { ValidationRules } from "../shared/types";
 
 /**
  * Проверяет UUID и возвращает детальную информацию об ошибках
  */
-export function validateUUID(str: string): UUIDValidationResult {
+export function validateUUID(str: string): ValidationRules {
   if (!str || typeof str !== "string") {
     return { valid: false, level: "none", reason: "" };
   }

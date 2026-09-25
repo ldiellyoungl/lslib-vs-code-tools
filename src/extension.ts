@@ -5,17 +5,16 @@ import * as fs from "node:fs";
 import { unpackPak, packFolder } from "./converters/pak";
 import { convertResource } from "./converters/resources";
 import { convertLoca } from "./converters/loca";
-import { insertUUID } from "./uuid/generator";
-import { insertVersion64 } from "./version/encoder";
 
 import { FileLinkProvider } from "./files/linkProvider";
 
-import { UuidValidationDecorator } from "./uuid/decorator";
-import { VersionDecorator } from "./version/decorator";
 import { TranslationDecorator } from "./translations/decorator";
-import { MetaDependencyDecorator } from "./files/metaDependencyDecorator";
 
-import { parseRangeFromArgs } from "./shared/utils";
+import { UuidDiagnosticProvider } from "./uuid/diagnostic";
+import { UuidCodeActionProvider } from "./uuid/actions";
+import { Version64Decorator } from "./version/decorator";
+import { Version64DiagnosticProvider } from "./version/diagnostic";
+import { Version64CodeActionProvider } from "./version/actions";
 
 /**
  * Определяет путь к divine.exe относительно корня расширения
@@ -42,7 +41,7 @@ export function activate(context: vscode.ExtensionContext) {
   const getGame = () =>
     (vscode.workspace.getConfiguration("lslib").get("game") || "bg3") as string;
 
-  // Регистрация команд
+  // divine
   const unpackPakCmd = vscode.commands.registerCommand(
     "LSLib.unpackPak",
     async (uri?: vscode.Uri) => {
@@ -52,7 +51,6 @@ export function activate(context: vscode.ExtensionContext) {
       await unpackPak(targetUri, toolPath, getGame(), outputChannel);
     },
   );
-
   const packFolderCmd = vscode.commands.registerCommand(
     "LSLib.packFolder",
     async (uri?: vscode.Uri) => {
@@ -62,7 +60,6 @@ export function activate(context: vscode.ExtensionContext) {
       await packFolder(targetUri, toolPath, getGame(), outputChannel);
     },
   );
-
   const convertResourceCmd = vscode.commands.registerCommand(
     "LSLib.convertResource",
     async (uri?: vscode.Uri) => {
@@ -74,7 +71,6 @@ export function activate(context: vscode.ExtensionContext) {
       await convertResource(targetUri, toolPath, getGame(), outputChannel);
     },
   );
-
   const convertLocaCmd = vscode.commands.registerCommand(
     "LSLib.convertLoca",
     async (uri?: vscode.Uri) => {
@@ -86,95 +82,83 @@ export function activate(context: vscode.ExtensionContext) {
       await convertLoca(targetUri, toolPath, getGame(), outputChannel);
     },
   );
-
-  const uuidValidationDecorator = new UuidValidationDecorator();
-  const versionDecorator = new VersionDecorator();
-
-  const translationDecorator = new TranslationDecorator();
-  const goToTranslationCmd = vscode.commands.registerCommand(
-    "LSLib.goToTranslation",
-    async (args: { filePath: string; lineNumber: number }) => {
-      // Проверяем, что аргументы переданы корректно
-      if (!args || !args.filePath) {
-        vscode.window.showErrorMessage(
-          "Не удалось определить путь к файлу перевода",
-        );
-        return;
-      }
-
-      try {
-        const uri = vscode.Uri.file(args.filePath);
-
-        const document = await vscode.workspace.openTextDocument(uri);
-
-        const editor = await vscode.window.showTextDocument(document);
-
-        const targetLine = Math.max(0, args.lineNumber - 1);
-        const range = new vscode.Range(targetLine, 0, targetLine, 0);
-
-        editor.selection = new vscode.Selection(range.start, range.end);
-        editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
-      } catch (err) {
-        vscode.window.showErrorMessage(
-          `Ошибка открытия файла перевода: ${err}`,
-        );
-      }
-    },
-  );
-
-  const fileLinkProvider = new FileLinkProvider(outputChannel);
-  const linkProviderDisposable = vscode.languages.registerDocumentLinkProvider(
-    { scheme: "file", language: "xml" },
-    fileLinkProvider,
-  );
-
-  const metaDependencyDecorator = new MetaDependencyDecorator();
-
-  const copyToClipboardCmd = vscode.commands.registerCommand(
-    "LSLib.copyToClipboard",
-    async (contentArg: string) => {
-      if (!contentArg) {
-        vscode.window.showErrorMessage("Нет данных для копирования");
-        return;
-      }
-      await vscode.env.clipboard.writeText(contentArg);
-      vscode.window.showInformationMessage("Скопировано в буфер обмена");
-    },
-  );
-
-  const insertUuidCmd = vscode.commands.registerCommand(
-    "LSLib.insertUUID",
-    async (rangeArg?: any) => {
-      await insertUUID(parseRangeFromArgs(rangeArg));
-    },
-  );
-
-  // const generateUuidCmd = vscode.commands.registerCommand(
-  //   "LSLib.generateUUID",
-  //   insertUUID,
-  // );
-  // const insertVersionCmd = vscode.commands.registerCommand(
-  //   "LSLib.insertVersion",
-  //   insertVersion64,
-  // );
-
-  // Подписка на комманды
   context.subscriptions.push(
-    outputChannel,
     unpackPakCmd,
     packFolderCmd,
     convertResourceCmd,
     convertLocaCmd,
-    uuidValidationDecorator,
-    versionDecorator,
-    translationDecorator,
-    goToTranslationCmd,
-    linkProviderDisposable,
-    metaDependencyDecorator,
-    copyToClipboardCmd,
-    insertUuidCmd,
   );
 
+  // const translationDecorator = new TranslationDecorator();
+  // const goToTranslationCmd = vscode.commands.registerCommand(
+  //   "LSLib.goToTranslation",
+  //   async (args: { filePath: string; lineNumber: number }) => {
+  //     // Проверяем, что аргументы переданы корректно
+  //     if (!args || !args.filePath) {
+  //       vscode.window.showErrorMessage(
+  //         "Не удалось определить путь к файлу перевода",
+  //       );
+  //       return;
+  //     }
+
+  //     try {
+  //       const uri = vscode.Uri.file(args.filePath);
+
+  //       const document = await vscode.workspace.openTextDocument(uri);
+
+  //       const editor = await vscode.window.showTextDocument(document);
+
+  //       const targetLine = Math.max(0, args.lineNumber - 1);
+  //       const range = new vscode.Range(targetLine, 0, targetLine, 0);
+
+  //       editor.selection = new vscode.Selection(range.start, range.end);
+  //       editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
+  //     } catch (err) {
+  //       vscode.window.showErrorMessage(
+  //         `Ошибка открытия файла перевода: ${err}`,
+  //       );
+  //     }
+  //   },
+  // );
+
+  // const fileLinkProvider = new FileLinkProvider(outputChannel);
+  // const linkProviderDisposable = vscode.languages.registerDocumentLinkProvider(
+  //   { scheme: "file", language: "xml" },
+  //   fileLinkProvider,
+  // );
+
+  // uuid
+  const uuidDiagnosticProvider = new UuidDiagnosticProvider();
+  const uuidCodeActionProvider = new UuidCodeActionProvider();
+  const uuidActionRegistration = vscode.languages.registerCodeActionsProvider(
+    { scheme: "file", language: "xml" },
+    uuidCodeActionProvider,
+    {
+      providedCodeActionKinds: UuidCodeActionProvider.providedCodeActionKinds,
+    },
+  );
+  context.subscriptions.push(uuidDiagnosticProvider, uuidActionRegistration);
+
+  //version
+  const version64Decorator = new Version64Decorator();
+  const version64DiagnosticProvider = new Version64DiagnosticProvider();
+  const version64CodeActionProvider = new Version64CodeActionProvider();
+  const versionActionRegistration =
+    vscode.languages.registerCodeActionsProvider(
+      { scheme: "file", language: "xml" },
+      version64CodeActionProvider,
+      {
+        providedCodeActionKinds:
+          Version64CodeActionProvider.providedCodeActionKinds,
+      },
+    );
+  context.subscriptions.push(
+    version64DiagnosticProvider,
+    versionActionRegistration,
+    version64Decorator,
+  );
+
+  context.subscriptions.push(outputChannel);
   outputChannel.appendLine("LSLib Tools успешно активирован!");
 }
 

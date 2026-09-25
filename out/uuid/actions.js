@@ -35,72 +35,29 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UuidCodeActionProvider = void 0;
 const vscode = __importStar(require("vscode"));
-// Регулярка для UUID v4
-const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/gi;
-/**
- * Проверяет, находится ли курсор на UUID
- */
-function getUuidAtPosition(document, position) {
-    const lineText = document.lineAt(position.line).text;
-    // Ищем все UUID в строке
-    const regex = new RegExp(UUID_REGEX.source, "gi");
-    let match;
-    while ((match = regex.exec(lineText)) !== null) {
-        const startChar = match.index;
-        const endChar = match.index + match[0].length;
-        // Проверяем, находится ли курсор внутри этого UUID
-        if (position.character >= startChar && position.character <= endChar) {
-            const range = new vscode.Range(position.line, startChar, position.line, endChar);
-            return { uuid: match[0], range };
-        }
-    }
-    return null;
-}
+const generator_1 = require("./generator");
 class UuidCodeActionProvider {
+    // Указываем VS Code, какие типы действий мы предоставляем
     static providedCodeActionKinds = [
         vscode.CodeActionKind.QuickFix,
     ];
-    /**
-     * VS Code вызывает этот метод, когда курсор находится на строке
-     * и есть "проблема" (diagnostic) или просто для проверки действий
-     */
-    provideCodeActions(document, range, context, _token) {
+    provideCodeActions(document, _range, context, _token) {
         const actions = [];
-        // Проверяем только если курсор на одной позиции (не выделение)
-        if (!range.isEmpty) {
-            return actions;
+        // Проходим по всем диагностикам в текущем контексте (строке)
+        for (const diagnostic of context.diagnostics) {
+            // Реагируем только на наши диагностики
+            if (diagnostic.source === "LSLib-UUID") {
+                const action = new vscode.CodeAction("Сгенерировать новый UUID", vscode.CodeActionKind.QuickFix);
+                // Создаем редактирование: заменяем диапазон ошибки на новый UUID
+                action.edit = new vscode.WorkspaceEdit();
+                action.edit.replace(document.uri, diagnostic.range, (0, generator_1.generateUUID)());
+                // Помечаем как предпочтительное действие (автоматическая исправлялка "💡")
+                action.isPreferred = true;
+                // Связываем действие с конкретной диагностикой
+                action.diagnostics = [diagnostic];
+                actions.push(action);
+            }
         }
-        // Ищем UUID под курсором
-        const uuidInfo = getUuidAtPosition(document, range.start);
-        if (!uuidInfo) {
-            return actions;
-        }
-        const { uuid, range: uuidRange } = uuidInfo;
-        // 1. Действие: Сгенерировать новый UUID
-        const replaceAction = new vscode.CodeAction("Сгенерировать новый UUID", vscode.CodeActionKind.QuickFix);
-        replaceAction.command = {
-            command: "LSLib.replaceUUID",
-            title: "Сгенерировать новый UUID",
-            arguments: [uuid], // Передаём сам UUID, а не range
-        };
-        replaceAction.isPreferred = true; // Помечаем как рекомендуемое действие
-        actions.push(replaceAction);
-        // 2. Действие: Скопировать UUID
-        const copyAction = new vscode.CodeAction("Скопировать UUID", vscode.CodeActionKind.QuickFix);
-        copyAction.command = {
-            command: "LSLib.copyToClipboard",
-            title: "Скопировать UUID",
-            arguments: [uuid],
-        };
-        actions.push(copyAction);
-        // 3. Действие: Валидировать UUID (показать информацию)
-        const validateAction = new vscode.CodeAction("Проверить UUID", vscode.CodeActionKind.QuickFix);
-        validateAction.command = {
-            command: "LSLib.validateUUID",
-            title: "Проверить UUID",
-            arguments: [uuid],
-        };
-        actions.push(validateAction);
         return actions;
     }
 }

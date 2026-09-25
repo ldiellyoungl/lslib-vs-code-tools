@@ -33,20 +33,30 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.isValidInt64 = isValidInt64;
 exports.encodeVersion64 = encodeVersion64;
 exports.parseVersion = parseVersion;
-exports.isValidInt64 = isValidInt64;
 exports.insertVersion64 = insertVersion64;
 const vscode = __importStar(require("vscode"));
 const decoder_1 = require("./decoder");
 const constants_1 = require("./constants");
+const constants_2 = require("./constants");
+function isValidInt64(str) {
+    try {
+        const n = BigInt(str.trim());
+        return n >= 0n && n <= constants_1.MAX_INT64;
+    }
+    catch {
+        return false;
+    }
+}
 /**
  * Кодирует объект Version в 64-битную строку (спецификация Larian)
  */
 function encodeVersion64(version) {
-    const bigMajor = BigInt(version.major) << constants_1.MAJOR_SHIFT;
-    const bigMinor = BigInt(version.minor) << constants_1.MINOR_SHIFT;
-    const bigRevision = BigInt(version.revision) << constants_1.REVISION_SHIFT;
+    const bigMajor = BigInt(version.major) << constants_2.MAJOR_SHIFT;
+    const bigMinor = BigInt(version.minor) << constants_2.MINOR_SHIFT;
+    const bigRevision = BigInt(version.revision) << constants_2.REVISION_SHIFT;
     const bigBuild = BigInt(version.build);
     return (bigMajor | bigMinor | bigRevision | bigBuild).toString();
 }
@@ -68,18 +78,6 @@ function parseVersion(versionStr) {
         return null;
     }
     return { major, minor, revision, build };
-}
-/**
- * Проверяет, является ли строка валидным положительным int64 числом
- */
-function isValidInt64(str) {
-    try {
-        const n = BigInt(str.trim());
-        return n >= 0n && n <= constants_1.MAX_INT64;
-    }
-    catch {
-        return false;
-    }
 }
 /**
  * Команда VS Code: показывает диалог ввода версии и автоматически вставляет/заменяет

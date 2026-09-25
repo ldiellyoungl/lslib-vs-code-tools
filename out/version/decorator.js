@@ -33,20 +33,15 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.VersionDecorator = void 0;
+exports.Version64Decorator = void 0;
 const vscode = __importStar(require("vscode"));
 const decoder_1 = require("../version/decoder");
 const encoder_1 = require("../version/encoder");
 const xmlParser_1 = require("../shared/xmlParser");
-class VersionDecorator {
-    invalidDecorator;
+class Version64Decorator {
     versionHintDecoration;
     disposables = [];
     constructor() {
-        this.invalidDecorator = vscode.window.createTextEditorDecorationType({
-            textDecoration: "underline wavy #ffa2a2",
-        });
-        // Стиль подсказки: цвет как у CodeLens, курсив, небольшой отступ
         this.versionHintDecoration = vscode.window.createTextEditorDecorationType({
             after: {
                 color: new vscode.ThemeColor("editorCodeLens.foreground"),
@@ -54,13 +49,11 @@ class VersionDecorator {
                 margin: "0 0 0 1em",
             },
         });
-        // 1. Обновление при смене активной вкладки
         this.disposables.push(vscode.window.onDidChangeActiveTextEditor((editor) => {
             if (editor?.document.languageId === "xml") {
                 this.updateDecorations(editor);
             }
         }));
-        // 2. Обновление при редактировании текста
         this.disposables.push(vscode.workspace.onDidChangeTextDocument((event) => {
             const editor = vscode.window.activeTextEditor;
             if (editor &&
@@ -69,7 +62,6 @@ class VersionDecorator {
                 this.updateDecorations(editor);
             }
         }));
-        // 3. Инициализация при старте, если XML уже открыт
         if (vscode.window.activeTextEditor?.document.languageId === "xml") {
             setTimeout(() => {
                 if (vscode.window.activeTextEditor) {
@@ -83,11 +75,8 @@ class VersionDecorator {
             return;
         const document = editor.document;
         const hintDecorations = [];
-        const invalidDecorations = [];
-        // Ищем атрибут value в тегах attribute, где id="Version64"
         const versionAttributes = (0, xmlParser_1.findXmlAttributeLocations)(document, "attribute", "id", "Version64", "value");
         for (const attr of versionAttributes) {
-            // Проверяем, что это валидное int64 число
             if ((0, encoder_1.isValidInt64)(attr.value)) {
                 const decoded = (0, decoder_1.decodeVersion64)(attr.value);
                 if (decoded) {
@@ -101,28 +90,14 @@ class VersionDecorator {
                     });
                 }
             }
-            else {
-                const args = JSON.stringify(attr.value);
-                const copyLink = `[$(copy) Скопировать версию](command:LSLib.copyToClipboard?${args})`;
-                // const insert = `[$(diff-added) Ввести версию](command:LSLib.insertVersion64)`;
-                const hoverContent = `**Не соответствует Version64**\n\n\`${attr.value}\`\n\n${copyLink}\n`;
-                const hoverMessage = new vscode.MarkdownString(hoverContent, true);
-                hoverMessage.isTrusted = true;
-                invalidDecorations.push({
-                    range: attr.range,
-                    hoverMessage,
-                });
-            }
         }
         // Применяем декорации
         editor.setDecorations(this.versionHintDecoration, hintDecorations);
-        editor.setDecorations(this.invalidDecorator, invalidDecorations);
     }
     dispose() {
         this.disposables.forEach((d) => d.dispose());
         this.versionHintDecoration.dispose();
-        this.invalidDecorator.dispose();
     }
 }
-exports.VersionDecorator = VersionDecorator;
+exports.Version64Decorator = Version64Decorator;
 //# sourceMappingURL=decorator.js.map

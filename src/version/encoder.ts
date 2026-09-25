@@ -1,14 +1,19 @@
 import * as vscode from "vscode";
 import { decodeVersion64 } from "./decoder";
+import { MAX_INT64 } from "./constants";
 
-import {
-  MAJOR_SHIFT,
-  MINOR_SHIFT,
-  REVISION_SHIFT,
-  MAX_INT64,
-} from "./constants";
+import { MAJOR_SHIFT, MINOR_SHIFT, REVISION_SHIFT } from "./constants";
 
 import type { Version } from "./types";
+
+export function isValidInt64(str: string): boolean {
+  try {
+    const n = BigInt(str.trim());
+    return n >= 0n && n <= MAX_INT64;
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Кодирует объект Version в 64-битную строку (спецификация Larian)
@@ -44,18 +49,6 @@ export function parseVersion(versionStr: string): Version | null {
   }
 
   return { major, minor, revision, build };
-}
-
-/**
- * Проверяет, является ли строка валидным положительным int64 числом
- */
-export function isValidInt64(str: string): boolean {
-  try {
-    const n = BigInt(str.trim());
-    return n >= 0n && n <= MAX_INT64;
-  } catch {
-    return false;
-  }
 }
 
 /**
