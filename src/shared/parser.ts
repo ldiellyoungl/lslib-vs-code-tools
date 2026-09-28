@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 
 export interface XmlAttributeLocation {
-  value: string;
-  range: vscode.Range;
+  valueRange: vscode.Range;
   fullTagRange: vscode.Range;
   fullTag: string;
+  value: string;
 }
 
 export function findXmlAttributeLocations(
@@ -36,7 +36,7 @@ export function findXmlAttributeLocations(
 
     const value = targetMatch[1];
 
-    // 🆕 Вычисляем координаты всего тега
+    // Вычисляем координаты всего тега
     const tagStartIndex = tagMatch.index;
     const tagEndIndex = tagStartIndex + fullTag.length;
 
@@ -49,7 +49,7 @@ export function findXmlAttributeLocations(
 
     results.push({
       value,
-      range: new vscode.Range(
+      valueRange: new vscode.Range(
         document.positionAt(valueStartIndex),
         document.positionAt(valueEndIndex),
       ),

@@ -37,7 +37,7 @@ exports.TranslationDecorator = void 0;
 const vscode = __importStar(require("vscode"));
 const fs = __importStar(require("node:fs"));
 const utils_1 = require("../shared/utils");
-const xmlParser_1 = require("../shared/xmlParser");
+const parser_1 = require("../shared/parser");
 class TranslationDecorator {
     decorationType;
     disposables = [];
@@ -142,7 +142,7 @@ class TranslationDecorator {
         const decorations = [];
         const modRoot = (0, utils_1.getModRoot)(document.fileName);
         // ✅ DRY: Используем наш универсальный парсер для поиска handle
-        const handleAttributes = (0, xmlParser_1.findXmlAttributeLocations)(document, "attribute", "handle", undefined, // Ищем любой атрибут handle
+        const handleAttributes = (0, parser_1.findXmlAttributeLocations)(document, "attribute", "handle", undefined, // Ищем любой атрибут handle
         "handle");
         for (const attr of handleAttributes) {
             const handle = attr.value;

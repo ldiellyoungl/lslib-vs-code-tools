@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { decodeVersion64 } from "../version/decoder";
 import { isValidInt64 } from "../version/encoder";
-import { findXmlAttributeLocations } from "../shared/xmlParser";
+import { findXmlAttributeLocations } from "../shared/parser";
 
 export class Version64Decorator implements vscode.Disposable {
   private readonly versionHintDecoration: vscode.TextEditorDecorationType;

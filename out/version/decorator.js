@@ -37,7 +37,7 @@ exports.Version64Decorator = void 0;
 const vscode = __importStar(require("vscode"));
 const decoder_1 = require("../version/decoder");
 const encoder_1 = require("../version/encoder");
-const xmlParser_1 = require("../shared/xmlParser");
+const parser_1 = require("../shared/parser");
 class Version64Decorator {
     versionHintDecoration;
     disposables = [];
@@ -75,7 +75,7 @@ class Version64Decorator {
             return;
         const document = editor.document;
         const hintDecorations = [];
-        const versionAttributes = (0, xmlParser_1.findXmlAttributeLocations)(document, "attribute", "id", "Version64", "value");
+        const versionAttributes = (0, parser_1.findXmlAttributeLocations)(document, "attribute", "id", "Version64", "value");
         for (const attr of versionAttributes) {
             if ((0, encoder_1.isValidInt64)(attr.value)) {
                 const decoded = (0, decoder_1.decodeVersion64)(attr.value);

@@ -41,11 +41,10 @@ const fs = __importStar(require("node:fs"));
 const pak_1 = require("./converters/pak");
 const resources_1 = require("./converters/resources");
 const loca_1 = require("./converters/loca");
-const diagnostic_1 = require("./uuid/diagnostic");
-const actions_1 = require("./uuid/actions");
-const decorator_1 = require("./version/decorator");
-const diagnostic_2 = require("./version/diagnostic");
-const actions_2 = require("./version/actions");
+// import { UuidDiagnosticProvider } from "./uuid/diagnostic";
+// import { UuidCodeActionProvider } from "./uuid/actions";
+// import { Version64DiagnosticProvider } from "./version/diagnostic";
+// import { Version64CodeActionProvider } from "./version/actions";
 /**
  * Определяет путь к divine.exe относительно корня расширения
  */
@@ -116,21 +115,6 @@ function activate(context) {
     //   { scheme: "file", language: "xml" },
     //   fileLinkProvider,
     // );
-    // uuid
-    const uuidDiagnosticProvider = new diagnostic_1.UuidDiagnosticProvider();
-    const uuidCodeActionProvider = new actions_1.UuidCodeActionProvider();
-    const uuidActionRegistration = vscode.languages.registerCodeActionsProvider({ scheme: "file", language: "xml" }, uuidCodeActionProvider, {
-        providedCodeActionKinds: actions_1.UuidCodeActionProvider.providedCodeActionKinds,
-    });
-    context.subscriptions.push(uuidDiagnosticProvider, uuidActionRegistration);
-    //version
-    const version64Decorator = new decorator_1.Version64Decorator();
-    const version64DiagnosticProvider = new diagnostic_2.Version64DiagnosticProvider();
-    const version64CodeActionProvider = new actions_2.Version64CodeActionProvider();
-    const versionActionRegistration = vscode.languages.registerCodeActionsProvider({ scheme: "file", language: "xml" }, version64CodeActionProvider, {
-        providedCodeActionKinds: actions_2.Version64CodeActionProvider.providedCodeActionKinds,
-    });
-    context.subscriptions.push(version64DiagnosticProvider, versionActionRegistration, version64Decorator);
     context.subscriptions.push(outputChannel);
     outputChannel.appendLine("LSLib Tools успешно активирован!");
 }

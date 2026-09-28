@@ -52,7 +52,7 @@ function findXmlAttributeLocations(document, tagName, conditionAttrName, conditi
         if (!targetMatch)
             continue;
         const value = targetMatch[1];
-        // 🆕 Вычисляем координаты всего тега
+        // Вычисляем координаты всего тега
         const tagStartIndex = tagMatch.index;
         const tagEndIndex = tagStartIndex + fullTag.length;
         // Координаты значения (как было раньше)
@@ -62,7 +62,7 @@ function findXmlAttributeLocations(document, tagName, conditionAttrName, conditi
         const valueEndIndex = valueStartIndex + value.length;
         results.push({
             value,
-            range: new vscode.Range(document.positionAt(valueStartIndex), document.positionAt(valueEndIndex)),
+            valueRange: new vscode.Range(document.positionAt(valueStartIndex), document.positionAt(valueEndIndex)),
             fullTagRange: new vscode.Range(document.positionAt(tagStartIndex), document.positionAt(tagEndIndex)),
             fullTag,
         });

@@ -9,12 +9,12 @@ import { convertLoca } from "./converters/loca";
 import { FileLinkProvider } from "./files/linkProvider";
 
 import { TranslationDecorator } from "./translations/decorator";
-
-import { UuidDiagnosticProvider } from "./uuid/diagnostic";
-import { UuidCodeActionProvider } from "./uuid/actions";
 import { Version64Decorator } from "./version/decorator";
-import { Version64DiagnosticProvider } from "./version/diagnostic";
-import { Version64CodeActionProvider } from "./version/actions";
+
+// import { UuidDiagnosticProvider } from "./uuid/diagnostic";
+// import { UuidCodeActionProvider } from "./uuid/actions";
+// import { Version64DiagnosticProvider } from "./version/diagnostic";
+// import { Version64CodeActionProvider } from "./version/actions";
 
 /**
  * Определяет путь к divine.exe относительно корня расширения
@@ -126,37 +126,6 @@ export function activate(context: vscode.ExtensionContext) {
   //   { scheme: "file", language: "xml" },
   //   fileLinkProvider,
   // );
-
-  // uuid
-  const uuidDiagnosticProvider = new UuidDiagnosticProvider();
-  const uuidCodeActionProvider = new UuidCodeActionProvider();
-  const uuidActionRegistration = vscode.languages.registerCodeActionsProvider(
-    { scheme: "file", language: "xml" },
-    uuidCodeActionProvider,
-    {
-      providedCodeActionKinds: UuidCodeActionProvider.providedCodeActionKinds,
-    },
-  );
-  context.subscriptions.push(uuidDiagnosticProvider, uuidActionRegistration);
-
-  //version
-  const version64Decorator = new Version64Decorator();
-  const version64DiagnosticProvider = new Version64DiagnosticProvider();
-  const version64CodeActionProvider = new Version64CodeActionProvider();
-  const versionActionRegistration =
-    vscode.languages.registerCodeActionsProvider(
-      { scheme: "file", language: "xml" },
-      version64CodeActionProvider,
-      {
-        providedCodeActionKinds:
-          Version64CodeActionProvider.providedCodeActionKinds,
-      },
-    );
-  context.subscriptions.push(
-    version64DiagnosticProvider,
-    versionActionRegistration,
-    version64Decorator,
-  );
 
   context.subscriptions.push(outputChannel);
   outputChannel.appendLine("LSLib Tools успешно активирован!");

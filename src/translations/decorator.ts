@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as fs from "node:fs";
 import { getModRoot } from "../shared/utils";
-import { findXmlAttributeLocations } from "../shared/xmlParser";
+import { findXmlAttributeLocations } from "../shared/parser";
 
 interface Translation {
   language: string;

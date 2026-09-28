@@ -72,16 +72,6 @@
         "command": "LSLib.goToTranslation",
         "title": "LSLib: Перейти к строке перевода",
         "icon": "$(link-external)"
-      },
-      {
-        "command": "LSLib.insertUUID",
-        "title": "LSLib: Сгенерировать UUID",
-        "icon": "$(key)"
-      },
-      {
-        "command": "LSLib.insertVersion",
-        "title": "LSLib: Версия",
-        "icon": "$(tag)"
       }
     ],
     "menus": {
@@ -105,16 +95,6 @@
           "command": "LSLib.convertLoca",
           "when": "resourceExtname == .loca || resourceExtname == .locas || resourceExtname == .xml",
           "group": "LSLib@4"
-        }
-      ],
-      "editor/context": [
-        {
-          "command": "LSLib.insertUUID",
-          "group": "LSLib@1"
-        },
-        {
-          "command": "LSLib.insertVersion",
-          "group": "LSLib@2"
         }
       ]
     }
