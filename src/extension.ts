@@ -6,16 +6,6 @@ import { unpackPak, packFolder } from "./converters/pak";
 import { convertResource } from "./converters/resources";
 import { convertLoca } from "./converters/loca";
 
-import { FileLinkProvider } from "./files/linkProvider";
-
-import { TranslationDecorator } from "./translations/decorator";
-import { Version64Decorator } from "./version/decorator";
-
-// import { UuidDiagnosticProvider } from "./uuid/diagnostic";
-// import { UuidCodeActionProvider } from "./uuid/actions";
-// import { Version64DiagnosticProvider } from "./version/diagnostic";
-// import { Version64CodeActionProvider } from "./version/actions";
-
 /**
  * Определяет путь к divine.exe относительно корня расширения
  */
@@ -88,44 +78,6 @@ export function activate(context: vscode.ExtensionContext) {
     convertResourceCmd,
     convertLocaCmd,
   );
-
-  // const translationDecorator = new TranslationDecorator();
-  // const goToTranslationCmd = vscode.commands.registerCommand(
-  //   "LSLib.goToTranslation",
-  //   async (args: { filePath: string; lineNumber: number }) => {
-  //     // Проверяем, что аргументы переданы корректно
-  //     if (!args || !args.filePath) {
-  //       vscode.window.showErrorMessage(
-  //         "Не удалось определить путь к файлу перевода",
-  //       );
-  //       return;
-  //     }
-
-  //     try {
-  //       const uri = vscode.Uri.file(args.filePath);
-
-  //       const document = await vscode.workspace.openTextDocument(uri);
-
-  //       const editor = await vscode.window.showTextDocument(document);
-
-  //       const targetLine = Math.max(0, args.lineNumber - 1);
-  //       const range = new vscode.Range(targetLine, 0, targetLine, 0);
-
-  //       editor.selection = new vscode.Selection(range.start, range.end);
-  //       editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
-  //     } catch (err) {
-  //       vscode.window.showErrorMessage(
-  //         `Ошибка открытия файла перевода: ${err}`,
-  //       );
-  //     }
-  //   },
-  // );
-
-  // const fileLinkProvider = new FileLinkProvider(outputChannel);
-  // const linkProviderDisposable = vscode.languages.registerDocumentLinkProvider(
-  //   { scheme: "file", language: "xml" },
-  //   fileLinkProvider,
-  // );
 
   context.subscriptions.push(outputChannel);
   outputChannel.appendLine("LSLib Tools успешно активирован!");

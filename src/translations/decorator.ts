@@ -113,7 +113,6 @@ export class TranslationDecorator implements vscode.Disposable {
 
         const rawText = match[1] || "";
 
-        // ✅ Вернул оригинальную логику замены без выноса в utils
         const text = rawText
           .replace(/&quot;/g, '"')
           .replace(/&apos;/g, "'")

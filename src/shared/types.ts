@@ -3,3 +3,10 @@ export interface ValidationRules {
   level: "valid" | "invalid" | "warning" | "none";
   reason: string;
 }
+
+export interface Version {
+  major: number;
+  minor: number;
+  revision: number;
+  build: number;
+}
