@@ -36,51 +36,69 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.activate = activate;
 exports.deactivate = deactivate;
 const vscode = __importStar(require("vscode"));
-const path = __importStar(require("node:path"));
-const fs = __importStar(require("node:fs"));
-const pak_1 = require("./converters/pak");
-const resources_1 = require("./converters/resources");
-const loca_1 = require("./converters/loca");
-/**
- * Определяет путь к divine.exe относительно корня расширения
- */
-function getDivineToolPath(context) {
-    return path.join(context.extensionPath, "resources", "lslibtools", "divine.exe");
-}
+// import { unpackPak, packFolder } from "./converters/pak";
+// import { convertResource } from "./converters/resources";
+// import { convertLoca } from "./converters/loca";
+const divine_1 = require("./divine");
 function activate(context) {
     const outputChannel = vscode.window.createOutputChannel("LSLib Tools");
-    const toolPath = getDivineToolPath(context);
-    if (!fs.existsSync(toolPath)) {
-        vscode.window.showWarningMessage(`LSLib: Не найден divine.exe по пути: ${toolPath}. Проверьте настройки расширения.`);
-    }
-    const getGame = () => (vscode.workspace.getConfiguration("lslib").get("game") || "bg3");
-    // divine
-    const unpackPakCmd = vscode.commands.registerCommand("LSLib.unpackPak", async (uri) => {
-        const targetUri = uri || vscode.window.activeTextEditor?.document.uri;
-        if (!targetUri)
-            return vscode.window.showErrorMessage("Выберите .pak файл");
-        await (0, pak_1.unpackPak)(targetUri, toolPath, getGame(), outputChannel);
-    });
-    const packFolderCmd = vscode.commands.registerCommand("LSLib.packFolder", async (uri) => {
-        const targetUri = uri || vscode.window.activeTextEditor?.document.uri;
-        if (!targetUri)
-            return vscode.window.showErrorMessage("Выберите папку для упаковки");
-        await (0, pak_1.packFolder)(targetUri, toolPath, getGame(), outputChannel);
-    });
-    const convertResourceCmd = vscode.commands.registerCommand("LSLib.convertResource", async (uri) => {
-        const targetUri = uri || vscode.window.activeTextEditor?.document.uri;
-        if (!targetUri)
-            return vscode.window.showErrorMessage("Выберите файл ресурса (.lsf, .lsx, .lsj, .lsb)");
-        await (0, resources_1.convertResource)(targetUri, toolPath, getGame(), outputChannel);
-    });
-    const convertLocaCmd = vscode.commands.registerCommand("LSLib.convertLoca", async (uri) => {
-        const targetUri = uri || vscode.window.activeTextEditor?.document.uri;
-        if (!targetUri)
-            return vscode.window.showErrorMessage("Выберите файл локализации (.loca или .xml)");
-        await (0, loca_1.convertLoca)(targetUri, toolPath, getGame(), outputChannel);
-    });
-    context.subscriptions.push(unpackPakCmd, packFolderCmd, convertResourceCmd, convertLocaCmd);
-    context.subscriptions.push(outputChannel);
+    (0, divine_1.initDivine)(context);
+    // const toolPath = getDivineToolPath(context);
+    // if (!fs.existsSync(toolPath)) {
+    //   vscode.window.showWarningMessage(
+    //     `LSLib: Не найден divine.exe по пути: ${toolPath}. Проверьте настройки расширения.`,
+    //   );
+    // }
+    // const getGame = () =>
+    //   (vscode.workspace.getConfiguration("lslib").get("game") || "bg3") as string;
+    // // divine
+    // const unpackPakCmd = vscode.commands.registerCommand(
+    //   "LSLib.unpackPak",
+    //   async (uri?: vscode.Uri) => {
+    //     const targetUri = uri || vscode.window.activeTextEditor?.document.uri;
+    //     if (!targetUri)
+    //       return vscode.window.showErrorMessage("Выберите .pak файл");
+    //     await unpackPak(targetUri, toolPath, getGame(), outputChannel);
+    //   },
+    // );
+    // const packFolderCmd = vscode.commands.registerCommand(
+    //   "LSLib.packFolder",
+    //   async (uri?: vscode.Uri) => {
+    //     const targetUri = uri || vscode.window.activeTextEditor?.document.uri;
+    //     if (!targetUri)
+    //       return vscode.window.showErrorMessage("Выберите папку для упаковки");
+    //     await packFolder(targetUri, toolPath, getGame(), outputChannel);
+    //   },
+    // );
+    // const convertResourceCmd = vscode.commands.registerCommand(
+    //   "LSLib.convertResource",
+    //   async (uri?: vscode.Uri) => {
+    //     const targetUri = uri || vscode.window.activeTextEditor?.document.uri;
+    //     if (!targetUri)
+    //       return vscode.window.showErrorMessage(
+    //         "Выберите файл ресурса (.lsf, .lsx, .lsj, .lsb)",
+    //       );
+    //     await convertResource(targetUri, toolPath, getGame(), outputChannel);
+    //   },
+    // );
+    // const convertLocaCmd = vscode.commands.registerCommand(
+    //   "LSLib.convertLoca",
+    //   async (uri?: vscode.Uri) => {
+    //     const targetUri = uri || vscode.window.activeTextEditor?.document.uri;
+    //     if (!targetUri)
+    //       return vscode.window.showErrorMessage(
+    //         "Выберите файл локализации (.loca или .xml)",
+    //       );
+    //     await convertLoca(targetUri, toolPath, getGame(), outputChannel);
+    //   },
+    // );
+    // context.subscriptions.push(
+    //   unpackPakCmd,
+    //   packFolderCmd,
+    //   convertResourceCmd,
+    //   convertLocaCmd,
+    // );
+    // context.subscriptions.push(outputChannel);
     outputChannel.appendLine("LSLib Tools успешно активирован!");
 }
 function deactivate() {
