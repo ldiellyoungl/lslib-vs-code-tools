@@ -1,0 +1,144 @@
+{
+  "name": "lslib-tools",
+  "displayName": "LSLib Tools",
+  "description": "Набор инструментов для моддинга игр от Larian Studios прямо в VS Code",
+  "publisher": "LeoBlock",
+  "version": "2.0.0",
+  "categories": [
+    "Other"
+  ],
+  "icon": "src/resources/icons/icon.png",
+  "galleryBanner": {
+    "color": "#31344e",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ldiellyoungl/lslib-vs-code-tools"
+  },
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.140.0"
+  },
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": [
+      {
+        "title": "LSLib Tools",
+        "properties": {
+          "lslib-tools.game": {
+            "type": "string",
+            "default": "bg3",
+            "enum": [
+              "dos",
+              "dosee",
+              "dos2",
+              "dos2de",
+              "bg3"
+            ],
+            "enumDescriptions": [
+              "Divinity: Original Sin",
+              "Divinity: Original Sin - Enhanced Edition",
+              "Divinity: Original Sin 2",
+              "Divinity: Original Sin 2 - Definitive Edition",
+              "Baldur's Gate 3"
+            ],
+            "description": "Целевая игра для операций Divine CLI"
+          },
+          "lslib-tools.compressionMethod": {
+            "type": "string",
+            "default": "lz4",
+            "enum": [
+              "zlib",
+              "zlibfast",
+              "lz4",
+              "lz4hc",
+              "none"
+            ],
+            "description": "Метод сжатия по умолочанию при создании PAK"
+          },
+          "lslib-tools.logLevel": {
+            "type": "string",
+            "default": "info",
+            "enum": [
+              "off",
+              "fatal",
+              "error",
+              "warn",
+              "info",
+              "debug",
+              "trace",
+              "all"
+            ],
+            "description": "Уровень детализации логов Divine CLI"
+          }
+        }
+      }
+    ],
+    "commands": [
+      {
+        "command": "lslib-tools.extractPak",
+        "title": "LSLib: Распаковать PAK"
+      },
+      {
+        "command": "lslib-tools.createPak",
+        "title": "LSLib: Создать PAK"
+      },
+      {
+        "command": "lslib-tools.convert-resource",
+        "title": "LSLib: Конвертировать ресурс"
+      },
+      {
+        "command": "lslib-tools.convert-loca",
+        "title": "LSLib: Конвертировать локализацию"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "lslib-tools.extractPak",
+          "when": "resourceExtname == .pak",
+          "group": "LSLib@1"
+        },
+        {
+          "command": "lslib-tools.createPak",
+          "when": "explorerResourceIsFolder == true",
+          "group": "LSLib@2"
+        },
+        {
+          "command": "lslib-tools.convert-resource",
+          "when": "resourceExtname == '.lsf' || resourceExtname == '.lsfx' || resourceExtname == '.lsb' || resourceExtname == '.lsj' || resourceExtname == '.lsx'",
+          "group": "LSLib@3"
+        },
+        {
+          "command": "lslib-tools.convert-loca",
+          "when": "resourceExtname == '.loca' || resourceExtname == '.xml'",
+          "group": "LSLib@4"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "pnpm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "pnpm run compile && pnpm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.140.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "24.x",
+    "typescript-eslint": "^8.61.1",
+    "eslint": "^10.5.0",
+    "typescript": "^6.0.3",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.0.0"
+  },
+  "overrides": {
+    "diff": "^8.0.4",
+    "serialize-javascript": "^7.0.6"
+  }
+}
