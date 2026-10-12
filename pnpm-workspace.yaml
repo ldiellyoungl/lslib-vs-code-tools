@@ -1,2 +1,0 @@
-minimumReleaseAgeExclude:
-  - '@types/vscode@1.140.0'
