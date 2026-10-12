@@ -1,98 +1,71 @@
-<div align="center">
+# bg3-modding-tools README
 
-# LSLib VS Code Tools
+This is the README for your extension "bg3-modding-tools". After writing up a brief description, we recommend including the following sections.
 
-**Набор инструментов для моддинга Baldur's Gate 3 и Divinity: Original Sin 2 прямо в VS Code**
+## Features
 
-[![Version](https://img.shields.io/badge/version-1.6.0-blue.svg?logo=github)](https://github.com/ldiellyoungl/lslib-vs-code-tools)
-[![VS Code](https://img.shields.io/badge/VS%20Code-1.70+-blue.svg)](https://code.visualstudio.com/)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
 
-</div>
+For example if there is an image subfolder under your extension project workspace:
+
+\!\[feature X\]\(images/feature-x.png\)
+
+> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+
+## Requirements
+
+If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+
+## Extension Settings
+
+Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+
+For example:
+
+This extension contributes the following settings:
+
+* `myExtension.enable`: Enable/disable this extension.
+* `myExtension.thing`: Set to `blah` to do something.
+
+## Known Issues
+
+Calling out known issues can help limit users opening duplicate issues against your extension.
+
+## Release Notes
+
+Users appreciate release notes as you update your extension.
+
+### 1.0.0
+
+Initial release of ...
+
+### 1.0.1
+
+Fixed issue #.
+
+### 1.1.0
+
+Added features X, Y, and Z.
 
 ---
 
-## О расширении
+## Following extension guidelines
 
-**LSLib VS Code Tools** — это расширение для Visual Studio Code, которое интегрирует инструменты из [LSLib](https://github.com/Norbyte/LSLib) прямо в ваш редактор. Больше не нужно переключаться между окнами и консолью — распаковывайте моды, конвертируйте ресурсы и редактируйте файлы прямо в привычной среде разработки.
+Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
 
----
+* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
 
-### Работа с PAK архивами
+## Working with Markdown
 
-- **Распаковка PAK** Извлечение `.pak` архива в папку с тем же именем
-- **Запаковка в PAK** Создание `.pak` архива из папки одним кликом
+You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
 
-### Работа с файлами
+* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
+* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
+* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
 
-- **Конвертация ресурсов**:
-  LSF ↔ LSX — бинарный формат ↔ XML
-  LSF ↔ LSJ — бинарный формат ↔ JSON
-  LSB ↔ LSX/LSJ — скриптовые бинарные форматы
+## For more information
 
-- **Поддержка ссылок на файлы** : найденные файлы будут ссылкой при нажатии на которую вы сразу перейдете к файлу
+* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
+* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
 
-<div align="center">
-
-![Поддержка ссылок на файлы](screenshots/fileLinkProvider.png)
-
-</div>
-
-- **Работа с meta.lsx:** Добавлена возможность копировать `ModuleShortDesc` с `ModuleInfo`. Теперь у вас будет подсвечен `ModuleInfo` и вы с легкостью можете скопировать его как зависимость и вставить как зависимость.
-
-<div align="center">
-
-![Поддержка ссылок на файлы](screenshots/metaDependencyDecoratorCopy.png)
-
-</div>
-
-### Локализация
-
-- **LOCA ↔ XML** — конвертация файлов переводов в читабельный формат
-- **Декоратор переводов** - рядом со строкой перевода будет показан декоратор при наведении мыши на который будет подсказка с ссылками на перевод:
-
-<div align="center">
-
-![Декоратор переводов](screenshots/translationDecorator.png)
-
-</div>
-
-### Работа с UUIDv4
-
-- **Генерация UUID** и вставка в позицию курсора/выделенного текста
-- **Валидация UUID** через декоратор и копирование в подсказке:
-
-|                          Ошибочный UUID                           |                         Отличная от v4 UUID версия                          |                           Версия UUID v4                            |
-| :---------------------------------------------------------------: | :-------------------------------------------------------------------------: | :-----------------------------------------------------------------: |
-| ![Декоратор UUID Ошибка](screenshots/uuidValidDecoratorError.png) | ![Декоратор UUID Предупреждение](screenshots/uuidValidDecoratorWarning.png) | ![Декоратор UUID Намана](screenshots/uuidValidDecoratorSuccess.png) |
-
-### Работа с версиями
-
-- **Кодирование версии** — ввод версии в формате `Major.Minor.Revision.Build`, конвертация в `int64`
-
-<div align="center">
-
-![Декоратор версий](screenshots/versionChange.png)
-
-</div>
-
-- **Декоратор версий** - отображение декоратора версии прямо в редакторе:
-
-<div align="center">
-
-![Декоратор версий](screenshots/versionDecorator.png)
-
-</div>
-
-### Базовая демонстрация `v1.4.0`
-
-<div align="center">
-
-![Демо](screenshots/LSLibg-VSCode-Demo.gif)
-
-</div>
-
-### Благодарности
-
-- **Norbyte** — за создание LSLib.
-- **Larian Studios** — за прекрасные игры!
+**Enjoy!**
