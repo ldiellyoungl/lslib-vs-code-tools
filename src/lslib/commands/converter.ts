@@ -1,14 +1,16 @@
 import * as vscode from "vscode";
 import * as path from "node:path";
 import * as fs from "node:fs";
-import { DivineService, createDivineArgs } from "../core";
-import { Format } from "../core/divineArgs";
+import { DivineService, createDivineArgs } from "@/lslib/core";
+import { Format } from "@/lslib/core/divineArgs";
+
 import {
   createStatistics,
   showOverwriteConfirmation,
   showFinalMessage,
 } from "./shared";
-import { getFileExtension } from "../..";
+
+import { getFileExtension } from "@/utils/files";
 
 export const RESOURCE_FORMATS: Format[] = ["lsx", "lsf", "lsb", "lsj", "lsfx"];
 

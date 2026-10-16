@@ -1,4 +1,4 @@
-import { getExtensionConfig } from "../..";
+import { getExtensionConfig } from "@/utils/common";
 
 export type Game = "dos" | "dosee" | "dos2" | "dos2de" | "bg3";
 

@@ -18,7 +18,7 @@
   },
   "license": "MIT",
   "engines": {
-    "vscode": "^1.140.0"
+    "vscode": "^1.70.0"
   },
   "activationEvents": [],
   "main": "./out/extension.js",
@@ -92,6 +92,10 @@
       {
         "command": "lslib-tools.convert-loca",
         "title": "LSLib: Конвертировать локализацию"
+      },
+      {
+        "command": "lslib-tools.copyAsModuleShortInfo",
+        "title": "Скопировать ModuleInfo как ModuleShortInfo"
       }
     ],
     "menus": {
@@ -128,17 +132,21 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.140.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "24.x",
-    "typescript-eslint": "^8.61.1",
+    "@types/sax": "^1.2.7",
+    "@types/vscode": "^1.140.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.0.0",
     "eslint": "^10.5.0",
     "typescript": "^6.0.3",
-    "@vscode/test-cli": "^0.0.15",
-    "@vscode/test-electron": "^3.0.0"
+    "typescript-eslint": "^8.61.1"
   },
   "overrides": {
     "diff": "^8.0.4",
     "serialize-javascript": "^7.0.6"
+  },
+  "dependencies": {
+    "sax": "^1.6.1"
   }
 }

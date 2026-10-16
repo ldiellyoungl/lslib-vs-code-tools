@@ -1,14 +1,20 @@
 import * as vscode from "vscode";
 import * as fs from "node:fs";
-import { DivineService } from "./lslib/core";
-import { getFileExtension } from ".";
+import { DivineService } from "@/lslib/core";
+import { getFileExtension } from "@/utils/files";
+
 import {
   extractPak,
   createPak,
   convertResource,
   RESOURCE_FORMATS,
   convertLoca,
-} from "./lslib/commands";
+} from "./lslib/commands/";
+
+import { MetaLsxDiagnosticProvider } from "./diagnostics/meta-lsx/diagnosticProvider";
+import { MetaLsxInlayHintsProvider } from "./diagnostics/meta-lsx/inlayHintsProvider";
+import { MetaLsxCodeLensProvider } from "./diagnostics/meta-lsx/codeLensProvider";
+import { copyAsModuleShortInfo } from "./diagnostics/meta-lsx/commands/copyAsModuleShorDesc";
 
 export function activate(context: vscode.ExtensionContext) {
   const divineService = new DivineService(context.extensionPath);
@@ -32,7 +38,6 @@ export function activate(context: vscode.ExtensionContext) {
       extractPak(divineService, pakUris);
     },
   );
-
   const createPakCommand = vscode.commands.registerCommand(
     "lslib-tools.createPak",
     (uri: vscode.Uri, selectedUris: vscode.Uri[]) => {
@@ -56,7 +61,6 @@ export function activate(context: vscode.ExtensionContext) {
       createPak(divineService, folderUris);
     },
   );
-
   const convertResourceCommand = vscode.commands.registerCommand(
     "lslib-tools.convert-resource",
     (uri: vscode.Uri, selectedUris: vscode.Uri[]) => {
@@ -76,7 +80,6 @@ export function activate(context: vscode.ExtensionContext) {
       convertResource(divineService, resourceUris);
     },
   );
-
   const convertLocaCommand = vscode.commands.registerCommand(
     "lslib-tools.convert-loca",
     (uri: vscode.Uri, selectedUris: vscode.Uri[]) => {
@@ -95,7 +98,6 @@ export function activate(context: vscode.ExtensionContext) {
       convertLoca(divineService, locaUris);
     },
   );
-
   context.subscriptions.push(
     extractPakCommand,
     createPakCommand,
@@ -103,7 +105,30 @@ export function activate(context: vscode.ExtensionContext) {
     convertLocaCommand,
   );
 
-  // Диагностики
+  // Diagnostics provider
+  context.subscriptions.push(new MetaLsxDiagnosticProvider());
+
+  // InlayHintsProviders
+  context.subscriptions.push(
+    vscode.languages.registerInlayHintsProvider(
+      { scheme: "file", pattern: "**/meta.lsx" },
+      new MetaLsxInlayHintsProvider(),
+    ),
+  );
+
+  //Codelens providers
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "lslib-tools.copyAsModuleShortInfo",
+      copyAsModuleShortInfo,
+    ),
+  );
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(
+      { scheme: "file", pattern: "**/meta.lsx" },
+      new MetaLsxCodeLensProvider(),
+    ),
+  );
 }
 
 // This method is called when your extension is deactivated

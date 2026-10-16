@@ -2,14 +2,15 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
-import { DivineService } from "../core/divineService";
-import { createDivineArgs } from "../core/divineArgs";
+import { DivineService, createDivineArgs } from "@/lslib/core";
+
 import {
   createStatistics,
   showOverwriteConfirmation,
   showFinalMessage,
 } from "./shared";
-import { getFileExtension } from "../..";
+
+import { getFileExtension } from "@/utils/files";
 
 export async function convertLoca(
   divineService: DivineService,
