@@ -20,7 +20,9 @@
   "engines": {
     "vscode": "^1.70.0"
   },
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "configuration": [
