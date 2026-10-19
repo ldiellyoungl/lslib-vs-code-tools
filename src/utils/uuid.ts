@@ -24,12 +24,12 @@ const UUID_V4 =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 /** Проверяет только форму UUID */
-export function checkValid(uuid: string): boolean {
+export function isValid(uuid: string): boolean {
   return UUID_FORMAT.test(uuid);
 }
 
 /** Проверяет форму и соответствие RFC 4122 version 4 */
-export function checkValidV4(uuid: string): boolean {
+export function isValidV4(uuid: string): boolean {
   return UUID_V4.test(uuid);
 }
 

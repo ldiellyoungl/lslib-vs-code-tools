@@ -127,8 +127,8 @@
   },
   "scripts": {
     "vscode:prepublish": "pnpm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
+    "compile": "tsc -p ./ && tsc-alias -p ./tsconfig.json",
+    "watch": "concurrently \"tsc -watch -p ./\" \"tsc-alias -w -p ./tsconfig.json\"",
     "pretest": "pnpm run compile && pnpm run lint",
     "lint": "eslint src",
     "test": "vscode-test"
@@ -140,7 +140,9 @@
     "@types/vscode": "^1.140.0",
     "@vscode/test-cli": "^0.0.15",
     "@vscode/test-electron": "^3.0.0",
+    "concurrently": "^10.0.6",
     "eslint": "^10.5.0",
+    "tsc-alias": "^1.9.8",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.61.1"
   },

@@ -65,7 +65,7 @@ export function decodeVersion64(
  * Отсекает "мусор" (например, "123111"), который технически влезает в биты,
  * но является ошибкой ввода (человек забыл закодировать версию).
  */
-export function checkValid(version64: string | number): boolean {
+export function isValid(version64: string | number): boolean {
   const strVal = String(version64).trim();
 
   // 1. Быстрая проверка: только цифры

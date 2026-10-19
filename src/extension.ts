@@ -11,15 +11,17 @@ import {
   convertLoca,
 } from "./lslib/commands/";
 
-import { MetaLsxDiagnosticProvider } from "./diagnostics/meta-lsx/diagnosticProvider";
-import { MetaLsxInlayHintsProvider } from "./diagnostics/meta-lsx/inlayHintsProvider";
-import { MetaLsxCodeLensProvider } from "./diagnostics/meta-lsx/codeLensProvider";
-import { copyAsModuleShortInfo } from "./diagnostics/meta-lsx/commands/copyAsModuleShorDesc";
+// import { MetaLsxDiagnosticProvider } from "./diagnostics/meta-lsx/diagnosticProvider";
+// import { MetaLsxInlayHintsProvider } from "./diagnostics/meta-lsx/inlayHintsProvider";
+// import { MetaLsxCodeLensProvider } from "./diagnostics/meta-lsx/codeLensProvider";
+// import { copyAsModuleShortInfo } from "./diagnostics/meta-lsx/commands/copyAsModuleShorDesc";
+
+import { DiagnosticProvider as MetaLsxDiagnosticProvider } from "@/meta-lsx/providers";
 
 export function activate(context: vscode.ExtensionContext) {
   const divineService = new DivineService(context.extensionPath);
 
-  // Основные комманды
+  // lslib commands
   const extractPakCommand = vscode.commands.registerCommand(
     "lslib-tools.extractPak",
     (uri: vscode.Uri, selectedUris: vscode.Uri[]) => {
@@ -108,27 +110,27 @@ export function activate(context: vscode.ExtensionContext) {
   // Diagnostics provider
   context.subscriptions.push(new MetaLsxDiagnosticProvider());
 
-  // InlayHintsProviders
-  context.subscriptions.push(
-    vscode.languages.registerInlayHintsProvider(
-      { scheme: "file", pattern: "**/meta.lsx" },
-      new MetaLsxInlayHintsProvider(),
-    ),
-  );
+  // // InlayHintsProviders
+  // context.subscriptions.push(
+  //   vscode.languages.registerInlayHintsProvider(
+  //     { scheme: "file", pattern: "**/meta.lsx" },
+  //     new MetaLsxInlayHintsProvider(),
+  //   ),
+  // );
 
-  //Codelens providers
-  context.subscriptions.push(
-    vscode.commands.registerCommand(
-      "lslib-tools.copyAsModuleShortInfo",
-      copyAsModuleShortInfo,
-    ),
-  );
-  context.subscriptions.push(
-    vscode.languages.registerCodeLensProvider(
-      { scheme: "file", pattern: "**/meta.lsx" },
-      new MetaLsxCodeLensProvider(),
-    ),
-  );
+  // //Codelens providers
+  // context.subscriptions.push(
+  //   vscode.commands.registerCommand(
+  //     "lslib-tools.copyAsModuleShortInfo",
+  //     copyAsModuleShortInfo,
+  //   ),
+  // );
+  // context.subscriptions.push(
+  //   vscode.languages.registerCodeLensProvider(
+  //     { scheme: "file", pattern: "**/meta.lsx" },
+  //     new MetaLsxCodeLensProvider(),
+  //   ),
+  // );
 }
 
 // This method is called when your extension is deactivated
