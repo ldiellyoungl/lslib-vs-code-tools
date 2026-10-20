@@ -1,3 +1,4 @@
+import * as vscode from "vscode";
 /**
  * Работа с версиями в формате Larian (64-битное целое).
  *
@@ -104,4 +105,103 @@ export function versionToString(
   const decoded = decodeVersion64(version64);
   if (!decoded) return null;
   return `${decoded.major}.${decoded.minor}.${decoded.revision}.${decoded.build}`;
+}
+
+/**
+ * Парсит строку вида "1.0.0.0" или "1.0.0" в объект Version.
+ * Возвращает null, если формат неверный.
+ */
+export function parseVersionString(str: string): Version | null {
+  const parts = str.trim().split(".").map(Number);
+
+  // Проверяем, что все части — числа, и их не больше 4
+  if (parts.length < 1 || parts.length > 4 || parts.some(isNaN)) {
+    return null;
+  }
+
+  // Проверяем допустимые диапазоны (Major/Minor до 255, Revision до 65535)
+  if (parts[0] > 255) return null;
+  if (parts[1] !== undefined && parts[1] > 255) return null;
+  if (parts[2] !== undefined && parts[2] > 65535) return null;
+
+  return {
+    major: parts[0] ?? 0,
+    minor: parts[1] ?? 0,
+    revision: parts[2] ?? 0,
+    build: parts[3] ?? 0,
+  };
+}
+
+export async function editVersion64(
+  rangeStr?: string | vscode.Uri,
+  currentVersionStr?: string,
+) {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) return;
+
+  const document = editor.document;
+  let targetRange: vscode.Range | undefined;
+  let defaultValue = "1.0.0.0";
+
+  // 1. Вызов из InlayHint (есть координаты и строка)
+  if (typeof rangeStr === "string" && currentVersionStr) {
+    const [startStr, endStr] = rangeStr.split("-");
+    const [startLine, startChar] = startStr.split(":").map(Number);
+    const [endLine, endChar] = endStr.split(":").map(Number);
+    targetRange = new vscode.Range(startLine, startChar, endLine, endChar);
+    defaultValue = currentVersionStr;
+  }
+  // 2. Вызов из контекстного меню / палитры
+  else {
+    if (!editor.selection.isEmpty) {
+      // Если есть выделение — используем его
+      targetRange = editor.selection;
+      const selectedText = document.getText(targetRange).trim();
+      // Пытаемся декодировать выделенный текст для удобства
+      if (isValid(selectedText)) {
+        const decoded = decodeVersion64(selectedText);
+        if (decoded) {
+          defaultValue = `${decoded.major}.${decoded.minor}.${decoded.revision}.${decoded.build}`;
+        }
+      }
+    } else {
+      // Если ничего не выделено — вставляем в позицию курсора
+      targetRange = new vscode.Range(
+        editor.selection.active,
+        editor.selection.active,
+      );
+    }
+  }
+
+  // 3. Показываем диалог ввода
+  const input = await vscode.window.showInputBox({
+    title: "Версия в формате int64",
+    prompt: "Введите версию для вставки",
+    placeHolder: "1.0.0.0",
+    value: defaultValue,
+    validateInput: (value) => {
+      if (!parseVersionString(value)) {
+        return "Неверный формат. Используйте: 1.0.0.0 или 1.0.0";
+      }
+      return null;
+    },
+  });
+
+  if (!input) return; // Пользователь отменил ввод
+
+  const parsed = parseVersionString(input);
+  if (!parsed) return;
+
+  // 4. Кодируем обратно в 64-битное число
+  const newEncoded = encodeVersion64(
+    parsed.major,
+    parsed.minor,
+    parsed.revision,
+    parsed.build,
+  );
+
+  // 5. Применяем изменения (заменяем выделение или вставляем в курсор)
+  await editor.edit((editBuilder) => {
+    editBuilder.replace(targetRange!, newEncoded);
+  });
 }

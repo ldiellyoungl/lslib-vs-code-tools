@@ -81,23 +81,48 @@
     "commands": [
       {
         "command": "lslib-tools.extractPak",
-        "title": "LSLib: Распаковать PAK"
+        "title": "LSLib: Распаковать PAK",
+        "category": "LSLib"
       },
       {
         "command": "lslib-tools.createPak",
-        "title": "LSLib: Создать PAK"
+        "title": "LSLib: Создать PAK",
+        "category": "LSLib"
       },
       {
         "command": "lslib-tools.convert-resource",
-        "title": "LSLib: Конвертировать ресурс"
+        "title": "LSLib: Конвертировать ресурс",
+        "category": "LSLib"
       },
       {
         "command": "lslib-tools.convert-loca",
-        "title": "LSLib: Конвертировать локализацию"
+        "title": "LSLib: Конвертировать локализацию",
+        "category": "LSLib"
       },
       {
-        "command": "lslib-tools.copyAsModuleShortInfo",
-        "title": "Скопировать ModuleInfo как ModuleShortInfo"
+        "command": "metalsx.copyAsShortDesc",
+        "title": "Скопировать как ModuleShortDesc",
+        "category": "LSLib"
+      },
+      {
+        "command": "metalsx.insertAsDependency",
+        "title": "Вставить как ModuleShortDesc в зависимости",
+        "category": "LSLib"
+      },
+      {
+        "command": "metalsx.insertAsConflict",
+        "title": "Вставить как ModuleShortDesc в конфликты",
+        "category": "LSLib"
+      },
+      {
+        "command": "metalsx.editVersion64",
+        "title": "Вставить версию в формате int64",
+        "category": "LSLib"
+      },
+      {
+        "command": "metalsx.generateUuid",
+        "title": "Сгенерировать и вставить UUID",
+        "category": "LSLib"
       }
     ],
     "menus": {
@@ -105,22 +130,62 @@
         {
           "command": "lslib-tools.extractPak",
           "when": "resourceExtname == .pak",
-          "group": "LSLib@1"
+          "group": "z_lslib@1"
         },
         {
           "command": "lslib-tools.createPak",
           "when": "explorerResourceIsFolder == true",
-          "group": "LSLib@2"
+          "group": "z_lslib@2"
         },
         {
           "command": "lslib-tools.convert-resource",
           "when": "resourceExtname == '.lsf' || resourceExtname == '.lsfx' || resourceExtname == '.lsb' || resourceExtname == '.lsj' || resourceExtname == '.lsx'",
-          "group": "LSLib@3"
+          "group": "z_lslib@3"
         },
         {
           "command": "lslib-tools.convert-loca",
           "when": "resourceExtname == '.loca' || resourceExtname == '.xml'",
-          "group": "LSLib@4"
+          "group": "z_lslib@4"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "metalsx.generateUuid",
+          "group": "z_lslib@1"
+        },
+        {
+          "command": "metalsx.editVersion64",
+          "group": "z_lslib@2"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "lslib-tools.extractPak",
+          "when": "false"
+        },
+        {
+          "command": "lslib-tools.createPak",
+          "when": "false"
+        },
+        {
+          "command": "lslib-tools.convert-resource",
+          "when": "false"
+        },
+        {
+          "command": "lslib-tools.convert-loca",
+          "when": "false"
+        },
+        {
+          "command": "metalsx.copyAsShortDesc",
+          "when": "false"
+        },
+        {
+          "command": "metalsx.insertAsDependency",
+          "when": "false"
+        },
+        {
+          "command": "metalsx.insertAsConflict",
+          "when": "false"
         }
       ]
     }

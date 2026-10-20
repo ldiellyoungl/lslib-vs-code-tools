@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import * as fs from "node:fs";
+import * as path from "node:path";
 import { DivineService } from "@/lslib/core";
 import { getFileExtension } from "@/utils/files";
 
@@ -11,12 +12,20 @@ import {
   convertLoca,
 } from "./lslib/commands/";
 
-// import { MetaLsxDiagnosticProvider } from "./diagnostics/meta-lsx/diagnosticProvider";
-// import { MetaLsxInlayHintsProvider } from "./diagnostics/meta-lsx/inlayHintsProvider";
-// import { MetaLsxCodeLensProvider } from "./diagnostics/meta-lsx/codeLensProvider";
-// import { copyAsModuleShortInfo } from "./diagnostics/meta-lsx/commands/copyAsModuleShorDesc";
+import {
+  DiagnosticProvider as MetaLsxDiagnosticProvider,
+  HoverProvider as MetaLsxHoverProvider,
+  InlayHintsProvider as MetaLsxInlayHintsProvider,
+  CodeLensProvider as MetaLsxCodeLensProvider,
+} from "@/meta-lsx/providers";
 
-import { DiagnosticProvider as MetaLsxDiagnosticProvider } from "@/meta-lsx/providers";
+import {
+  copyModuleInfoAsShortDesc,
+  insertModuleShortDescInto,
+} from "./meta-lsx/commands/moduleInfoCommands";
+
+import { editVersion64 } from "./utils/version64";
+import { generateUuid } from "./utils/uuid";
 
 export function activate(context: vscode.ExtensionContext) {
   const divineService = new DivineService(context.extensionPath);
@@ -107,30 +116,41 @@ export function activate(context: vscode.ExtensionContext) {
     convertLocaCommand,
   );
 
-  // Diagnostics provider
-  context.subscriptions.push(new MetaLsxDiagnosticProvider());
+  // meta.lsx
+  context.subscriptions.push(
+    new MetaLsxDiagnosticProvider(),
+    vscode.languages.registerHoverProvider(
+      { pattern: "**/meta.lsx" },
+      new MetaLsxHoverProvider(),
+    ),
+    vscode.languages.registerInlayHintsProvider(
+      { pattern: "**/meta.lsx" },
+      new MetaLsxInlayHintsProvider(),
+    ),
+    vscode.languages.registerCodeLensProvider(
+      { pattern: "**/meta.lsx" },
+      new MetaLsxCodeLensProvider(),
+    ),
+    vscode.commands.registerCommand("metalsx.copyAsShortDesc", async () => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) return;
+      await copyModuleInfoAsShortDesc(editor.document);
+    }),
 
-  // // InlayHintsProviders
-  // context.subscriptions.push(
-  //   vscode.languages.registerInlayHintsProvider(
-  //     { scheme: "file", pattern: "**/meta.lsx" },
-  //     new MetaLsxInlayHintsProvider(),
-  //   ),
-  // );
+    vscode.commands.registerCommand("metalsx.insertAsDependency", async () => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) return;
+      await insertModuleShortDescInto(editor.document, "Dependencies");
+    }),
 
-  // //Codelens providers
-  // context.subscriptions.push(
-  //   vscode.commands.registerCommand(
-  //     "lslib-tools.copyAsModuleShortInfo",
-  //     copyAsModuleShortInfo,
-  //   ),
-  // );
-  // context.subscriptions.push(
-  //   vscode.languages.registerCodeLensProvider(
-  //     { scheme: "file", pattern: "**/meta.lsx" },
-  //     new MetaLsxCodeLensProvider(),
-  //   ),
-  // );
+    vscode.commands.registerCommand("metalsx.insertAsConflict", async () => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) return;
+      await insertModuleShortDescInto(editor.document, "Conflicts");
+    }),
+    vscode.commands.registerCommand("metalsx.editVersion64", editVersion64),
+    vscode.commands.registerCommand("metalsx.generateUuid", generateUuid),
+  );
 }
 
 // This method is called when your extension is deactivated

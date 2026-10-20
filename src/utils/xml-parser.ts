@@ -15,18 +15,15 @@ export interface XmlNode {
 }
 
 export interface XmlParseError {
-  /** Строка (0-based) */
   line: number;
-  /** Колонка (0-based) */
   column: number;
-  /** Короткое сообщение (первая строка err.message) */
+  position: number;
   message: string;
 }
 
 export interface XmlParseResult {
   roots: XmlNode[];
   errors: XmlParseError[];
-  /** Удобный флаг — true, если хоть одна ошибка */
   hasErrors: boolean;
 }
 
@@ -46,18 +43,21 @@ export function parseXml(text: string): XmlParseResult {
   const errors: XmlParseError[] = [];
   let pendingSelfClosing = false;
 
-  parser.onerror = function (err: Error) {
-    const lineMatch = err.message.match(/Line: (\d+)/);
-    const columnMatch = err.message.match(/Column: (\d+)/);
+  parser.onerror = function (this: any, err: Error) {
+    const line = Math.max(0, this.line - 1);
+    const column = Math.max(0, this.column);
+
+    // Отрезаем всё, что идёт после "Line:" (или до него), оставляя только суть
+    // Например: "No whitespace between attributes\nLine: 21..." -> "No whitespace between attributes"
+    const shortMessage = err.message.split("\n")[0].trim();
 
     errors.push({
-      line: lineMatch ? parseInt(lineMatch[1], 10) : 0,
-      // sax column — 1-based, переводим в 0-based
-      column: Math.max(0, (columnMatch ? parseInt(columnMatch[1], 10) : 1) - 1),
-      message: err.message.split("\n")[0],
+      line,
+      column,
+      position: this.position,
+      message: shortMessage,
     });
 
-    // Продолжаем парсинг, чтобы собрать по возможности больше ошибок
     this.resume();
   };
 

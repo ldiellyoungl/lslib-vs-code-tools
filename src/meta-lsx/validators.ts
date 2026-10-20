@@ -7,7 +7,7 @@ import {
   isValid as isValidUUID,
   isValidV4 as isValidUUIDv4,
 } from "@/utils/uuid";
-import { getModFolder, getModRoot } from "@/utils/files";
+import { getModFolder } from "@/utils/files";
 
 export interface ValidationContext {
   document: vscode.TextDocument;
@@ -77,6 +77,14 @@ export function validateUuidAttribute(ctx: ValidationContext) {
           range: nodeToRange(ctx.document, node),
         }),
       );
+    } else if (!isValidUUIDv4(value)) {
+      ctx.diagnostics.push(
+        createDiagnostic({
+          message: `UUID валиден но не соответствует спецификации 4ой версии`,
+          range: nodeToRange(ctx.document, node),
+          severity: vscode.DiagnosticSeverity.Hint,
+        }),
+      );
     }
   }
 }
@@ -108,7 +116,7 @@ export function validateModuleInfoFolder(ctx: ValidationContext) {
 
   if (!moduleInfo) return; // Если ноды нет, эту ошибку поймает другой валидатор
 
-  // 2. Ищем Folder только среди ПРЯМЫХ детей ModuleInfo
+  // Ищем Folder только среди ПРЯМЫХ детей ModuleInfo
   const folderAttr = moduleInfo.children.find(
     (c) => c.name === "attribute" && c.attributes.id === "Folder",
   );
@@ -117,6 +125,14 @@ export function validateModuleInfoFolder(ctx: ValidationContext) {
 
   const value = folderAttr.attributes.value;
 
-  console.log(getModRoot(ctx.document.uri.fsPath));
-  console.log(getModFolder(ctx.document.uri.fsPath));
+  if (value === undefined) return;
+
+  if (value !== getModFolder(ctx.document.uri.fsPath)) {
+    ctx.diagnostics.push(
+      createDiagnostic({
+        message: `Некоректное имя папки`,
+        range: nodeToRange(ctx.document, folderAttr),
+      }),
+    );
+  }
 }
