@@ -1,13 +1,13 @@
 {
   "name": "lslib-tools",
   "displayName": "LSLib Tools",
-  "description": "Набор инструментов для моддинга Baldur's Gate 3 и Divinity: Original Sin 2 прямо в VS Code",
+  "description": "Набор инструментов для моддинга игр от Larian Studios прямо в VS Code",
   "publisher": "LeoBlock",
-  "version": "1.6.0",
+  "version": "2.0.0",
   "categories": [
     "Other"
   ],
-  "icon": "resources/icon.png",
+  "icon": "src/resources/icons/icon.png",
   "galleryBanner": {
     "color": "#31344e",
     "theme": "dark"
@@ -20,98 +20,202 @@
   "engines": {
     "vscode": "^1.70.0"
   },
-  "main": "./extension.js",
   "activationEvents": [
     "onStartupFinished"
   ],
+  "main": "./out/extension.js",
   "contributes": {
-    "configuration": {
-      "title": "LSLib Tools",
-      "properties": {
-        "lslib.game": {
-          "type": "string",
-          "default": "bg3",
-          "enum": [
-            "bg3",
-            "dos2",
-            "dos2ee",
-            "dos"
-          ],
-          "enumDescriptions": [
-            "Baldur's Gate 3",
-            "Divinity: Original Sin 2 (Definitive Edition)",
-            "Divinity: Original Sin 2 (Early Access)",
-            "Divinity: Original Sin (Enhanced Edition)"
-          ],
-          "description": "Игра, для которой выполняются операции с файлами"
+    "configuration": [
+      {
+        "title": "LSLib Tools",
+        "properties": {
+          "lslib-tools.game": {
+            "type": "string",
+            "default": "bg3",
+            "enum": [
+              "dos",
+              "dosee",
+              "dos2",
+              "dos2de",
+              "bg3"
+            ],
+            "enumDescriptions": [
+              "Divinity: Original Sin",
+              "Divinity: Original Sin - Enhanced Edition",
+              "Divinity: Original Sin 2",
+              "Divinity: Original Sin 2 - Definitive Edition",
+              "Baldur's Gate 3"
+            ],
+            "description": "Целевая игра для операций Divine CLI"
+          },
+          "lslib-tools.compressionMethod": {
+            "type": "string",
+            "default": "lz4",
+            "enum": [
+              "zlib",
+              "zlibfast",
+              "lz4",
+              "lz4hc",
+              "none"
+            ],
+            "description": "Метод сжатия по умолочанию при создании PAK"
+          },
+          "lslib-tools.logLevel": {
+            "type": "string",
+            "default": "info",
+            "enum": [
+              "off",
+              "fatal",
+              "error",
+              "warn",
+              "info",
+              "debug",
+              "trace",
+              "all"
+            ],
+            "description": "Уровень детализации логов Divine CLI"
+          }
         }
       }
-    },
+    ],
     "commands": [
       {
-        "command": "LSLib.unpackPak",
+        "command": "lslib-tools.extractPak",
         "title": "LSLib: Распаковать PAK",
-        "icon": "$(unarchive)"
+        "category": "LSLib"
       },
       {
-        "command": "LSLib.packFolder",
-        "title": "LSLib: Запаковать папку в PAK",
-        "icon": "$(archive)"
+        "command": "lslib-tools.createPak",
+        "title": "LSLib: Создать PAK",
+        "category": "LSLib"
       },
       {
-        "command": "LSLib.convertResource",
-        "title": "LSLib: Конвертировать ресурс (LSF/LSX/LSJ/LSB)",
-        "icon": "$(symbol-enum)"
+        "command": "lslib-tools.convert-resource",
+        "title": "LSLib: Конвертировать ресурс",
+        "category": "LSLib"
       },
       {
-        "command": "LSLib.convertLoca",
-        "title": "LSLib: Конвертировать локализацию (LOCA/XML)",
-        "icon": "$(globe)"
+        "command": "lslib-tools.convert-loca",
+        "title": "LSLib: Конвертировать локализацию",
+        "category": "LSLib"
       },
       {
-        "command": "LSLib.generateUUID",
-        "title": "LSLib: Сгенерировать UUID",
-        "icon": "$(key)"
+        "command": "metalsx.copyAsShortDesc",
+        "title": "Скопировать как ModuleShortDesc",
+        "category": "LSLib"
       },
       {
-        "command": "LSLib.encodeVersion",
-        "title": "LSLib: Версия",
-        "icon": "$(symbol-number)"
+        "command": "metalsx.insertAsDependency",
+        "title": "Вставить как ModuleShortDesc в зависимости",
+        "category": "LSLib"
+      },
+      {
+        "command": "metalsx.insertAsConflict",
+        "title": "Вставить как ModuleShortDesc в конфликты",
+        "category": "LSLib"
+      },
+      {
+        "command": "metalsx.editVersion64",
+        "title": "Вставить версию в формате int64",
+        "category": "LSLib"
+      },
+      {
+        "command": "metalsx.generateUuid",
+        "title": "Сгенерировать и вставить UUID",
+        "category": "LSLib"
       }
     ],
     "menus": {
       "explorer/context": [
         {
-          "command": "LSLib.unpackPak",
+          "command": "lslib-tools.extractPak",
           "when": "resourceExtname == .pak",
-          "group": "LSLib@1"
+          "group": "z_lslib@1"
         },
         {
-          "command": "LSLib.packFolder",
-          "when": "explorerResourceIsFolder",
-          "group": "LSLib@2"
+          "command": "lslib-tools.createPak",
+          "when": "explorerResourceIsFolder == true",
+          "group": "z_lslib@2"
         },
         {
-          "command": "LSLib.convertResource",
-          "when": "resourceExtname == .lsf || resourceExtname == .lsx || resourceExtname == .lsj || resourceExtname == .lsb",
-          "group": "LSLib@3"
+          "command": "lslib-tools.convert-resource",
+          "when": "resourceExtname == '.lsf' || resourceExtname == '.lsfx' || resourceExtname == '.lsb' || resourceExtname == '.lsj' || resourceExtname == '.lsx'",
+          "group": "z_lslib@3"
         },
         {
-          "command": "LSLib.convertLoca",
-          "when": "resourceExtname == .loca || resourceExtname == .locas || resourceExtname == .xml",
-          "group": "LSLib@4"
+          "command": "lslib-tools.convert-loca",
+          "when": "resourceExtname == '.loca' || resourceExtname == '.xml'",
+          "group": "z_lslib@4"
         }
       ],
       "editor/context": [
         {
-          "command": "LSLib.generateUUID",
-          "group": "LSLib@1"
+          "command": "metalsx.generateUuid",
+          "group": "z_lslib@1"
         },
         {
-          "command": "LSLib.encodeVersion",
-          "group": "LSLib@2"
+          "command": "metalsx.editVersion64",
+          "group": "z_lslib@2"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "lslib-tools.extractPak",
+          "when": "false"
+        },
+        {
+          "command": "lslib-tools.createPak",
+          "when": "false"
+        },
+        {
+          "command": "lslib-tools.convert-resource",
+          "when": "false"
+        },
+        {
+          "command": "lslib-tools.convert-loca",
+          "when": "false"
+        },
+        {
+          "command": "metalsx.copyAsShortDesc",
+          "when": "false"
+        },
+        {
+          "command": "metalsx.insertAsDependency",
+          "when": "false"
+        },
+        {
+          "command": "metalsx.insertAsConflict",
+          "when": "false"
         }
       ]
     }
+  },
+  "scripts": {
+    "vscode:prepublish": "pnpm run compile",
+    "compile": "tsc -p ./ && tsc-alias -p ./tsconfig.json",
+    "watch": "concurrently \"tsc -watch -p ./\" \"tsc-alias -w -p ./tsconfig.json\"",
+    "pretest": "pnpm run compile && pnpm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "24.x",
+    "@types/sax": "^1.2.7",
+    "@types/vscode": "^1.140.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.0.0",
+    "concurrently": "^10.0.6",
+    "eslint": "^10.5.0",
+    "tsc-alias": "^1.9.8",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.61.1"
+  },
+  "overrides": {
+    "diff": "^8.0.4",
+    "serialize-javascript": "^7.0.6"
+  },
+  "dependencies": {
+    "sax": "^1.6.1"
   }
 }
