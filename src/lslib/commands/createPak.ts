@@ -6,7 +6,7 @@ import {
   createStatistics,
   showOverwriteConfirmation,
   showFinalMessage,
-} from "./shared";
+} from "./helpers";
 
 /**
  * Выполняет команду создания PAK файлов из одной или нескольких папок.

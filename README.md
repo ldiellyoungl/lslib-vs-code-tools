@@ -1,71 +1,109 @@
-# bg3-modding-tools README
+<div align="center">
 
-This is the README for your extension "bg3-modding-tools". After writing up a brief description, we recommend including the following sections.
+# 🛠️ LSLib VS Code Tools
 
-## Features
+**Набор инструментов для моддинга Baldur's Gate 3 и Divinity: Original Sin 2 прямо в VS Code**
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg?logo=github)](https://github.com/ldiellyoungl/lslib-vs-code-tools)
+[![VS Code](https://img.shields.io/badge/VS%20Code-1.70+-blue.svg)](https://code.visualstudio.com/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
-
-## Requirements
-
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
-
-## Extension Settings
-
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+</div>
 
 ---
 
-## Following extension guidelines
+## 📖 О расширении
 
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
+**LSLib VS Code Tools** — это расширение для Visual Studio Code, которое интегрирует инструменты [LSLib](https://github.com/Norbyte/LSLib) прямо в ваш редактор. Распаковывайте моды, конвертируйте ресурсы и редактируйте файлы прямо в привычной среде разработки.
 
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
+---
 
-## Working with Markdown
+### ⚙️ Divine CLI
 
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
+#### 📦 Работа с `.pak` файлами
 
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
+- **Пакетная распаковка `.pak`** — извлечение `.pak` архивов в папку с тем же именем.
+- **Пакетная запаковка `.pak`** — создание `.pak` архивов из папки одним кликом.
 
-## For more information
+#### 🔄 Конвертация ресурсов
 
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
+- **Пакетная конвертация ресурсов**:
+  - `LSF ↔ LSX` (бинарный формат ↔ XML)
+  - `LSF ↔ LSJ` (бинарный формат ↔ JSON)
+  - `LSB ↔ LSX/LSJ` (скриптовые бинарные форматы)
+  - `loca ↔ LSX` (файлы локализации)
 
-**Enjoy!**
+#### 🎛️ Конфигурация CLI
+
+Вы можете настроить `game`, `compressionMethod` и `logLevel` для `divine CLI` прямо в настройках расширения.
+
+<div align="center">
+
+![Настройки расширения](screenshots/settings.png)
+
+</div>
+
+### 📄 Поддержка `meta.lsx`
+
+- **Надёжный парсер на базе `sax`**.
+- **HoverProvider** — подсказки по атрибутам, типам и нодам.
+
+<div align="center">
+
+![HoverProvider превью](screenshots/hoverProvider.png)
+
+</div>
+
+- **DiagnosticProvider** — полноценная диагностика файлов (ошибки XML, неверные атрибуты, невалидные версии и т.д.).
+
+<div align="center">
+
+![DiagnosticProvider превью](screenshots/diagnosticProvider.png)
+
+</div>
+
+- **InlayHints** — визуальное декодирование и быстрое редактирование `Version64`, а также генерация нового `UUID` в один клик.
+  - **Декодирование и подсказки:**
+    ![InlayHints превью](screenshots/inlayHints.png)
+  - **Быстрое редактирование версии:**
+    ![InlayHintsVersionEdit превью](screenshots/inlayHintsVersionEdit.png)
+  - **Диалог выбора версии:**
+    ![versionPick превью](screenshots/versionPick.png)
+  - **Генерация нового UUID:**
+    ![InlayHintsGenerateUUID превью](screenshots/inlayHintsGenerateUUID.png)
+
+<br />
+
+- **CodeLens** — быстрые действия для копирования и вставки `ModuleShortDesc`.
+
+<div align="center">
+
+![CodeLens превью](screenshots/codeLensProvider.png)
+
+</div>
+
+### 🔗 Навигация по файлам (Document Link Provider)
+
+- Пути к ресурсам в атрибутах `source` и `value` теперь кликабельны. Вы можете переходить прямо к `.GR2`, `.DDS` и другим файлам в вашем моде.
+
+<div align="center">
+
+![Навигация по файлам превью](screenshots/documentLinkProvider.png)
+
+</div>
+
+### 🌍 Работа с локализацией
+
+- **Умные декорации**: просмотр переводов для `handle` прямо в редакторе.
+- **Быстрый переход**: клик по ссылке открывает файл локализации на нужной строке.
+
+<div align="center">
+
+![Работа с локализацией превью](screenshots/translationDecorator.png)
+
+</div>
+
+### 🙏 Благодарности
+
+- **Norbyte** — за создание LSLib.
+- **Larian Studios** — за прекрасные игры!

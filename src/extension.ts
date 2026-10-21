@@ -1,6 +1,5 @@
 import * as vscode from "vscode";
 import * as fs from "node:fs";
-import * as path from "node:path";
 import { DivineService } from "@/lslib/core";
 import { getFileExtension } from "@/utils/files";
 
@@ -12,20 +11,20 @@ import {
   convertLoca,
 } from "./lslib/commands/";
 
-import {
-  DiagnosticProvider as MetaLsxDiagnosticProvider,
-  HoverProvider as MetaLsxHoverProvider,
-  InlayHintsProvider as MetaLsxInlayHintsProvider,
-  CodeLensProvider as MetaLsxCodeLensProvider,
-} from "@/meta-lsx/providers";
+import { DocumentLinkProvider } from "@/common/documentLinkProvider";
+import { TranslationDecorator, goToTranslation } from "@/translations";
 
 import {
+  MetaLsxDiagnosticProvider,
+  MetaLsxHoverProvider,
+  MetaLsxInlayHintsProvider,
+  MetaLsxCodeLensProvider,
   copyModuleInfoAsShortDesc,
   insertModuleShortDescInto,
-} from "./meta-lsx/commands/moduleInfoCommands";
+} from "@/meta-lsx";
 
-import { editVersion64 } from "./utils/version64";
-import { generateUuid } from "./utils/uuid";
+import { editVersion64 } from "@/utils/version64";
+import { generateUuid } from "@/utils/uuid";
 
 export function activate(context: vscode.ExtensionContext) {
   const divineService = new DivineService(context.extensionPath);
@@ -114,6 +113,20 @@ export function activate(context: vscode.ExtensionContext) {
     createPakCommand,
     convertResourceCommand,
     convertLocaCommand,
+  );
+
+  // summary
+  context.subscriptions.push(
+    vscode.languages.registerDocumentLinkProvider(
+      { pattern: "**/*.xml" },
+      new DocumentLinkProvider(),
+    ),
+  );
+
+  // translation
+  context.subscriptions.push(
+    vscode.commands.registerCommand("LSLib.goToTranslation", goToTranslation),
+    new TranslationDecorator(context),
   );
 
   // meta.lsx

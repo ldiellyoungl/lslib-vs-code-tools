@@ -8,7 +8,7 @@ import {
   createStatistics,
   showOverwriteConfirmation,
   showFinalMessage,
-} from "./shared";
+} from "./helpers";
 
 import { getFileExtension } from "@/utils/files";
 
