@@ -5,7 +5,7 @@
 **Набор инструментов для моддинга Baldur's Gate 3 и Divinity: Original Sin 2 прямо в VS Code**
 
 [![Version](https://img.shields.io/badge/version-2.0.0-blue.svg?logo=github)](https://github.com/ldiellyoungl/lslib-vs-code-tools)
-[![VS Code](https://img.shields.io/badge/VS%20Code-1.70+-blue.svg)](https://code.visualstudio.com/)
+[![VS Code](https://img.shields.io/badge/VS%20Code-1.140+-blue.svg)](https://code.visualstudio.com/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 </div>
