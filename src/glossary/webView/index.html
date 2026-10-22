@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>Glossary Term</title>
+
+    <!-- INITIAL_DATA -->
+
+    <style>
+      :root {
+        /* Переменные для картинок (для Live Server) */
+        --border-image: url("./resources/border.png");
+        --title-image: url("./resources/title.png");
+        --title-mid-image: url("./resources/title_mid.png");
+
+        /* Общие стили для плиток */
+        --tile-radius: 3px;
+        --tile-shadow: 0 0 3px #d1b681;
+        --tile-bg: transparent;
+        --text-color: #bec9ca;
+        --text-muted: #8b9a9b;
+
+        --padding: 1rem;
+        --padding-small: 0.5rem;
+      }
+
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6,
+      p {
+        margin: 0;
+        color: var(--text-color);
+      }
+
+      body {
+        font-family: "Kurale-Regular", var(--vscode-font-family, sans-serif);
+        padding: 10px;
+        color: var(--text-color);
+      }
+
+      main {
+        display: flex;
+        flex-direction: column;
+        border: 8px solid transparent;
+        padding: var(--padding-small);
+        gap: var(--padding);
+        border-image-source: var(--border-image);
+        border-image-slice: 6;
+        border-image-width: 1;
+        border-image-repeat: stretch;
+        .header {
+          display: flex;
+          width: 100%;
+          gap: var(--padding-small);
+          .icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            padding: var(--padding);
+            border-radius: var(--tile-radius);
+            box-shadow: var(--tile-shadow);
+            background: var(--tile-bg);
+          }
+
+          h1 {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: var(--padding);
+            border-radius: var(--tile-radius);
+            box-shadow: var(--tile-shadow);
+            background: var(--tile-bg);
+          }
+        }
+
+        section {
+          display: flex;
+          flex-direction: column;
+          gap: var(--padding-small);
+          border-radius: var(--tile-radius);
+          box-shadow: var(--tile-shadow);
+          background: var(--tile-bg);
+          padding: var(--padding-small);
+          h2 {
+            text-transform: uppercase;
+            color: var(--text-muted);
+          }
+          p {
+          }
+        }
+
+        /* section {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+
+          .title {
+            padding: 4px 8px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            border-radius: var(--tile-radius);
+            box-shadow: var(--tile-shadow);
+            background: var(--tile-bg);
+          }
+          .content {
+            padding: 8px 12px;
+            font-size: 13.5px;
+            line-height: 1.5;
+            border-radius: var(--tile-radius);
+            box-shadow: var(--tile-shadow);
+            background: var(--tile-bg);
+            white-space: pre-wrap;
+          }
+        } */
+      }
+
+      /* --- ССЫЛКИ И БЕЙДЖИ --- */
+      .aliases {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        padding: 4px;
+      }
+
+      .alias-badge {
+        padding: 2px 8px;
+        font-size: 12px;
+        border-radius: var(--tile-radius);
+        box-shadow: var(--tile-shadow);
+        background: var(--tile-bg);
+      }
+
+      .source-link {
+        display: inline-block;
+        margin-top: 8px;
+        color: #d1b681;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <main id="main">
+      <!-- Данные рендерятся здесь -->
+    </main>
+
+    <script>
+      const initialData = window.initialData;
+      console.log("Данные из VS Code:", initialData);
+
+      function renderTerm(data) {
+        if (!data) {
+          document.getElementById("main").innerHTML = "<p>Нет данных</p>";
+          return;
+        }
+
+        // Безопасное извлечение
+        const { name = "Без названия", term = {}, icon = "📖" } = data;
+        const borderImageUri = data.borderImageUri;
+        const titleImageUri = data.titleImageUri;
+
+        // 1. Динамическая загрузка шрифта (Способ 1)
+        if (data.fontUri) {
+          const style = document.createElement("style");
+          style.innerHTML = `
+            @font-face {
+              font-family: "Kurale-Regular";
+              src: url("${data.fontUri}") format("truetype");
+              font-weight: normal;
+              font-style: normal;
+            }
+          `;
+          document.head.appendChild(style);
+        }
+
+        // 2. Установка картинок
+        if (borderImageUri) {
+          document.documentElement.style.setProperty(
+            "--border-image",
+            `url("${borderImageUri}")`,
+          );
+        }
+        if (titleImageUri) {
+          document.documentElement.style.setProperty(
+            "--title-image",
+            `url("${titleImageUri}")`,
+          );
+        }
+
+        const main = document.getElementById("main");
+
+        let html = `
+          <div class="header">
+            <h1>${name}</h1>
+          </div>
+        `;
+
+        if (term.translation) {
+          html += `<section><h2>Перевод</h2><p>${term.translation}</p></section>`;
+        }
+
+        const desc = term.fullDescription || term.shortDescription;
+        if (desc) {
+          html += `<section><h2>Описание</h2><p>${desc}</p></section>`;
+        }
+
+        if (term.example) {
+          html += `<section><h2>Пример</h2><p>${term.example}</p></section>`;
+        }
+
+        // if (term.aliases && term.aliases.length > 0) {
+        //   html += `
+        //     <section>
+        //       <div class="title">Синонимы</div>
+        //       <div class="aliases">${term.aliases.map((a) => `<span class="alias-badge">${a}</span>`).join("")}</div>
+        //     </section>`;
+        // }
+
+        // if (term.source) {
+        //   html += `<a href="${term.source}" class="source-link">Открыть в документации</a>`;
+        // }
+
+        main.innerHTML = html;
+      }
+
+      // Запуск рендера
+      renderTerm(initialData);
+    </script>
+  </body>
+</html>

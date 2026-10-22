@@ -12,7 +12,7 @@ import {
 } from "./lslib/commands/";
 
 import { DocumentLinkProvider } from "@/common/documentLinkProvider";
-import { TranslationDecorator, goToTranslation } from "@/translations";
+import { TranslationDecorator, goToTranslation } from "@/localization";
 
 import {
   MetaLsxDiagnosticProvider,
@@ -25,6 +25,12 @@ import {
 
 import { editVersion64 } from "@/utils/version64";
 import { generateUuid } from "@/utils/uuid";
+
+// TODO glossary
+import { GlossaryManager } from "@/glossary/manager";
+import { GlossaryHoverProvider } from "@/glossary/hoverProvider";
+import { GlossaryLinkProvider } from "@/glossary/linkProvier";
+import { GlossaryWebviewProvider } from "@/glossary/webViewProvider";
 
 export function activate(context: vscode.ExtensionContext) {
   const divineService = new DivineService(context.extensionPath);
@@ -163,6 +169,33 @@ export function activate(context: vscode.ExtensionContext) {
     }),
     vscode.commands.registerCommand("metalsx.editVersion64", editVersion64),
     vscode.commands.registerCommand("metalsx.generateUuid", generateUuid),
+  );
+
+  // TODO
+  const glossaryManager = new GlossaryManager();
+  context.subscriptions.push(glossaryManager);
+
+  // 2. Регистрируем HoverProvider для всех файлов (или можно ограничить *.lsf, *.xml и т.д.)
+  context.subscriptions.push(
+    vscode.languages.registerHoverProvider(
+      { pattern: "**/*" }, // Или конкретные расширения
+      new GlossaryHoverProvider(glossaryManager),
+    ),
+  );
+  context.subscriptions.push(
+    vscode.languages.registerDocumentLinkProvider(
+      { pattern: "**/*" }, // Или ограничить, как в Hover
+      new GlossaryLinkProvider(glossaryManager),
+    ),
+  );
+
+  const webviewProvider = new GlossaryWebviewProvider(context, glossaryManager);
+
+  // Регистрируем команду, которую вызывает DocumentLinkProvider
+  context.subscriptions.push(
+    vscode.commands.registerCommand("glossary.showTerm", (termKey: string) => {
+      webviewProvider.showTerm(termKey);
+    }),
   );
 }
 
