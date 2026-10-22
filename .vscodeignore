@@ -4,7 +4,6 @@
 .gitignore
 *.md
 !README.md
-node_modules/**
 test/**
 tests/**
 *.map
