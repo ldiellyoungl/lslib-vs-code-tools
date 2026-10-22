@@ -3,7 +3,7 @@
   "displayName": "LSLib Tools",
   "description": "Набор инструментов для моддинга игр от Larian Studios прямо в VS Code",
   "publisher": "LeoBlock",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "categories": [
     "Other"
   ],
