@@ -63,7 +63,7 @@ export class GlossaryManager implements vscode.Disposable {
 
   private scheduleReload() {
     if (this.timeout) clearTimeout(this.timeout);
-    this.timeout = setTimeout(() => this.reload(), 500);
+    this.timeout = setTimeout(() => this.reload(), 100);
   }
 
   private normalize(str: string): string {
