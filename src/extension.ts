@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import * as fs from "node:fs";
-import { DivineService } from "@/lslib/core";
+import { DivineService } from "@/divine/core";
 import { getFileExtension } from "@/utils/files";
 
 import {
@@ -9,7 +9,7 @@ import {
   convertResource,
   RESOURCE_FORMATS,
   convertLoca,
-} from "./lslib/commands/";
+} from "./divine/commands";
 
 import { DocumentLinkProvider } from "@/common/documentLinkProvider";
 import { TranslationDecorator, goToTranslation } from "@/localization";
@@ -26,18 +26,14 @@ import {
 import { editVersion64 } from "@/utils/version64";
 import { generateUuid } from "@/utils/uuid";
 
-// TODO glossary
-import { GlossaryManager } from "@/glossary/manager";
-import { GlossaryHoverProvider } from "@/glossary/hoverProvider";
-import { GlossaryLinkProvider } from "@/glossary/linkProvier";
-import { GlossaryWebviewProvider } from "@/glossary/webViewProvider";
+import { GlossaryController, initGlossary, addTermin } from "@/glossary";
 
 export function activate(context: vscode.ExtensionContext) {
   const divineService = new DivineService(context.extensionPath);
 
   // lslib commands
   const extractPakCommand = vscode.commands.registerCommand(
-    "lslib-tools.extractPak",
+    "divineCli.extractPak",
     (uri: vscode.Uri, selectedUris: vscode.Uri[]) => {
       const urisToProcess = selectedUris ?? [uri];
 
@@ -55,7 +51,7 @@ export function activate(context: vscode.ExtensionContext) {
     },
   );
   const createPakCommand = vscode.commands.registerCommand(
-    "lslib-tools.createPak",
+    "divineCli.createPak",
     (uri: vscode.Uri, selectedUris: vscode.Uri[]) => {
       const urisToProcess = selectedUris ?? [uri];
 
@@ -78,7 +74,7 @@ export function activate(context: vscode.ExtensionContext) {
     },
   );
   const convertResourceCommand = vscode.commands.registerCommand(
-    "lslib-tools.convert-resource",
+    "divineCli.convert-resource",
     (uri: vscode.Uri, selectedUris: vscode.Uri[]) => {
       const urisToProcess = selectedUris ?? [uri];
 
@@ -97,7 +93,7 @@ export function activate(context: vscode.ExtensionContext) {
     },
   );
   const convertLocaCommand = vscode.commands.registerCommand(
-    "lslib-tools.convert-loca",
+    "divineCli.convert-loca",
     (uri: vscode.Uri, selectedUris: vscode.Uri[]) => {
       const urisToProcess = selectedUris ?? [uri];
       const locaUris = urisToProcess.filter((u) => {
@@ -155,13 +151,11 @@ export function activate(context: vscode.ExtensionContext) {
       if (!editor) return;
       await copyModuleInfoAsShortDesc(editor.document);
     }),
-
     vscode.commands.registerCommand("metalsx.insertAsDependency", async () => {
       const editor = vscode.window.activeTextEditor;
       if (!editor) return;
       await insertModuleShortDescInto(editor.document, "Dependencies");
     }),
-
     vscode.commands.registerCommand("metalsx.insertAsConflict", async () => {
       const editor = vscode.window.activeTextEditor;
       if (!editor) return;
@@ -171,31 +165,10 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand("metalsx.generateUuid", generateUuid),
   );
 
-  // TODO
-  const glossaryManager = new GlossaryManager();
-  context.subscriptions.push(glossaryManager);
-
-  // 2. Регистрируем HoverProvider для всех файлов (или можно ограничить *.lsf, *.xml и т.д.)
+  // glossary
   context.subscriptions.push(
-    vscode.languages.registerHoverProvider(
-      { pattern: "**/*" }, // Или конкретные расширения
-      new GlossaryHoverProvider(glossaryManager),
-    ),
-  );
-  context.subscriptions.push(
-    vscode.languages.registerDocumentLinkProvider(
-      { pattern: "**/*" }, // Или ограничить, как в Hover
-      new GlossaryLinkProvider(glossaryManager),
-    ),
-  );
-
-  const webviewProvider = new GlossaryWebviewProvider(context, glossaryManager);
-
-  // Регистрируем команду, которую вызывает DocumentLinkProvider
-  context.subscriptions.push(
-    vscode.commands.registerCommand("glossary.showTerm", (termKey: string) => {
-      webviewProvider.showTerm(termKey);
-    }),
+    new GlossaryController(context),
+    vscode.commands.registerCommand("glossary.init", initGlossary),
   );
 }
 

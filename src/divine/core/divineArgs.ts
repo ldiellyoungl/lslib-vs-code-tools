@@ -62,11 +62,15 @@ export function createDivineArgs(
   options?: Partial<Omit<DivineArgs, "source" | "action">>,
 ): DivineArgs {
   return {
-    game: getExtensionConfig("game", "bg3"),
+    game: getExtensionConfig("divineCli", "game", "bg3"),
     source,
     action,
-    logLevel: getExtensionConfig("logLevel", "info"),
-    compressionMethod: getExtensionConfig("compressionMethod", "lz4"),
+    logLevel: getExtensionConfig("divineCli", "logLevel", "info"),
+    compressionMethod: getExtensionConfig(
+      "divineCli",
+      "compressionMethod",
+      "lz4",
+    ),
     conformPath: false,
     usePackageName: false,
     useRegex: false,

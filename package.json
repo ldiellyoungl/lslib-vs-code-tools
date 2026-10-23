@@ -29,7 +29,7 @@
       {
         "title": "LSLib Tools",
         "properties": {
-          "lslib-tools.game": {
+          "divineCli.game": {
             "type": "string",
             "default": "bg3",
             "enum": [
@@ -48,7 +48,7 @@
             ],
             "description": "Целевая игра для операций Divine CLI"
           },
-          "lslib-tools.compressionMethod": {
+          "divineCli.compressionMethod": {
             "type": "string",
             "default": "lz4",
             "enum": [
@@ -60,7 +60,7 @@
             ],
             "description": "Метод сжатия по умолочанию при создании PAK"
           },
-          "lslib-tools.logLevel": {
+          "divineCli.logLevel": {
             "type": "string",
             "default": "info",
             "enum": [
@@ -74,78 +74,107 @@
               "all"
             ],
             "description": "Уровень детализации логов Divine CLI"
+          },
+          "glossary.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить или отключить поддержку глоссария (подсветку терминов и Hover)."
+          },
+          "glossary.searchFolders": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [
+              "Localization"
+            ],
+            "description": "Список папок, в которых ищутся термины глоссария (например, ['Localization', 'Scripts'])."
           }
         }
       }
     ],
     "commands": [
       {
-        "command": "lslib-tools.extractPak",
-        "title": "LSLib: Распаковать PAK",
-        "category": "LSLib"
+        "command": "divineCli.extractPak",
+        "title": "DivineCLI: Распаковать PAK",
+        "category": "DivineCLI"
       },
       {
-        "command": "lslib-tools.createPak",
-        "title": "LSLib: Создать PAK",
-        "category": "LSLib"
+        "command": "divineCli.createPak",
+        "title": "DivineCLI: Создать PAK",
+        "category": "DivineCLI"
       },
       {
-        "command": "lslib-tools.convert-resource",
-        "title": "LSLib: Конвертировать ресурс",
-        "category": "LSLib"
+        "command": "divineCli.convert-resource",
+        "title": "DivineCLI: Конвертировать ресурс",
+        "category": "DivineCLI"
       },
       {
-        "command": "lslib-tools.convert-loca",
-        "title": "LSLib: Конвертировать локализацию",
-        "category": "LSLib"
+        "command": "divineCli.convert-loca",
+        "title": "DivineCLI: Конвертировать локализацию",
+        "category": "DivineCLI"
       },
       {
         "command": "metalsx.copyAsShortDesc",
-        "title": "Скопировать как ModuleShortDesc",
-        "category": "LSLib"
+        "title": "Скопировать как ModuleShortDesc"
       },
       {
         "command": "metalsx.insertAsDependency",
-        "title": "Вставить как ModuleShortDesc в зависимости",
-        "category": "LSLib"
+        "title": "Вставить как ModuleShortDesc в зависимости"
       },
       {
         "command": "metalsx.insertAsConflict",
-        "title": "Вставить как ModuleShortDesc в конфликты",
-        "category": "LSLib"
+        "title": "Вставить как ModuleShortDesc в конфликты"
       },
       {
         "command": "metalsx.editVersion64",
-        "title": "Вставить версию в формате int64",
-        "category": "LSLib"
+        "title": "Вставить версию в формате int64"
       },
       {
         "command": "metalsx.generateUuid",
-        "title": "Сгенерировать и вставить UUID",
-        "category": "LSLib"
+        "title": "Сгенерировать и вставить UUID"
+      },
+      {
+        "command": "glossary.init",
+        "title": "Инициализировать глоссарий"
+      },
+      {
+        "command": "glossary.showTerm",
+        "title": "Показать термин",
+        "enablement": "config.glossary.enabled"
+      },
+      {
+        "command": "glossary.addTermin",
+        "title": "Добавить термин в глоссарий",
+        "enablement": "config.glossary.enabled"
       }
     ],
     "menus": {
       "explorer/context": [
         {
-          "command": "lslib-tools.extractPak",
+          "command": "divineCli.extractPak",
           "when": "resourceExtname == .pak",
           "group": "z_lslib@1"
         },
         {
-          "command": "lslib-tools.createPak",
+          "command": "divineCli.createPak",
           "when": "explorerResourceIsFolder == true",
           "group": "z_lslib@2"
         },
         {
-          "command": "lslib-tools.convert-resource",
+          "command": "divineCli.convert-resource",
           "when": "resourceExtname == '.lsf' || resourceExtname == '.lsfx' || resourceExtname == '.lsb' || resourceExtname == '.lsj' || resourceExtname == '.lsx'",
           "group": "z_lslib@3"
         },
         {
-          "command": "lslib-tools.convert-loca",
+          "command": "divineCli.convert-loca",
           "when": "resourceExtname == '.loca' || resourceExtname == '.xml'",
           "group": "z_lslib@4"
+        },
+        {
+          "command": "glossary.init",
+          "when": "explorerResourceIsFolder",
+          "group": "z_lslib@5"
         }
       ],
       "editor/context": [
@@ -156,36 +185,10 @@
         {
           "command": "metalsx.editVersion64",
           "group": "z_lslib@2"
-        }
-      ],
-      "commandPalette": [
-        {
-          "command": "lslib-tools.extractPak",
-          "when": "false"
         },
         {
-          "command": "lslib-tools.createPak",
-          "when": "false"
-        },
-        {
-          "command": "lslib-tools.convert-resource",
-          "when": "false"
-        },
-        {
-          "command": "lslib-tools.convert-loca",
-          "when": "false"
-        },
-        {
-          "command": "metalsx.copyAsShortDesc",
-          "when": "false"
-        },
-        {
-          "command": "metalsx.insertAsDependency",
-          "when": "false"
-        },
-        {
-          "command": "metalsx.insertAsConflict",
-          "when": "false"
+          "command": "glossary.addTermin",
+          "group": "z_lslib@3"
         }
       ]
     }

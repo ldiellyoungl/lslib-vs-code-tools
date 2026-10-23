@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { GlossaryManager } from "./manager";
+import { GlossaryManager } from "../manager";
 
 export class GlossaryWebviewProvider {
   private static panels = new Map<string, vscode.WebviewPanel>();
@@ -27,13 +27,12 @@ export class GlossaryWebviewProvider {
       return;
     }
 
-    // 1. Определяем путь к папке с ресурсами (webview)
-    // __dirname указывает на out/glossary
     const resourcesPath = vscode.Uri.joinPath(
       this.context.extensionUri,
       "out",
       "glossary",
-      "webView", // Папка, где лежат css и resources
+      "providers",
+      "webView",
     );
 
     const panel = vscode.window.createWebviewPanel(
@@ -43,13 +42,11 @@ export class GlossaryWebviewProvider {
       {
         enableScripts: true,
         retainContextWhenHidden: true,
-        // 2. РАЗРЕШАЕМ VS Code читать файлы из этой папки
         localResourceRoots: [resourcesPath],
       },
     );
 
     const htmlPath = path.join(__dirname, "webView", "index.html");
-
     if (!fs.existsSync(htmlPath)) {
       vscode.window.showErrorMessage(`Файл не найден: ${htmlPath}`);
       return;
@@ -57,33 +54,61 @@ export class GlossaryWebviewProvider {
 
     let html = fs.readFileSync(htmlPath, "utf8");
 
-    const borderImagePath = vscode.Uri.joinPath(
-      resourcesPath,
-      "resources",
-      "border.png",
-    );
-
     const borderImageUri = panel.webview
-      .asWebviewUri(borderImagePath)
+      .asWebviewUri(
+        vscode.Uri.joinPath(resourcesPath, "resources", "border.png"),
+      )
       .toString();
 
-    const fontPath = vscode.Uri.joinPath(
-      resourcesPath,
-      "resources",
-      "Kurale-Regular.ttf",
-    );
-    const fontUri = panel.webview.asWebviewUri(fontPath).toString();
+    const fontUri = panel.webview
+      .asWebviewUri(
+        vscode.Uri.joinPath(resourcesPath, "resources", "Kurale-Regular.ttf"),
+      )
+      .toString();
 
-    // Передаем в данные
+    const termData = { ...term } as any;
+
+    if (termData.icon) {
+      if (
+        termData.icon.startsWith("http://") ||
+        termData.icon.startsWith("https://")
+      ) {
+      } else {
+        const iconPath = vscode.Uri.joinPath(resourcesPath, termData.icon);
+        if (fs.existsSync(iconPath.fsPath)) {
+          termData.icon = panel.webview.asWebviewUri(iconPath).toString();
+        } else {
+          console.warn(`[Glossary] Иконка не найдена: ${iconPath.fsPath}`);
+          delete termData.icon; // Если файл не найден, удаляем поле
+        }
+      }
+    }
+
+    const categoryIconRaw = this.manager.getCategoryIcon(termData.category);
+    if (categoryIconRaw) {
+      if (
+        categoryIconRaw.startsWith("http://") ||
+        categoryIconRaw.startsWith("https://")
+      ) {
+        termData.categoryIcon = categoryIconRaw;
+      } else {
+        const catIconPath = vscode.Uri.joinPath(resourcesPath, categoryIconRaw);
+        if (fs.existsSync(catIconPath.fsPath)) {
+          termData.categoryIcon = panel.webview
+            .asWebviewUri(catIconPath)
+            .toString();
+        }
+      }
+    }
+
     const data = {
       name: termKey,
-      term: term,
+      term: termData,
       borderImageUri: borderImageUri,
-      fontUri,
+      fontUri: fontUri,
     };
 
     const jsonData = JSON.stringify(data).replace(/</g, "\\u003c");
-
     html = html.replace(
       "<!-- INITIAL_DATA -->",
       `<script>window.initialData = ${jsonData};</script>`,
@@ -100,24 +125,5 @@ export class GlossaryWebviewProvider {
     );
 
     GlossaryWebviewProvider.panels.set(termKey, panel);
-  }
-
-  private getCategoryIcon(category?: string): string {
-    switch (category) {
-      case "combat":
-        return "⚔️";
-      case "magic":
-        return "🔮";
-      case "stats":
-        return "📊";
-      case "lore":
-        return "📜";
-      case "technical":
-        return "⚙️";
-      case "ui":
-        return "🖥️";
-      default:
-        return "📖";
-    }
   }
 }

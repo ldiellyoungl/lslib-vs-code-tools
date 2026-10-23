@@ -25,7 +25,7 @@ import { compactXml } from "@/utils/strings";
 
 import { isValid, decodeVersion64 } from "@/utils/version64";
 
-export class DiagnosticProvider implements vscode.Disposable {
+export class MetaLsxDiagnosticProvider implements vscode.Disposable {
   private collection: vscode.DiagnosticCollection =
     vscode.languages.createDiagnosticCollection("lslib-meta");
   private subscriptions: vscode.Disposable[] = [];
@@ -85,7 +85,7 @@ export class DiagnosticProvider implements vscode.Disposable {
   }
 }
 
-export class HoverProvider implements vscode.HoverProvider {
+export class MetaLsxHoverProvider implements vscode.HoverProvider {
   provideHover(
     document: vscode.TextDocument,
     position: vscode.Position,
@@ -169,7 +169,7 @@ export class HoverProvider implements vscode.HoverProvider {
   }
 }
 
-export class InlayHintsProvider implements vscode.InlayHintsProvider {
+export class MetaLsxInlayHintsProvider implements vscode.InlayHintsProvider {
   provideInlayHints(
     document: vscode.TextDocument,
     range: vscode.Range,
@@ -269,7 +269,7 @@ export class InlayHintsProvider implements vscode.InlayHintsProvider {
   }
 }
 
-export class CodeLensProvider implements vscode.CodeLensProvider {
+export class MetaLsxCodeLensProvider implements vscode.CodeLensProvider {
   provideCodeLenses(
     document: vscode.TextDocument,
     token: vscode.CancellationToken,

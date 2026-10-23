@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { GlossaryManager } from "./manager";
+import { GlossaryManager } from "../manager";
 
 export class GlossaryLinkProvider implements vscode.DocumentLinkProvider {
   constructor(private manager: GlossaryManager) {}
@@ -8,6 +8,10 @@ export class GlossaryLinkProvider implements vscode.DocumentLinkProvider {
     document: vscode.TextDocument,
     token: vscode.CancellationToken,
   ): vscode.ProviderResult<vscode.DocumentLink[]> {
+    if (!document.uri.fsPath.includes("Localization")) {
+      return [];
+    }
+
     const links: vscode.DocumentLink[] = [];
     const text = document.getText();
 

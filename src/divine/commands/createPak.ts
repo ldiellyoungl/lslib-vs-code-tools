@@ -1,33 +1,30 @@
-// src/lslib/commands/convertLoca.ts
 import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
-import { DivineService, createDivineArgs } from "@/lslib/core";
-
+import { DivineService, createDivineArgs } from "@/divine/core";
 import {
   createStatistics,
   showOverwriteConfirmation,
   showFinalMessage,
 } from "./helpers";
 
-import { getFileExtension } from "@/utils/files";
-
-export async function convertLoca(
+/**
+ * Выполняет команду создания PAK файлов из одной или нескольких папок.
+ */
+export async function createPak(
   divineService: DivineService,
   uris: vscode.Uri[],
 ): Promise<void> {
-  if (uris.length === 0) return;
-
-  const statistics = createStatistics();
-
   try {
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: `Конвертация локализации (${uris.length} шт.)`,
+        title: `Создание PAK файлов (${uris.length} шт.)`,
         cancellable: true,
       },
       async (progress, token) => {
+        const statistics = createStatistics();
+
         for (let i = 0; i < uris.length; i++) {
           if (token.isCancellationRequested) {
             statistics.cancelledCount = uris.length - i;
@@ -35,21 +32,19 @@ export async function convertLoca(
           }
 
           const uri = uris[i];
-          const sourcePath = uri.fsPath;
-          const sourceExt = getFileExtension(sourcePath);
-          const targetExt = sourceExt === "loca" ? "xml" : "loca";
-          const baseName = path.basename(sourcePath, `.${sourceExt}`);
-          const dirName = path.dirname(sourcePath);
-          const targetPath = path.join(dirName, `${baseName}.${targetExt}`);
+          const folderPath = uri.fsPath;
+          const baseName = path.basename(folderPath);
+          const dirName = path.dirname(folderPath);
+
+          const pakFilePath = path.join(dirName, `${baseName}.pak`);
 
           progress.report({
-            message: `Обработка ${i + 1}/${uris.length}: ${baseName}.${sourceExt} -> ${targetExt}`,
+            message: `Обработка ${i + 1}/${uris.length}: ${baseName}`,
             increment: 100 / uris.length,
           });
 
-          // Проверка существования целевого файла
-          if (fs.existsSync(targetPath) && !statistics.overwriteAll) {
-            const action = await showOverwriteConfirmation(targetPath);
+          if (fs.existsSync(pakFilePath) && !statistics.overwriteAll) {
+            const action = await showOverwriteConfirmation(pakFilePath);
 
             switch (action) {
               case "cancel":
@@ -68,8 +63,8 @@ export async function convertLoca(
           }
 
           try {
-            const args = createDivineArgs(sourcePath, "convert-loca", {
-              destination: targetPath,
+            const args = createDivineArgs(folderPath, "create-package", {
+              destination: pakFilePath,
             });
 
             await divineService.runCommand(args);
@@ -81,7 +76,7 @@ export async function convertLoca(
             }
 
             console.error(
-              `Ошибка при конвертации ${baseName}.${sourceExt}:`,
+              `Ошибка при создании PAK из ${baseName}:`,
               error.message,
             );
             statistics.errorCount++;
@@ -89,7 +84,7 @@ export async function convertLoca(
         }
 
         showFinalMessage(
-          "Конвертация локализации",
+          "Создание PAK",
           statistics,
           token.isCancellationRequested,
         );

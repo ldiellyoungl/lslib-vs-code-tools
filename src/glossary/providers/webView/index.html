@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>Glossary Term</title>
+
+    <!-- INITIAL_DATA -->
+
+    <style>
+      :root {
+        --border-image: url("./resources/border.png");
+
+        --spacing: 0.25rem;
+
+        --radius-sm: 0.25rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+
+        --gap: var(--spacing);
+        --gap-2: calc(var(--spacing) * 2);
+        --gap-4: calc(var(--spacing) * 4);
+
+        --padding: var(--spacing);
+        --padding-2: calc(var(--spacing) * 2);
+        --padding-4: calc(var(--spacing) * 4);
+
+        --rounded-sm: var(--radius-sm);
+        --rounded-md: var(--radius-md);
+        --rounded-lg: var(--radius-lg);
+        --rounded-full: calc(infinity * 1px);
+
+        --bg-accent: #d1b681;
+        --bg-muted: #625951;
+
+        --shadow: 0 0 3px var(--bg-accent);
+
+        --text: #bec9ca;
+        --text-muted: #8b9a9b;
+      }
+
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6,
+      p,
+      hr,
+      ol {
+        margin: 0;
+      }
+
+      body {
+        font-family: "Kurale-Regular", var(--vscode-font-family, sans-serif);
+      }
+
+      #main {
+        border: 8px solid transparent;
+        border-image-source: var(--border-image);
+        border-image-slice: 6;
+        border-image-width: 1;
+        border-image-repeat: stretch;
+      }
+
+      .w-full {
+        width: 100%;
+      }
+
+      .p-0 {
+        padding: 0;
+      }
+      .p-min {
+        padding: var(--padding);
+      }
+      .p-2 {
+        padding: var(--padding-2);
+      }
+      .p-4 {
+        padding: var(--padding-4);
+      }
+
+      .gap-min {
+        gap: var(--gap);
+      }
+      .gap-2 {
+        gap: var(--gap-2);
+      }
+      .gap-4 {
+        gap: var(--gap-4);
+      }
+
+      .text-default {
+        color: var(--text);
+      }
+      .text-highlighted {
+        color: var(--bg-accent);
+      }
+      .text-muted {
+        color: var(--text-muted);
+      }
+
+      .flex {
+        display: flex;
+      }
+      .flex-row {
+        flex-direction: row;
+      }
+      .flex-col {
+        flex-direction: column;
+      }
+      .flex-wrap {
+        flex-wrap: wrap;
+      }
+      .items-center {
+        align-items: center;
+      }
+      .justify-center {
+        justify-items: center;
+      }
+
+      .rounded-sm {
+        border-radius: var(--rounded-sm);
+      }
+      .rounded-md {
+        border-radius: var(--rounded-md);
+      }
+      .rounded-lg {
+        border-radius: var(--rounded-lg);
+      }
+      .rounded-full {
+        border-radius: var(--rounded-full);
+      }
+
+      .border {
+        box-shadow: var(--shadow);
+      }
+
+      .uppercase {
+        text-transform: uppercase;
+      }
+
+      .bg-muted {
+        background: var(--bg-muted);
+      }
+
+      .bg-accent {
+        background: var(--bg-accent);
+      }
+
+      .list-inside {
+        list-style-position: inside;
+      }
+
+      .object-contain {
+        object-fit: contain;
+      }
+
+      .aspect-square {
+        aspect-ratio: 1 / 1;
+      }
+
+      .size-inline {
+        width: 1em;
+        height: 1em;
+      }
+      .size-5 {
+        width: 5em;
+        height: 5em;
+      }
+
+      hr {
+        border: none;
+        height: 1px;
+        background-color: var(--bg-muted);
+      }
+    </style>
+  </head>
+  <body class="text-default p-0">
+    <main
+      id="main"
+      class="flex flex-col gap-2 p-2"
+    />
+
+    <script>
+      const initialData = window.initialData;
+      console.log("Данные из VS Code:", initialData);
+
+      function renderTerm(data) {
+        if (!data) {
+          document.getElementById("main").innerHTML = "<h1>Нет данных</h1>";
+          return;
+        }
+
+        const {
+          name = "Без названия",
+          term = undefined,
+          fontUri,
+          borderImageUri,
+        } = data;
+
+        const {
+          translation,
+          aliases,
+          category,
+          example,
+          fullDescription,
+          shortDescription,
+          source,
+          icon,
+          categoryIcon,
+        } = term;
+
+        // загрузка шрифта
+        if (fontUri) {
+          const style = document.createElement("style");
+          style.innerHTML = `
+            @font-face {
+              font-family: "Kurale-Regular";
+              src: url("${data.fontUri}") format("truetype");
+              font-weight: normal;
+              font-style: normal;
+            }
+          `;
+          document.head.appendChild(style);
+        }
+
+        // загрузка border image
+        if (borderImageUri) {
+          document.documentElement.style.setProperty(
+            "--border-image",
+            `url("${borderImageUri}")`,
+          );
+        }
+
+        const main = document.getElementById("main");
+
+        if (term) {
+          let html = `
+            <div class="flex flex-row gap-2">
+              ${
+                icon
+                  ? `
+                <div class="flex justify-center items-center p-2 border">
+                  <img class="aspect-square object-contain size-5" src="${icon}"/>
+                </div>
+                `
+                  : ""
+              }
+
+              
+              <div class="flex flex-col w-full rounded-sm border p-2">
+                <h1>${name}</h1>
+                <h2 class="text-muted flex items-center gap-min">
+                  ${categoryIcon ? `<img src="${categoryIcon}" class="aspect-square object-contain size-inline"/>` : ""} ${category}
+                </h2>
+              </div>
+            </div>
+          `;
+
+          if (translation) {
+            html += `
+            <div class="flex flex-col border rounded-sm">
+              <h3 class="p-2 text-muted uppercase">Перевод</h3>
+              <hr/>
+              <p class="p-2">${translation}</p>
+            </div>
+            `;
+          }
+
+          const desc = fullDescription || shortDescription;
+          if (desc) {
+            html += `
+            <div class="flex flex-col border rounded-sm">
+              <h3 class="p-2 text-muted uppercase">Описание</h3>
+              <hr/>
+              <p class="p-2">${desc}</p>
+            </div>
+            `;
+          }
+
+          if (example) {
+            html += `
+            <div class="flex flex-col border rounded-sm">
+              <h3 class="p-2 text-muted uppercase">Пример</h3>
+              <hr/>
+              <p class="p-2">${example}</p>
+            </div>
+            `;
+          }
+
+          if (aliases && aliases.length > 0) {
+            html += `
+            <div class="flex flex-col border rounded-sm">
+              <h3 class="p-2 text-muted uppercase">Алиасы</h3>
+              <hr/>
+              <div class="p-2 gap-2 flex flex-wrap">
+                  ${aliases.map((a) => `<span class="rounded-md bg-muted text-highlighted p-min">${a}</span>`).join("")}
+              </div>
+            </div>
+             `;
+          }
+
+          if (source && source.length > 0) {
+            html += `
+            <div class="flex flex-col border rounded-sm">
+              <h3 class="p-2 text-muted uppercase">Ссылки</h3>
+              <hr/>
+              <ol class="p-2 list-inside">
+                  ${source.map((s) => `<li><a class="text-highlighted" href="${s.href}">${s.name}</a></li>`).join("")}
+              </ol>
+            </div>
+            `;
+          }
+
+          main.innerHTML = html;
+        }
+      }
+
+      renderTerm(initialData);
+    </script>
+  </body>
+</html>

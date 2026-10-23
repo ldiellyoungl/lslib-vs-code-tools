@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
-import { DivineService, createDivineArgs } from "@/lslib/core";
+import { DivineService, createDivineArgs } from "@/divine/core";
 import {
   createStatistics,
   showOverwriteConfirmation,

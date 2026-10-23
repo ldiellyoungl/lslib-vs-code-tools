@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
-import { GlossaryManager } from "./manager";
-import { GlossaryCategory, GlossaryMatch } from "./types";
+import { GlossaryManager } from "../manager";
+import { GlossaryMatch } from "../types";
 
 export class GlossaryHoverProvider implements vscode.HoverProvider {
   constructor(private manager: GlossaryManager) {}
@@ -10,6 +10,10 @@ export class GlossaryHoverProvider implements vscode.HoverProvider {
     position: vscode.Position,
     token: vscode.CancellationToken,
   ): vscode.ProviderResult<vscode.Hover> {
+    if (!document.uri.fsPath.includes("Localization")) {
+      return undefined;
+    }
+
     // 1. Пробуем найти одно слово под курсором (стандартный метод VS Code)
     const wordRange = document.getWordRangeAtPosition(position);
     if (wordRange) {
@@ -27,7 +31,6 @@ export class GlossaryHoverProvider implements vscode.HoverProvider {
     const lineStart = document.lineAt(position.line).range.start.character;
 
     // Разбиваем строку на слова, чтобы искать комбинации
-    // Используем регулярку для поиска слов (включая кириллицу и цифры)
     const words: { text: string; index: number }[] = [];
     const wordRegex = /[\w\u0400-\u04FF]+/g;
     let m;
@@ -75,11 +78,9 @@ export class GlossaryHoverProvider implements vscode.HoverProvider {
     const { term, originalKey, matchedWord } = match;
     const md = new vscode.MarkdownString();
     md.isTrusted = true;
-    md.supportThemeIcons = true;
 
     // Заголовок
-    const icon = this.getCategoryIcon(term.category);
-    md.appendMarkdown(`### ${icon} **${originalKey}**\n\n`);
+    md.appendMarkdown(`### **${originalKey}**\n\n`);
 
     // Уточнение синонима
     if (matchedWord.toLowerCase() !== originalKey.toLowerCase()) {
@@ -110,43 +111,9 @@ export class GlossaryHoverProvider implements vscode.HoverProvider {
 
     // Категория внизу
     if (term.category) {
-      md.appendMarkdown(
-        `---\n*Категория: ${this.getCategoryName(term.category)}*`,
-      );
+      md.appendMarkdown(`---\n*Категория: ${term.category}*`);
     }
 
     return new vscode.Hover(md, range);
-  }
-
-  private getCategoryIcon(category?: GlossaryCategory): string {
-    switch (category) {
-      case "combat":
-        return "⚔️";
-      case "magic":
-        return "🔮";
-      case "stats":
-        return "📊";
-      case "lore":
-        return "📜";
-      case "technical":
-        return "⚙️";
-      case "ui":
-        return "🖥️";
-      default:
-        return "📖";
-    }
-  }
-
-  private getCategoryName(category: GlossaryCategory): string {
-    const names: Record<GlossaryCategory, string> = {
-      combat: "Боевая система",
-      magic: "Магия",
-      stats: "Характеристики",
-      lore: "Лор",
-      technical: "Техническое",
-      ui: "Интерфейс",
-      general: "Общее",
-    };
-    return names[category] || "Общее";
   }
 }
