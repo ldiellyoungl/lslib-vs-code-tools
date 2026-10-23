@@ -18,10 +18,10 @@
         --title-mid-image: url("./resources/title_mid.png");
 
         /* Общие стили для плиток */
-        --tile-radius: 3px;
-        --tile-shadow: 0 0 3px #d1b681;
-        --tile-bg: transparent;
-        --text-color: #bec9ca;
+        --accent: #d1b681;
+        --muted: #625951;
+        --shadow: 0 0 3px var(--accent);
+        --text: #bec9ca;
         --text-muted: #8b9a9b;
 
         --padding: 1rem;
@@ -36,13 +36,16 @@
       h6,
       p {
         margin: 0;
-        color: var(--text-color);
+        color: var(--text);
+      }
+      hr {
+        margin: 0;
       }
 
       body {
         font-family: "Kurale-Regular", var(--vscode-font-family, sans-serif);
         padding: 10px;
-        color: var(--text-color);
+        color: var(--text);
       }
 
       main {
@@ -59,25 +62,30 @@
           display: flex;
           width: 100%;
           gap: var(--padding-small);
-          .icon {
+          .icon-container {
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-shrink: 0;
             padding: var(--padding);
             border-radius: var(--tile-radius);
-            box-shadow: var(--tile-shadow);
-            background: var(--tile-bg);
+            box-shadow: var(--shadow);
+            .icon {
+              width: 2rem;
+            }
           }
 
-          h1 {
+          .content {
             display: flex;
-            align-items: center;
+            flex-direction: column;
+            align-items: start;
             width: 100%;
             padding: var(--padding);
             border-radius: var(--tile-radius);
-            box-shadow: var(--tile-shadow);
-            background: var(--tile-bg);
+            box-shadow: var(--shadow);
+            .title {
+            }
+            .category {
+            }
           }
         }
 
@@ -86,43 +94,24 @@
           flex-direction: column;
           gap: var(--padding-small);
           border-radius: var(--tile-radius);
-          box-shadow: var(--tile-shadow);
-          background: var(--tile-bg);
-          padding: var(--padding-small);
+          box-shadow: var(--shadow);
+
           h2 {
             text-transform: uppercase;
             color: var(--text-muted);
+            padding: var(--padding-small);
+          }
+          hr {
+            width: 100%;
+            border: none;
+            height: 1px;
+            background: var(--muted);
+            box-shadow: var(--shadow);
           }
           p {
+            padding: var(--padding-small);
           }
         }
-
-        /* section {
-          display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
-
-          .title {
-            padding: 4px 8px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            letter-spacing: 0.5px;
-            border-radius: var(--tile-radius);
-            box-shadow: var(--tile-shadow);
-            background: var(--tile-bg);
-          }
-          .content {
-            padding: 8px 12px;
-            font-size: 13.5px;
-            line-height: 1.5;
-            border-radius: var(--tile-radius);
-            box-shadow: var(--tile-shadow);
-            background: var(--tile-bg);
-            white-space: pre-wrap;
-          }
-        } */
       }
 
       /* --- ССЫЛКИ И БЕЙДЖИ --- */
@@ -137,8 +126,7 @@
         padding: 2px 8px;
         font-size: 12px;
         border-radius: var(--tile-radius);
-        box-shadow: var(--tile-shadow);
-        background: var(--tile-bg);
+        box-shadow: var(--shadow);
       }
 
       .source-link {
@@ -202,21 +190,40 @@
 
         let html = `
           <div class="header">
-            <h1>${name}</h1>
+            <div class="icon-container"
+            <span class="icon">${icon}</span>
+            </div>
+            <div class="content">
+              <h1 class="title">${name}</h1>
+              <p class="category">Category</p>
+            </div>
           </div>
         `;
 
         if (term.translation) {
-          html += `<section><h2>Перевод</h2><p>${term.translation}</p></section>`;
+          html += `
+          <section>
+            <h2>Перевод</h2>
+            <hr/>
+            <p>${term.translation}</p>
+          </section>`;
         }
 
         const desc = term.fullDescription || term.shortDescription;
         if (desc) {
-          html += `<section><h2>Описание</h2><p>${desc}</p></section>`;
+          html += `<section>
+                    <h2>Описание</h2>
+                    <hr/>
+                    <p>${desc}</p>
+                  </section>`;
         }
 
         if (term.example) {
-          html += `<section><h2>Пример</h2><p>${term.example}</p></section>`;
+          html += `<section>
+                    <h2>Пример</h2>
+                    <hr/>
+                    <p>${term.example}</p>
+                  </section>`;
         }
 
         // if (term.aliases && term.aliases.length > 0) {
