@@ -2,11 +2,11 @@ import * as vscode from "vscode";
 import { XmlNode, findAllNodes, nodeToRange } from "@/utils/xml-parser";
 import { createDiagnostic } from "@/utils/diagnosticsHelper";
 import { NODE_ATTRIBUTE_RULES } from "./constants";
-import { isValid as isValidVersion64 } from "@/utils/version64";
+import { isValid as isValidVersion64 } from "@/meta-lsx/commands/version64";
 import {
   isValid as isValidUUID,
   isValidV4 as isValidUUIDv4,
-} from "@/utils/uuid";
+} from "@/meta-lsx/commands/uuid";
 import { getModFolder } from "@/utils/files";
 
 export interface ValidationContext {

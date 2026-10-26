@@ -25,28 +25,45 @@ import { compactXml } from "@/utils/strings";
 
 import { isValid, decodeVersion64 } from "@/utils/version64";
 
-export class MetaLsxDiagnosticProvider implements vscode.Disposable {
+function isMetaLsx(document: vscode.TextDocument): boolean {
+  return document.uri.fsPath.endsWith("meta.lsx");
+}
+
+export class DiagnosticProvider implements vscode.Disposable {
   private collection: vscode.DiagnosticCollection =
     vscode.languages.createDiagnosticCollection("lslib-meta");
   private subscriptions: vscode.Disposable[] = [];
-  private timeout: NodeJS.Timeout | undefined;
+  private updateTimeout: NodeJS.Timeout | undefined;
 
   constructor() {
     this.subscriptions.push(
-      vscode.workspace.onDidChangeTextDocument((e) => {
-        if (this.timeout) clearTimeout(this.timeout);
-        this.timeout = setTimeout(() => this.update(e.document), 300);
-      }),
-      vscode.workspace.onDidSaveTextDocument((d) => this.update(d)),
-      vscode.workspace.onDidChangeTextDocument((e) => this.update(e.document)),
+      vscode.workspace.onDidChangeTextDocument((e) =>
+        this.scheduleUpdate(e.document),
+      ),
       vscode.workspace.onDidOpenTextDocument((d) => this.update(d)),
+      vscode.window.onDidChangeActiveTextEditor((editor) => {
+        if (editor) this.update(editor.document);
+      }),
+      vscode.workspace.onDidCloseTextDocument((d) => {
+        if (isMetaLsx(d)) {
+          this.collection.delete(d.uri);
+        }
+      }),
     );
+
     if (vscode.window.activeTextEditor) {
       this.update(vscode.window.activeTextEditor.document);
     }
   }
+
+  private scheduleUpdate(document: vscode.TextDocument) {
+    if (!isMetaLsx(document)) return;
+    if (this.updateTimeout) clearTimeout(this.updateTimeout);
+    this.updateTimeout = setTimeout(() => this.update(document), 150);
+  }
+
   private update(document: vscode.TextDocument) {
-    if (!document.uri.fsPath.endsWith("meta.lsx")) {
+    if (!isMetaLsx(document)) {
       return;
     }
 
@@ -79,13 +96,18 @@ export class MetaLsxDiagnosticProvider implements vscode.Disposable {
   }
 
   dispose() {
-    if (this.timeout) clearTimeout(this.timeout);
+    if (this.updateTimeout) {
+      clearTimeout(this.updateTimeout);
+      this.updateTimeout = undefined;
+    }
     this.collection.dispose();
     this.subscriptions.forEach((s) => s.dispose());
+    this.subscriptions = [];
   }
 }
 
-export class MetaLsxHoverProvider implements vscode.HoverProvider {
+// TODO Переделать hoverProvider
+export class HoverProvider implements vscode.HoverProvider {
   provideHover(
     document: vscode.TextDocument,
     position: vscode.Position,
@@ -169,13 +191,13 @@ export class MetaLsxHoverProvider implements vscode.HoverProvider {
   }
 }
 
-export class MetaLsxInlayHintsProvider implements vscode.InlayHintsProvider {
+export class VersionInlayHintsProvider implements vscode.InlayHintsProvider {
   provideInlayHints(
     document: vscode.TextDocument,
     range: vscode.Range,
     token: vscode.CancellationToken,
   ): vscode.ProviderResult<vscode.InlayHint[]> {
-    if (!document.uri.fsPath.endsWith("meta.lsx")) {
+    if (!isMetaLsx(document)) {
       return [];
     }
 
@@ -203,29 +225,7 @@ export class MetaLsxInlayHintsProvider implements vscode.InlayHintsProvider {
       const endPositionOffset = valueOffset + value64.length + 1;
       const position = document.positionAt(endPositionOffset);
 
-      // Оптимизация: если подсказка за пределами видимой области (range), пропускаем
-      if (!range.contains(position)) {
-        continue;
-      }
-
-      const startPos = document.positionAt(valueOffset);
-      const endPos = document.positionAt(valueOffset + value64.length);
-      const rangeStr = `${startPos.line}:${startPos.character}-${endPos.line}:${endPos.character}`;
-
-      const part = new vscode.InlayHintLabelPart(`${versionString}`);
-
-      part.command = {
-        title: "Редактировать версию",
-        command: "metalsx.editVersion64",
-        arguments: [rangeStr, versionString],
-      };
-
-      part.tooltip = new vscode.MarkdownString(`**Редактировать версию**\n\n`);
-      const hint = new vscode.InlayHint(
-        position,
-        [part],
-        vscode.InlayHintKind.Type,
-      );
+      const hint = new vscode.InlayHint(position, versionString);
 
       hint.paddingLeft = true;
       hint.paddingRight = true;
@@ -233,48 +233,68 @@ export class MetaLsxInlayHintsProvider implements vscode.InlayHintsProvider {
       hints.push(hint);
     }
 
-    const uuidRegex =
-      /<attribute\b[^>]*\bid\s*=\s*"UUID"[^>]*\bvalue\s*=\s*"([^"]+)"/g;
-
-    while ((match = uuidRegex.exec(text)) !== null) {
-      if (token.isCancellationRequested) break;
-
-      const valueUuid = match[1];
-      const valueOffset = match.index + match[0].lastIndexOf(valueUuid);
-
-      const endPositionOffset = valueOffset + valueUuid.length + 1;
-      const position = document.positionAt(endPositionOffset);
-
-      if (!range.contains(position)) continue;
-
-      const startPos = document.positionAt(valueOffset);
-      const endPos = document.positionAt(valueOffset + valueUuid.length);
-      const rangeStr = `${startPos.line}:${startPos.character}-${endPos.line}:${endPos.character}`;
-
-      // Иконка обновления
-      const part = new vscode.InlayHintLabelPart(`⟳`);
-      part.command = {
-        title: "Сгенерировать UUID",
-        command: "metalsx.generateUuid",
-        arguments: [rangeStr, valueUuid],
-      };
-      part.tooltip = new vscode.MarkdownString(`**Сгенерировать UUID**\n\n`);
-
-      hints.push(
-        new vscode.InlayHint(position, [part], vscode.InlayHintKind.Type),
-      );
-    }
-
     return hints;
   }
 }
 
-export class MetaLsxCodeLensProvider implements vscode.CodeLensProvider {
+export class VersionCodeLens implements vscode.CodeLensProvider {
   provideCodeLenses(
     document: vscode.TextDocument,
     token: vscode.CancellationToken,
   ): vscode.ProviderResult<vscode.CodeLens[]> {
-    if (!document.uri.fsPath.endsWith("meta.lsx")) return [];
+    if (!isMetaLsx(document)) return [];
+    const lenses: vscode.CodeLens[] = [];
+    const text = document.getText();
+    const regex = /<attribute\b[^>]*\bid\s*=\s*"Version64"/g;
+
+    for (const match of text.matchAll(regex)) {
+      const startPos = document.positionAt(match.index!);
+      const range = new vscode.Range(startPos.line, 0, startPos.line, 0);
+
+      lenses.push(
+        new vscode.CodeLens(range, {
+          title: "$(edit) Отредактировать",
+          command: "hui",
+        }),
+      );
+    }
+
+    return lenses;
+  }
+}
+
+export class UuidCodeLens implements vscode.CodeLensProvider {
+  provideCodeLenses(
+    document: vscode.TextDocument,
+    token: vscode.CancellationToken,
+  ): vscode.ProviderResult<vscode.CodeLens[]> {
+    if (!isMetaLsx(document)) return [];
+    const lenses: vscode.CodeLens[] = [];
+    const text = document.getText();
+    const regex = /<attribute\b[^>]*\bid\s*=\s*"UUID"/g;
+
+    for (const match of text.matchAll(regex)) {
+      const startPos = document.positionAt(match.index!);
+      const range = new vscode.Range(startPos.line, 0, startPos.line, 0);
+
+      lenses.push(
+        new vscode.CodeLens(range, {
+          title: "$(diff-added) Сгенерировать",
+          command: "hui",
+        }),
+      );
+    }
+
+    return lenses;
+  }
+}
+
+export class ModuleInfoCodeLens implements vscode.CodeLensProvider {
+  provideCodeLenses(
+    document: vscode.TextDocument,
+    token: vscode.CancellationToken,
+  ): vscode.ProviderResult<vscode.CodeLens[]> {
+    if (!isMetaLsx(document)) return [];
 
     const lenses: vscode.CodeLens[] = [];
     const text = document.getText();

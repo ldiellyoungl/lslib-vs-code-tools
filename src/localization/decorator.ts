@@ -151,7 +151,7 @@ export class Decorator implements vscode.Disposable {
           );
           const textDisplay = t.text.length > 0 ? t.text : "*[пусто]*";
           hoverContent.appendMarkdown(
-            `- [**${t.language}**](command:LSLib.goToTranslation?${args}) (строка ${t.line}): ${textDisplay}\n`,
+            `- [**${t.language}**](command:localization.goToTranslation?${args}) (строка ${t.line}): ${textDisplay}\n`,
           );
         }
       } else {

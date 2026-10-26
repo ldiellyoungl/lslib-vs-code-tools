@@ -3,7 +3,7 @@
   "displayName": "LSLib Tools",
   "description": "Набор инструментов для моддинга игр от Larian Studios прямо в VS Code",
   "publisher": "LeoBlock",
-  "version": "2.0.0",
+  "version": "2.1.1",
   "categories": [
     "Other"
   ],
@@ -27,7 +27,8 @@
   "contributes": {
     "configuration": [
       {
-        "title": "LSLib Tools",
+        "title": "Divine CLI: Аргументы",
+        "order": 0,
         "properties": {
           "divineCli.game": {
             "type": "string",
@@ -74,11 +75,65 @@
               "all"
             ],
             "description": "Уровень детализации логов Divine CLI"
+          }
+        }
+      },
+      {
+        "title": "Meta.lsx: Диагностика",
+        "order": 1,
+        "properties": {
+          "metalsx.diagnostics.enable": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить диагностику"
+          }
+        }
+      },
+      {
+        "title": "Meta.lsx: Codelens",
+        "order": 2,
+        "properties": {
+          "metalsx.codelens.moduleInfo.enable": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить быстрые действия над блоком ModuleInfo"
           },
+          "metalsx.codelens.uuid.enable": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить быстрые действия над строкой UUID"
+          },
+          "metalsx.codelens.version.enable": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить быстрые действия над строкой Version64"
+          }
+        }
+      },
+      {
+        "title": "Meta.lsx: Прочее",
+        "order": 3,
+        "properties": {
+          "metalsx.inlayhints.version.enable": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить показ дешефрованной версии"
+          },
+          "metalsx.hovers.enable": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить подсказки при наведении мыши"
+          }
+        }
+      },
+      {
+        "title": "Глоссарий: Общее",
+        "order": 4,
+        "properties": {
           "glossary.enabled": {
             "type": "boolean",
             "default": true,
-            "description": "Включить или отключить поддержку глоссария (подсветку терминов и Hover)."
+            "description": "Включить  поддержку глоссария (подсветку терминов и подсказки при наведении мыши)."
           },
           "glossary.searchFolders": {
             "type": "array",
@@ -89,6 +144,16 @@
               "Localization"
             ],
             "description": "Список папок, в которых ищутся термины глоссария (например, ['Localization', 'Scripts'])."
+          }
+        }
+      },
+      {
+        "title": "Работа с локализацией",
+        "properties": {
+          "localization.decorators.enable": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить декораторы локализации"
           }
         }
       }
@@ -116,37 +181,54 @@
       },
       {
         "command": "metalsx.copyAsShortDesc",
-        "title": "Скопировать как ModuleShortDesc"
+        "title": "Скопировать как ModuleShortDesc",
+        "category": "Meta.lsx",
+        "enablement": "metalsx.codelens.moduleInfo.enable"
       },
       {
         "command": "metalsx.insertAsDependency",
-        "title": "Вставить как ModuleShortDesc в зависимости"
+        "title": "Вставить как ModuleShortDesc в зависимости",
+        "category": "Meta.lsx",
+        "enablement": "metalsx.codelens.moduleInfo.enable"
       },
       {
         "command": "metalsx.insertAsConflict",
-        "title": "Вставить как ModuleShortDesc в конфликты"
-      },
-      {
-        "command": "metalsx.editVersion64",
-        "title": "Вставить версию в формате int64"
-      },
-      {
-        "command": "metalsx.generateUuid",
-        "title": "Сгенерировать и вставить UUID"
+        "title": "Вставить как ModuleShortDesc в конфликты",
+        "category": "Meta.lsx",
+        "enablement": "metalsx.codelens.moduleInfo.enable"
       },
       {
         "command": "glossary.init",
-        "title": "Инициализировать глоссарий"
+        "title": "Инициализировать",
+        "category": "Глоссарий"
       },
       {
         "command": "glossary.showTerm",
         "title": "Показать термин",
+        "category": "Глоссарий",
         "enablement": "config.glossary.enabled"
       },
       {
         "command": "glossary.addTermin",
-        "title": "Добавить термин в глоссарий",
+        "title": "Добавить термин",
+        "category": "Глоссарий",
         "enablement": "config.glossary.enabled"
+      },
+      {
+        "command": "metalsx.editVersion64",
+        "title": "Редактировать версию",
+        "category": "Общее"
+      },
+      {
+        "command": "metalsx.generateUuid",
+        "title": "Сгенерировать и вставить UUID",
+        "category": "Общее"
+      },
+      {
+        "command": "localization.goToTranslation",
+        "title": "Перейти к локализации",
+        "category": "Локализация",
+        "enablement": "config.decorators.enabled"
       }
     ],
     "menus": {
@@ -199,7 +281,8 @@
     "watch": "concurrently \"tsc -watch -p ./\" \"tsc-alias -w -p ./tsconfig.json\" \"node scripts/copy-assets.js --watch\"",
     "pretest": "pnpm run compile && pnpm run lint",
     "lint": "eslint src",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "update": "vscode-ext-gen --output src/generated/meta.ts"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
@@ -213,7 +296,8 @@
     "eslint": "^10.5.0",
     "tsc-alias": "^1.9.8",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.61.1"
+    "typescript-eslint": "^8.61.1",
+    "vscode-ext-gen": "^1.6.0"
   },
   "overrides": {
     "diff": "^8.0.4",

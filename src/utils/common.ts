@@ -1,31 +1,29 @@
 import * as vscode from "vscode";
+import * as meta from "@/generated/meta";
 
-import { Game, CompressionMethod, LogLevel } from "@/divine/core";
-
-export interface ExtensionConfig {
-  // Divine CLI
-  game: "dos" | "dosee" | "dos2" | "dos2de" | "bg3";
-  compressionMethod: "zlib" | "zlibfast" | "lz4" | "lz4hc" | "none";
-  logLevel:
-    | "off"
-    | "fatal"
-    | "error"
-    | "warn"
-    | "info"
-    | "debug"
-    | "trace"
-    | "all";
-
-  // Glossary
-  enabled: boolean;
-  searchFolders: string[];
+export function getExtensionConfig<K extends keyof typeof meta.configs>(
+  key: K,
+): (typeof meta.configs)[K]["default"] {
+  const { key: fullKey, default: defaultValue } = meta.configs[key];
+  return vscode.workspace.getConfiguration().get(fullKey, defaultValue) as any;
 }
 
-export function getExtensionConfig<K extends keyof ExtensionConfig>(
-  section: "divineCli" | "glossary",
-  key: K,
-  defaultValue: ExtensionConfig[K],
-): ExtensionConfig[K] {
-  const config = vscode.workspace.getConfiguration(section);
-  return config.get(key, defaultValue) as ExtensionConfig[K];
+// функция для проверки конфига и провайдера
+export function syncRegister(
+  provider: vscode.Disposable | undefined,
+  enabled: boolean,
+  disposables: vscode.Disposable[],
+  factory: () => vscode.Disposable,
+): vscode.Disposable | undefined {
+  if (enabled && !provider) {
+    const d = factory();
+    disposables.push(d);
+    return d;
+  }
+  if (!enabled && provider) {
+    provider.dispose();
+    disposables = disposables.filter((x) => x !== provider);
+    return undefined;
+  }
+  return provider;
 }
