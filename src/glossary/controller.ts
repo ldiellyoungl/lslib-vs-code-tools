@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import * as meta from "@/generated/meta";
 
 import { syncRegister, getExtensionConfig } from "@/utils/common";
 
@@ -12,8 +13,6 @@ import {
 
 import { addTermin, initGlossary } from "./commands";
 
-// TODO Чекнуть webViewProvider мб вообще по другому регистрировать
-
 export class GlossaryController implements vscode.Disposable {
   private disposables: vscode.Disposable[] = [];
   private manager!: GlossaryManager;
@@ -24,13 +23,25 @@ export class GlossaryController implements vscode.Disposable {
   constructor(context: vscode.ExtensionContext) {
     this.registerProvider();
     this.webviewProvider = new GlossaryWebviewProvider(context, this.manager);
+    this.registerCommands();
   }
 
-  private registerCommands() {}
+  private registerCommands() {
+    this.disposables.push(
+      vscode.commands.registerCommand(
+        meta.commands.glossaryAddTermin,
+        addTermin,
+      ),
+      vscode.commands.registerCommand(meta.commands.glossaryInit, initGlossary),
+      vscode.commands.registerCommand(meta.commands.glossaryShowTerm, (key) =>
+        this.webviewProvider.showTerm(key),
+      ),
+    );
+  }
 
   private registerProvider() {
     this.manager = syncRegister(
-      this.linkProvider,
+      this.manager,
       getExtensionConfig("glossaryEnabled"),
       this.disposables,
       () => new GlossaryManager(),

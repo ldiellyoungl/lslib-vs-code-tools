@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import * as meta from "@/generated/meta";
 
 import { getExtensionConfig, syncRegister } from "@/utils/common";
 
@@ -42,38 +43,55 @@ export class MetaLsxController implements vscode.Disposable {
   }
 
   private registerCommands() {
-    vscode.commands.registerCommand("metalsx.copyAsShortDesc", async () => {
-      const editor = vscode.window.activeTextEditor;
-      if (!editor) return;
-      await copyModuleInfoAsShortDesc(editor.document);
-    });
+    this.disposables.push(
+      vscode.commands.registerCommand(
+        meta.commands.metalsxCopyAsShortDesc,
+        async () => {
+          const editor = vscode.window.activeTextEditor;
+          if (!editor) return;
+          await copyModuleInfoAsShortDesc(editor.document);
+        },
+      ),
 
-    vscode.commands.registerCommand("metalsx.insertAsDependency", async () => {
-      const editor = vscode.window.activeTextEditor;
-      if (!editor) return;
-      await insertModuleShortDescInto(editor.document, "Dependencies");
-    });
-    vscode.commands.registerCommand("metalsx.insertAsConflict", async () => {
-      const editor = vscode.window.activeTextEditor;
-      if (!editor) return;
-      await insertModuleShortDescInto(editor.document, "Conflicts");
-    });
+      vscode.commands.registerCommand(
+        meta.commands.metalsxInsertAsDependency,
+        async () => {
+          const editor = vscode.window.activeTextEditor;
+          if (!editor) return;
+          await insertModuleShortDescInto(editor.document, "Dependencies");
+        },
+      ),
+      vscode.commands.registerCommand(
+        meta.commands.metalsxInsertAsConflict,
+        async () => {
+          const editor = vscode.window.activeTextEditor;
+          if (!editor) return;
+          await insertModuleShortDescInto(editor.document, "Conflicts");
+        },
+      ),
 
-    vscode.commands.registerCommand("metalsx.editVersion64", editVersion64);
-    vscode.commands.registerCommand("metalsx.generateUuid", generateUuid);
+      vscode.commands.registerCommand(
+        meta.commands.metalsxEditVersion64,
+        editVersion64,
+      ),
+      vscode.commands.registerCommand(
+        meta.commands.metalsxGenerateUuid,
+        generateUuid,
+      ),
+    );
   }
 
   private registerProviders() {
     this.diagnosticsProvider = syncRegister(
       this.diagnosticsProvider,
-      getExtensionConfig("metalsxDiagnosticsEnable"),
+      getExtensionConfig("metalsxDiagnosticsEnabled"),
       this.disposables,
       () => new DiagnosticProvider(),
     );
 
     this.moduleInfoCodeLens = syncRegister(
       this.moduleInfoCodeLens,
-      getExtensionConfig("metalsxCodelensModuleInfoEnable"),
+      getExtensionConfig("metalsxCodelensModuleInfoEnabled"),
       this.disposables,
       () =>
         vscode.languages.registerCodeLensProvider(
@@ -83,7 +101,7 @@ export class MetaLsxController implements vscode.Disposable {
     );
     this.versionCodeLens = syncRegister(
       this.versionCodeLens,
-      getExtensionConfig("metalsxCodelensVersionEnable"),
+      getExtensionConfig("metalsxCodelensVersionEnabled"),
       this.disposables,
       () =>
         vscode.languages.registerCodeLensProvider(
@@ -93,7 +111,7 @@ export class MetaLsxController implements vscode.Disposable {
     );
     this.uuidCodeLens = syncRegister(
       this.uuidCodeLens,
-      getExtensionConfig("metalsxCodelensUuidEnable"),
+      getExtensionConfig("metalsxCodelensUuidEnabled"),
       this.disposables,
       () =>
         vscode.languages.registerCodeLensProvider(
@@ -104,7 +122,7 @@ export class MetaLsxController implements vscode.Disposable {
 
     this.versionInlayHints = syncRegister(
       this.versionInlayHints,
-      getExtensionConfig("metalsxInlayhintsVersionEnable"),
+      getExtensionConfig("metalsxInlayhintsVersionEnabled"),
       this.disposables,
       () =>
         vscode.languages.registerInlayHintsProvider(
@@ -115,7 +133,7 @@ export class MetaLsxController implements vscode.Disposable {
 
     this.hoverProvider = syncRegister(
       this.hoverProvider,
-      getExtensionConfig("metalsxHoversEnable"),
+      getExtensionConfig("metalsxHoversEnabled"),
       this.disposables,
       () =>
         vscode.languages.registerHoverProvider(

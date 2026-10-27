@@ -102,62 +102,66 @@ export const commands = {
  * Type union of all configs
  */
 export type ConfigKey =
-  | "divineCli.game"
-  | "divineCli.compressionMethod"
-  | "divineCli.logLevel"
-  | "metalsx.diagnostics.enable"
-  | "metalsx.codelens.moduleInfo.enable"
-  | "metalsx.codelens.uuid.enable"
-  | "metalsx.codelens.version.enable"
-  | "metalsx.inlayhints.version.enable"
-  | "metalsx.hovers.enable"
+  | "divineCli.args.game"
+  | "divineCli.args.compressionMethod"
+  | "divineCli.args.logLevel"
+  | "metalsx.diagnostics.enabled"
+  | "metalsx.codelens.moduleInfo.enabled"
+  | "metalsx.codelens.uuid.enabled"
+  | "metalsx.codelens.version.enabled"
+  | "metalsx.inlayhints.version.enabled"
+  | "metalsx.hovers.enabled"
   | "glossary.enabled"
   | "glossary.searchFolders"
-  | "localization.decorators.enable"
+  | "resources.documentLink.enabled"
+  | "localization.decorators.enabled"
 
 export interface ConfigKeyTypeMap {
-  "divineCli.game": ("dos" | "dosee" | "dos2" | "dos2de" | "bg3"),
-  "divineCli.compressionMethod": ("zlib" | "zlibfast" | "lz4" | "lz4hc" | "none"),
-  "divineCli.logLevel": ("off" | "fatal" | "error" | "warn" | "info" | "debug" | "trace" | "all"),
-  "metalsx.diagnostics.enable": boolean,
-  "metalsx.codelens.moduleInfo.enable": boolean,
-  "metalsx.codelens.uuid.enable": boolean,
-  "metalsx.codelens.version.enable": boolean,
-  "metalsx.inlayhints.version.enable": boolean,
-  "metalsx.hovers.enable": boolean,
+  "divineCli.args.game": ("dos" | "dosee" | "dos2" | "dos2de" | "bg3"),
+  "divineCli.args.compressionMethod": ("zlib" | "zlibfast" | "lz4" | "lz4hc" | "none"),
+  "divineCli.args.logLevel": ("off" | "fatal" | "error" | "warn" | "info" | "debug" | "trace" | "all"),
+  "metalsx.diagnostics.enabled": boolean,
+  "metalsx.codelens.moduleInfo.enabled": boolean,
+  "metalsx.codelens.uuid.enabled": boolean,
+  "metalsx.codelens.version.enabled": boolean,
+  "metalsx.inlayhints.version.enabled": boolean,
+  "metalsx.hovers.enabled": boolean,
   "glossary.enabled": boolean,
   "glossary.searchFolders": string[],
-  "localization.decorators.enable": boolean,
+  "resources.documentLink.enabled": boolean,
+  "localization.decorators.enabled": boolean,
 }
 
 export interface ConfigShorthandMap {
-  divineCliGame: "divineCli.game",
-  divineCliCompressionMethod: "divineCli.compressionMethod",
-  divineCliLogLevel: "divineCli.logLevel",
-  metalsxDiagnosticsEnable: "metalsx.diagnostics.enable",
-  metalsxCodelensModuleInfoEnable: "metalsx.codelens.moduleInfo.enable",
-  metalsxCodelensUuidEnable: "metalsx.codelens.uuid.enable",
-  metalsxCodelensVersionEnable: "metalsx.codelens.version.enable",
-  metalsxInlayhintsVersionEnable: "metalsx.inlayhints.version.enable",
-  metalsxHoversEnable: "metalsx.hovers.enable",
+  divineCliArgsGame: "divineCli.args.game",
+  divineCliArgsCompressionMethod: "divineCli.args.compressionMethod",
+  divineCliArgsLogLevel: "divineCli.args.logLevel",
+  metalsxDiagnosticsEnabled: "metalsx.diagnostics.enabled",
+  metalsxCodelensModuleInfoEnabled: "metalsx.codelens.moduleInfo.enabled",
+  metalsxCodelensUuidEnabled: "metalsx.codelens.uuid.enabled",
+  metalsxCodelensVersionEnabled: "metalsx.codelens.version.enabled",
+  metalsxInlayhintsVersionEnabled: "metalsx.inlayhints.version.enabled",
+  metalsxHoversEnabled: "metalsx.hovers.enabled",
   glossaryEnabled: "glossary.enabled",
   glossarySearchFolders: "glossary.searchFolders",
-  localizationDecoratorsEnable: "localization.decorators.enable",
+  resourcesDocumentLinkEnabled: "resources.documentLink.enabled",
+  localizationDecoratorsEnabled: "localization.decorators.enabled",
 }
 
 export interface ConfigShorthandTypeMap {
-  divineCliGame: ("dos" | "dosee" | "dos2" | "dos2de" | "bg3"),
-  divineCliCompressionMethod: ("zlib" | "zlibfast" | "lz4" | "lz4hc" | "none"),
-  divineCliLogLevel: ("off" | "fatal" | "error" | "warn" | "info" | "debug" | "trace" | "all"),
-  metalsxDiagnosticsEnable: boolean,
-  metalsxCodelensModuleInfoEnable: boolean,
-  metalsxCodelensUuidEnable: boolean,
-  metalsxCodelensVersionEnable: boolean,
-  metalsxInlayhintsVersionEnable: boolean,
-  metalsxHoversEnable: boolean,
+  divineCliArgsGame: ("dos" | "dosee" | "dos2" | "dos2de" | "bg3"),
+  divineCliArgsCompressionMethod: ("zlib" | "zlibfast" | "lz4" | "lz4hc" | "none"),
+  divineCliArgsLogLevel: ("off" | "fatal" | "error" | "warn" | "info" | "debug" | "trace" | "all"),
+  metalsxDiagnosticsEnabled: boolean,
+  metalsxCodelensModuleInfoEnabled: boolean,
+  metalsxCodelensUuidEnabled: boolean,
+  metalsxCodelensVersionEnabled: boolean,
+  metalsxInlayhintsVersionEnabled: boolean,
+  metalsxHoversEnabled: boolean,
   glossaryEnabled: boolean,
   glossarySearchFolders: string[],
-  localizationDecoratorsEnable: boolean,
+  resourcesDocumentLinkEnabled: boolean,
+  localizationDecoratorsEnabled: boolean,
 }
 
 export interface ConfigItem<T extends keyof ConfigKeyTypeMap> {
@@ -172,94 +176,94 @@ export interface ConfigItem<T extends keyof ConfigKeyTypeMap> {
 export const configs = {
   /**
    * Целевая игра для операций Divine CLI
-   * @key `divineCli.game`
+   * @key `divineCli.args.game`
    * @default `"bg3"`
    * @type `string`
    */
-  divineCliGame: {
-    key: "divineCli.game",
+  divineCliArgsGame: {
+    key: "divineCli.args.game",
     default: "bg3",
-  } as ConfigItem<"divineCli.game">,
+  } as ConfigItem<"divineCli.args.game">,
   /**
    * Метод сжатия по умолочанию при создании PAK
-   * @key `divineCli.compressionMethod`
+   * @key `divineCli.args.compressionMethod`
    * @default `"lz4"`
    * @type `string`
    */
-  divineCliCompressionMethod: {
-    key: "divineCli.compressionMethod",
+  divineCliArgsCompressionMethod: {
+    key: "divineCli.args.compressionMethod",
     default: "lz4",
-  } as ConfigItem<"divineCli.compressionMethod">,
+  } as ConfigItem<"divineCli.args.compressionMethod">,
   /**
    * Уровень детализации логов Divine CLI
-   * @key `divineCli.logLevel`
+   * @key `divineCli.args.logLevel`
    * @default `"info"`
    * @type `string`
    */
-  divineCliLogLevel: {
-    key: "divineCli.logLevel",
+  divineCliArgsLogLevel: {
+    key: "divineCli.args.logLevel",
     default: "info",
-  } as ConfigItem<"divineCli.logLevel">,
+  } as ConfigItem<"divineCli.args.logLevel">,
   /**
    * Включить диагностику
-   * @key `metalsx.diagnostics.enable`
+   * @key `metalsx.diagnostics.enabled`
    * @default `true`
    * @type `boolean`
    */
-  metalsxDiagnosticsEnable: {
-    key: "metalsx.diagnostics.enable",
+  metalsxDiagnosticsEnabled: {
+    key: "metalsx.diagnostics.enabled",
     default: true,
-  } as ConfigItem<"metalsx.diagnostics.enable">,
+  } as ConfigItem<"metalsx.diagnostics.enabled">,
   /**
    * Включить быстрые действия над блоком ModuleInfo
-   * @key `metalsx.codelens.moduleInfo.enable`
+   * @key `metalsx.codelens.moduleInfo.enabled`
    * @default `true`
    * @type `boolean`
    */
-  metalsxCodelensModuleInfoEnable: {
-    key: "metalsx.codelens.moduleInfo.enable",
+  metalsxCodelensModuleInfoEnabled: {
+    key: "metalsx.codelens.moduleInfo.enabled",
     default: true,
-  } as ConfigItem<"metalsx.codelens.moduleInfo.enable">,
+  } as ConfigItem<"metalsx.codelens.moduleInfo.enabled">,
   /**
    * Включить быстрые действия над строкой UUID
-   * @key `metalsx.codelens.uuid.enable`
+   * @key `metalsx.codelens.uuid.enabled`
    * @default `true`
    * @type `boolean`
    */
-  metalsxCodelensUuidEnable: {
-    key: "metalsx.codelens.uuid.enable",
+  metalsxCodelensUuidEnabled: {
+    key: "metalsx.codelens.uuid.enabled",
     default: true,
-  } as ConfigItem<"metalsx.codelens.uuid.enable">,
+  } as ConfigItem<"metalsx.codelens.uuid.enabled">,
   /**
    * Включить быстрые действия над строкой Version64
-   * @key `metalsx.codelens.version.enable`
+   * @key `metalsx.codelens.version.enabled`
    * @default `true`
    * @type `boolean`
    */
-  metalsxCodelensVersionEnable: {
-    key: "metalsx.codelens.version.enable",
+  metalsxCodelensVersionEnabled: {
+    key: "metalsx.codelens.version.enabled",
     default: true,
-  } as ConfigItem<"metalsx.codelens.version.enable">,
+  } as ConfigItem<"metalsx.codelens.version.enabled">,
   /**
    * Включить показ дешефрованной версии
-   * @key `metalsx.inlayhints.version.enable`
+   * @key `metalsx.inlayhints.version.enabled`
    * @default `true`
    * @type `boolean`
    */
-  metalsxInlayhintsVersionEnable: {
-    key: "metalsx.inlayhints.version.enable",
+  metalsxInlayhintsVersionEnabled: {
+    key: "metalsx.inlayhints.version.enabled",
     default: true,
-  } as ConfigItem<"metalsx.inlayhints.version.enable">,
+  } as ConfigItem<"metalsx.inlayhints.version.enabled">,
   /**
    * Включить подсказки при наведении мыши
-   * @key `metalsx.hovers.enable`
+   * @key `metalsx.hovers.enabled`
    * @default `true`
    * @type `boolean`
    */
-  metalsxHoversEnable: {
-    key: "metalsx.hovers.enable",
+  metalsxHoversEnabled: {
+    key: "metalsx.hovers.enabled",
     default: true,
-  } as ConfigItem<"metalsx.hovers.enable">,
+  } as ConfigItem<"metalsx.hovers.enabled">,
   /**
    * Включить  поддержку глоссария (подсветку терминов и подсказки при наведении мыши).
    * @key `glossary.enabled`
@@ -281,15 +285,25 @@ export const configs = {
     default: ["Localization"],
   } as ConfigItem<"glossary.searchFolders">,
   /**
-   * Включить декораторы локализации
-   * @key `localization.decorators.enable`
+   * Включить ссылки для ресурсных путей
+   * @key `resources.documentLink.enabled`
    * @default `true`
    * @type `boolean`
    */
-  localizationDecoratorsEnable: {
-    key: "localization.decorators.enable",
+  resourcesDocumentLinkEnabled: {
+    key: "resources.documentLink.enabled",
     default: true,
-  } as ConfigItem<"localization.decorators.enable">,
+  } as ConfigItem<"resources.documentLink.enabled">,
+  /**
+   * Включить декораторы локализации
+   * @key `localization.decorators.enabled`
+   * @default `true`
+   * @type `boolean`
+   */
+  localizationDecoratorsEnabled: {
+    key: "localization.decorators.enabled",
+    default: true,
+  } as ConfigItem<"localization.decorators.enabled">,
 }
 
 export interface ScopedConfigKeyTypeMap {
@@ -303,41 +317,48 @@ export const scopedConfigs = {
 
 export interface NestedConfigs {
   "divineCli": {
-    "game": ("dos" | "dosee" | "dos2" | "dos2de" | "bg3"),
-    "compressionMethod": ("zlib" | "zlibfast" | "lz4" | "lz4hc" | "none"),
-    "logLevel": ("off" | "fatal" | "error" | "warn" | "info" | "debug" | "trace" | "all"),
+    "args": {
+      "game": ("dos" | "dosee" | "dos2" | "dos2de" | "bg3"),
+      "compressionMethod": ("zlib" | "zlibfast" | "lz4" | "lz4hc" | "none"),
+      "logLevel": ("off" | "fatal" | "error" | "warn" | "info" | "debug" | "trace" | "all"),
+    },
   },
   "metalsx": {
     "diagnostics": {
-      "enable": boolean,
+      "enabled": boolean,
     },
     "codelens": {
       "moduleInfo": {
-        "enable": boolean,
+        "enabled": boolean,
       },
       "uuid": {
-        "enable": boolean,
+        "enabled": boolean,
       },
       "version": {
-        "enable": boolean,
+        "enabled": boolean,
       },
     },
     "inlayhints": {
       "version": {
-        "enable": boolean,
+        "enabled": boolean,
       },
     },
     "hovers": {
-      "enable": boolean,
+      "enabled": boolean,
     },
   },
   "glossary": {
     "enabled": boolean,
     "searchFolders": string[],
   },
+  "resources": {
+    "documentLink": {
+      "enabled": boolean,
+    },
+  },
   "localization": {
     "decorators": {
-      "enable": boolean,
+      "enabled": boolean,
     },
   },
 }

@@ -1,6 +1,6 @@
 // src/lslib/divineService.ts
-import { DivineRunner, DivineRunOptions } from "./divineRunner";
-import { DivineArgs } from "./divineArgs";
+import { DivineRunner, DivineRunOptions } from "./runner";
+import { DivineArgs } from "./args";
 
 /**
  * Универсальный сервис для запуска Divine CLI.

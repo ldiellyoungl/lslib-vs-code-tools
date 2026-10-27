@@ -1,7 +1,9 @@
 import * as vscode from "vscode";
 import * as fs from "node:fs";
 import * as path from "node:path";
+
 import { getModRootPath } from "@/utils/files";
+import { truncate } from "@/utils/strings";
 
 interface TranslationData {
   language: string;
@@ -126,7 +128,7 @@ export class Decorator implements vscode.Disposable {
         const primary =
           translations.find((t) => t.text.length > 0) || translations[0];
         const langCode = primary.language.substring(0, 2).toUpperCase();
-        displayText = `${langCode}: "${primary.text || "[пусто]"}"`;
+        displayText = `${langCode}: "${truncate(primary.text) || "[пусто]"}"`;
         if (translations.length > 1)
           displayText += ` (+${translations.length - 1})`;
       } else {

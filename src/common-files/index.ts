@@ -1,0 +1,1 @@
+export { CommonFilesController } from "./controller";

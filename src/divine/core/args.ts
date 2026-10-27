@@ -1,6 +1,7 @@
 import { getExtensionConfig } from "@/utils/common";
+import * as meta from "@/generated/meta";
 
-export type Game = "dos" | "dosee" | "dos2" | "dos2de" | "bg3";
+export type Game = meta.ConfigKeyTypeMap["divineCli.args.game"];
 
 export type Action =
   | "create-package"
@@ -12,17 +13,10 @@ export type Action =
   | "convert-models"
   | "convert-resource"
   | "convert-resources"
-  | "convert-loca";
+  | "convert-loca"
+  | "build-vt";
 
-export type LogLevel =
-  | "off"
-  | "fatal"
-  | "error"
-  | "warn"
-  | "info"
-  | "debug"
-  | "trace"
-  | "all";
+export type LogLevel = meta.ConfigKeyTypeMap["divineCli.args.logLevel"];
 
 export type Format =
   | "dae"
@@ -35,7 +29,8 @@ export type Format =
   | "lsf"
   | "lsfx";
 
-export type CompressionMethod = "zlib" | "zlibfast" | "lz4" | "lz4hc" | "none";
+export type CompressionMethod =
+  meta.ConfigKeyTypeMap["divineCli.args.compressionMethod"];
 
 export interface DivineArgs {
   game: Game;
@@ -51,31 +46,26 @@ export interface DivineArgs {
   useRegex?: boolean;
 }
 
-/**
- * Создаёт объект аргументов для Divine.
- * game по умолчанию ВСЕГДА "bg3".
- * Обязательны только source и action.
- */
 export function createDivineArgs(
   source: string,
   action: Action,
   options?: Partial<Omit<DivineArgs, "source" | "action">>,
 ): DivineArgs {
   return {
-    game: getExtensionConfig("divineCliGame"),
+    game: getExtensionConfig("divineCliArgsGame"),
     source,
     action,
-    logLevel: getExtensionConfig("divineCliLogLevel"),
-    compressionMethod: getExtensionConfig("divineCliCompressionMethod"),
+    logLevel: getExtensionConfig("divineCliArgsLogLevel"),
+    compressionMethod: getExtensionConfig("divineCliArgsCompressionMethod"),
     conformPath: false,
     usePackageName: false,
     useRegex: false,
-    ...options, // Позволяет переопределить game или любой другой параметр при необходимости
+    ...options,
   };
 }
 
 /**
- * Маппит lsfx -> lsf для CLI, так как Divine не различает эти форматы.
+ * TODO ЧЕТА НЕ РАБОТАЕТ Маппит lsfx -> lsf для CLI, так как Divine не различает эти форматы.
  */
 function toCliFormat(format?: Format): string | undefined {
   if (!format) return undefined;
@@ -100,7 +90,6 @@ export function buildDivineArgs(args: DivineArgs): string[] {
   push("--input-format", toCliFormat(args.inputFormat));
   push("--output-format", toCliFormat(args.outputFormat));
 
-  // Только для create-package
   if (args.action === "create-package") {
     push("--compression-method", args.compressionMethod);
   }

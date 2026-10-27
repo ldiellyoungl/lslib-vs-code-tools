@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 import * as fs from "node:fs";
+import * as meta from "@/generated/meta";
 
-import { syncRegister, getExtensionConfig } from "@/utils/common";
 import { getFileExtension } from "@/utils/files";
 
-import { DivineService } from "./core";
+import { DivineService } from "./";
 
 import {
   RESOURCE_FORMATS,
@@ -15,11 +15,12 @@ import {
 } from "./commands";
 
 export class DivineController implements vscode.Disposable {
+  private disposables: vscode.Disposable[] = [];
   constructor(context: vscode.ExtensionContext) {
     const divineService = new DivineService(context.extensionPath);
 
     const extractPakCommand = vscode.commands.registerCommand(
-      "divineCli.extractPak",
+      meta.commands.divineCliExtractPak,
       (uri: vscode.Uri, selectedUris: vscode.Uri[]) => {
         const urisToProcess = selectedUris ?? [uri];
 
@@ -37,7 +38,7 @@ export class DivineController implements vscode.Disposable {
       },
     );
     const createPakCommand = vscode.commands.registerCommand(
-      "divineCli.createPak",
+      meta.commands.divineCliCreatePak,
       (uri: vscode.Uri, selectedUris: vscode.Uri[]) => {
         const urisToProcess = selectedUris ?? [uri];
 
@@ -60,7 +61,7 @@ export class DivineController implements vscode.Disposable {
       },
     );
     const convertResourceCommand = vscode.commands.registerCommand(
-      "divineCli.convert-resource",
+      meta.commands.divineCliConvertResource,
       (uri: vscode.Uri, selectedUris: vscode.Uri[]) => {
         const urisToProcess = selectedUris ?? [uri];
 
@@ -79,7 +80,7 @@ export class DivineController implements vscode.Disposable {
       },
     );
     const convertLocaCommand = vscode.commands.registerCommand(
-      "divineCli.convert-loca",
+      meta.commands.divineCliConvertLoca,
       (uri: vscode.Uri, selectedUris: vscode.Uri[]) => {
         const urisToProcess = selectedUris ?? [uri];
         const locaUris = urisToProcess.filter((u) => {
@@ -97,15 +98,16 @@ export class DivineController implements vscode.Disposable {
       },
     );
 
-    // context.subscriptions.push(
-    //   extractPakCommand,
-    //   createPakCommand,
-    //   convertResourceCommand,
-    //   convertLocaCommand,
-    // );
+    this.disposables.push(
+      extractPakCommand,
+      createPakCommand,
+      convertResourceCommand,
+      convertLocaCommand,
+    );
   }
 
-  //  private registerCommands() {}
-
-  dispose() {}
+  dispose() {
+    this.disposables.forEach((d) => d.dispose());
+    this.disposables = [];
+  }
 }

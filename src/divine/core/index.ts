@@ -8,11 +8,6 @@ export function getConfig(name: string, defaultValue: string): any {
   return config.get(name, defaultValue);
 }
 
-export {
-  createDivineArgs,
-  Game,
-  CompressionMethod,
-  LogLevel,
-} from "./divineArgs";
-export { DivineRunner } from "./divineRunner";
-export { DivineService } from "./divineService";
+export { createDivineArgs, Game, CompressionMethod, LogLevel } from "./args";
+export { DivineRunner } from "./runner";
+export { DivineService } from "./service";

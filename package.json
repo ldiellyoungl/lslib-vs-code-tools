@@ -27,10 +27,20 @@
   "contributes": {
     "configuration": [
       {
+        "title": "Общее: Ресурсы",
+        "properties": {
+          "resources.documentLink.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить ссылки для ресурсных путей"
+          }
+        }
+      },
+      {
         "title": "Divine CLI: Аргументы",
         "order": 0,
         "properties": {
-          "divineCli.game": {
+          "divineCli.args.game": {
             "type": "string",
             "default": "bg3",
             "enum": [
@@ -49,7 +59,7 @@
             ],
             "description": "Целевая игра для операций Divine CLI"
           },
-          "divineCli.compressionMethod": {
+          "divineCli.args.compressionMethod": {
             "type": "string",
             "default": "lz4",
             "enum": [
@@ -61,7 +71,7 @@
             ],
             "description": "Метод сжатия по умолочанию при создании PAK"
           },
-          "divineCli.logLevel": {
+          "divineCli.args.logLevel": {
             "type": "string",
             "default": "info",
             "enum": [
@@ -82,7 +92,7 @@
         "title": "Meta.lsx: Диагностика",
         "order": 1,
         "properties": {
-          "metalsx.diagnostics.enable": {
+          "metalsx.diagnostics.enabled": {
             "type": "boolean",
             "default": true,
             "description": "Включить диагностику"
@@ -93,17 +103,17 @@
         "title": "Meta.lsx: Codelens",
         "order": 2,
         "properties": {
-          "metalsx.codelens.moduleInfo.enable": {
+          "metalsx.codelens.moduleInfo.enabled": {
             "type": "boolean",
             "default": true,
             "description": "Включить быстрые действия над блоком ModuleInfo"
           },
-          "metalsx.codelens.uuid.enable": {
+          "metalsx.codelens.uuid.enabled": {
             "type": "boolean",
             "default": true,
             "description": "Включить быстрые действия над строкой UUID"
           },
-          "metalsx.codelens.version.enable": {
+          "metalsx.codelens.version.enabled": {
             "type": "boolean",
             "default": true,
             "description": "Включить быстрые действия над строкой Version64"
@@ -114,12 +124,12 @@
         "title": "Meta.lsx: Прочее",
         "order": 3,
         "properties": {
-          "metalsx.inlayhints.version.enable": {
+          "metalsx.inlayhints.version.enabled": {
             "type": "boolean",
             "default": true,
             "description": "Включить показ дешефрованной версии"
           },
-          "metalsx.hovers.enable": {
+          "metalsx.hovers.enabled": {
             "type": "boolean",
             "default": true,
             "description": "Включить подсказки при наведении мыши"
@@ -150,7 +160,7 @@
       {
         "title": "Работа с локализацией",
         "properties": {
-          "localization.decorators.enable": {
+          "localization.decorators.enabled": {
             "type": "boolean",
             "default": true,
             "description": "Включить декораторы локализации"
@@ -183,19 +193,19 @@
         "command": "metalsx.copyAsShortDesc",
         "title": "Скопировать как ModuleShortDesc",
         "category": "Meta.lsx",
-        "enablement": "metalsx.codelens.moduleInfo.enable"
+        "enablement": "metalsx.codelens.moduleInfo.enabled"
       },
       {
         "command": "metalsx.insertAsDependency",
         "title": "Вставить как ModuleShortDesc в зависимости",
         "category": "Meta.lsx",
-        "enablement": "metalsx.codelens.moduleInfo.enable"
+        "enablement": "metalsx.codelens.moduleInfo.enabled"
       },
       {
         "command": "metalsx.insertAsConflict",
         "title": "Вставить как ModuleShortDesc в конфликты",
         "category": "Meta.lsx",
-        "enablement": "metalsx.codelens.moduleInfo.enable"
+        "enablement": "metalsx.codelens.moduleInfo.enabled"
       },
       {
         "command": "glossary.init",
@@ -245,7 +255,7 @@
         },
         {
           "command": "divineCli.convert-resource",
-          "when": "resourceExtname == '.lsf' || resourceExtname == '.lsfx' || resourceExtname == '.lsb' || resourceExtname == '.lsj' || resourceExtname == '.lsx'",
+          "when": "resourceExtname == '.lsf' || resourceExtname == '.lsfx' || resourceExtname == '.lsb' || resourceExtname == '.lsj' || resourceExtname == '.lsx' || resourceExtname == '.gr2'",
           "group": "z_lslib@3"
         },
         {

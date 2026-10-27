@@ -1,4 +1,4 @@
-import { DivineArgs, Action } from "./divineArgs";
+import { DivineArgs, Action } from "./args";
 
 /**
  * Проверяет корректность аргументов для Divine CLI.
@@ -158,6 +158,8 @@ function getValidConversions(): string[] {
     "lsb->lsj",
     "lsj->lsx",
     "lsx->lsj",
+    "lsx->lsfx",
+    "lsfx->lsx",
     // Модели
     "gr2->dae",
     "dae->gr2",

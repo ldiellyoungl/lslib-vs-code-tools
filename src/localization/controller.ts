@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import * as meta from "@/generated/meta";
 
 import { syncRegister, getExtensionConfig } from "@/utils/common";
 
@@ -23,16 +24,18 @@ export class LocalizationController implements vscode.Disposable {
   }
 
   private registerCommands() {
-    vscode.commands.registerCommand(
-      "localization.goToTranslation",
-      goToTranslation,
+    this.disposables.push(
+      vscode.commands.registerCommand(
+        meta.commands.localizationGoToTranslation,
+        goToTranslation,
+      ),
     );
   }
 
   private registerDecorator(context: vscode.ExtensionContext) {
     this.decorator = syncRegister(
       this.decorator,
-      getExtensionConfig("localizationDecoratorsEnable"),
+      getExtensionConfig("localizationDecoratorsEnabled"),
       this.disposables,
       () => new Decorator(context),
     );

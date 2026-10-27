@@ -46,3 +46,7 @@ export function compactXml(xml: string): string {
 
   return formatted.join("\n");
 }
+
+export function truncate(str: string, maxLength: number = 12) {
+  return str.length > maxLength ? str.slice(0, maxLength) + "..." : str;
+}

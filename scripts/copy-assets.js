@@ -32,7 +32,7 @@ copyRecursive(srcDir, outDir);
 
 // 2. Режим наблюдения
 if (WATCH_MODE) {
-  console.log("👀 Ожидание изменений в папке src/glossary...");
+  console.log("Ожидание изменений в папке src/glossary...");
 
   // fs.watch с recursive: true следит за всеми вложенными папками
   fs.watch(srcDir, { recursive: true }, (eventType, filename) => {
