@@ -59,7 +59,7 @@ export const ATTRIBUTE_DOCS: Record<string, AttributeDoc> = {
   },
   Dependencies: {
     description:
-      "Зависимости мода. Перечисление модов от которых зависит ваш. Также будет грузится после всех зависимостей",
+      "Зависимости мода. Перечисление модов от которых зависит ваш. Также ваш мод будет грузится после всех зависимостей",
     example: `<children>
               <node id="ModuleShortDesc">
                 <attribute id="Folder" type="LSString" value="GustavX"/>

@@ -1,0 +1,91 @@
+{
+  "contributes": {
+    "configuration": [
+      {
+        "title": "Divine CLI: Аргументы",
+        "properties": {
+          "divineCli.args.game": {
+            "type": "string",
+            "default": "bg3",
+            "enum": ["dos", "dosee", "dos2", "dos2de", "bg3"],
+            "enumDescriptions": [
+              "Divinity: Original Sin",
+              "Divinity: Original Sin - Enhanced Edition",
+              "Divinity: Original Sin 2",
+              "Divinity: Original Sin 2 - Definitive Edition",
+              "Baldur's Gate 3"
+            ],
+            "description": "Целевая игра для операций Divine CLI"
+          },
+          "divineCli.args.compressionMethod": {
+            "type": "string",
+            "default": "lz4",
+            "enum": ["zlib", "zlibfast", "lz4", "lz4hc", "none"],
+            "description": "Метод сжатия по умолочанию при создании PAK"
+          },
+          "divineCli.args.logLevel": {
+            "type": "string",
+            "default": "info",
+            "enum": [
+              "off",
+              "fatal",
+              "error",
+              "warn",
+              "info",
+              "debug",
+              "trace",
+              "all"
+            ],
+            "description": "Уровень детализации логов Divine CLI"
+          }
+        }
+      }
+    ],
+    "commands": [
+      {
+        "command": "divineCli.extractPak",
+        "title": "DivineCLI: Распаковать PAK",
+        "category": "DivineCLI"
+      },
+      {
+        "command": "divineCli.createPak",
+        "title": "DivineCLI: Создать PAK",
+        "category": "DivineCLI"
+      },
+      {
+        "command": "divineCli.convert-resource",
+        "title": "DivineCLI: Конвертировать ресурс",
+        "category": "DivineCLI"
+      },
+      {
+        "command": "divineCli.convert-loca",
+        "title": "DivineCLI: Конвертировать локализацию",
+        "category": "DivineCLI"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "divineCli.extractPak",
+          "when": "resourceExtname == .pak",
+          "group": "z_lslib@1"
+        },
+        {
+          "command": "divineCli.createPak",
+          "when": "explorerResourceIsFolder == true",
+          "group": "z_lslib@2"
+        },
+        {
+          "command": "divineCli.convert-resource",
+          "when": "resourceExtname == '.lsf' || resourceExtname == '.lsfx' || resourceExtname == '.lsb' || resourceExtname == '.lsj' || resourceExtname == '.lsx' || resourceExtname == '.gr2'",
+          "group": "z_lslib@3"
+        },
+        {
+          "command": "divineCli.convert-loca",
+          "when": "resourceExtname == '.loca' || resourceExtname == '.xml'",
+          "group": "z_lslib@4"
+        }
+      ]
+    }
+  }
+}

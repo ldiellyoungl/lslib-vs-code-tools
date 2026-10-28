@@ -1,0 +1,38 @@
+{
+  "contributes": {
+    "configuration": [
+      {
+        "title": "Общее",
+        "properties": {
+          "resources.documentLink.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить ссылки для ресурсных путей"
+          }
+        }
+      }
+    ],
+    "commands": [
+      {
+        "title": "Вставить версию в формате int64",
+        "command": "common.editor.context.insertVersion64",
+        "icon": "$(add-compact)"
+      },
+      {
+        "title": "Сгенерировать и вставить UUID",
+        "command": "common.editor.context.insertUUID",
+        "icon": "$(add-compact)"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "common.editor.context.insertVersion64"
+        },
+        {
+          "command": "common.editor.context.insertUUID"
+        }
+      ]
+    }
+  }
+}

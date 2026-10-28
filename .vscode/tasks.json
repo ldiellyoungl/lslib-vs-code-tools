@@ -1,0 +1,24 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "watch",
+      "type": "npm",
+      "script": "watch",
+      "isBackground": true,
+      "problemMatcher": {
+        "base": "$tsc-watch",
+        "owner": "lslib-tools-watch",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*(tsc|tsc-alias|copy-assets).*",
+          "endsPattern": ".*(Found 0 errors|Watching for file changes).*"
+        }
+      },
+      "presentation": {
+        "reveal": "never"
+      },
+      "group": "build"
+    }
+  ]
+}

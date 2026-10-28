@@ -1,0 +1,58 @@
+{
+  "contributes": {
+    "configuration": [
+      {
+        "title": "Глоссарий",
+        "properties": {
+          "glossary.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить поддержку глоссария (подсветку терминов и подсказки при наведении мыши)."
+          },
+          "glossary.searchFolders": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": ["Localization"],
+            "description": "Список папок, в которых ищутся термины глоссария (например, ['Localization', 'Scripts'])."
+          }
+        }
+      }
+    ],
+    "commands": [
+      {
+        "command": "glossary.init",
+        "title": "Инициализировать",
+        "category": "Глоссарий"
+      },
+      {
+        "command": "glossary.showTerm",
+        "title": "Показать термин",
+        "category": "Глоссарий",
+        "enablement": "config.glossary.enabled"
+      },
+      {
+        "command": "glossary.addTermin",
+        "title": "Добавить термин",
+        "category": "Глоссарий",
+        "enablement": "config.glossary.enabled"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "glossary.init",
+          "when": "explorerResourceIsFolder",
+          "group": "z_lslib@5"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "glossary.addTermin",
+          "group": "z_lslib@3"
+        }
+      ]
+    }
+  }
+}

@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
 import { XmlNode, findAllNodes, nodeToRange } from "@/utils/xml-parser";
 import { createDiagnostic } from "@/utils/diagnosticsHelper";
-import { NODE_ATTRIBUTE_RULES } from "./constants";
 
 import { isValid as isValidVersion64 } from "@/utils/version64";
 import {
@@ -10,6 +9,36 @@ import {
 } from "@/utils/uuid";
 
 import { getModFolder } from "@/utils/files";
+
+export interface NodeAttributeValidationRules {
+  /** Обязательные атрибуты для каждого <attribute> */
+  reqAttrs: readonly string[];
+  /** Разрешённые значения для атрибута type */
+  typesEnum: ReadonlySet<string>;
+  /** id, у которых value не должен быть пустым */
+  nonEmpty: ReadonlySet<string>;
+}
+
+export const NODE_ATTRIBUTE_RULES: NodeAttributeValidationRules = {
+  reqAttrs: ["id", "type", "value"],
+  typesEnum: new Set([
+    "LSString",
+    "uint8",
+    "uint64",
+    "guid",
+    "int32",
+    "int64",
+    "FixedString",
+  ]),
+  nonEmpty: new Set([
+    "Folder",
+    "MD5",
+    "Name",
+    "PublishHandle",
+    "UUID",
+    "Version64",
+  ]),
+};
 
 export interface ValidationContext {
   document: vscode.TextDocument;

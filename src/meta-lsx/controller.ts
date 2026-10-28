@@ -3,14 +3,12 @@ import * as meta from "@/generated/meta";
 
 import { getExtensionConfig, syncRegister } from "@/utils/common";
 
-import {
-  DiagnosticProvider,
-  HoverProvider,
-  VersionInlayHintsProvider,
-  ModuleInfoCodeLens,
-  VersionCodeLens,
-  UuidCodeLens,
-} from "./providers";
+import { DiagnosticProvider } from "./providers/diagnostics/provider";
+import { HoverProvider } from "./providers/hover/provider";
+import { VersionInlayHintsProvider } from "./providers/inlayhints";
+import { ModuleInfoCodeLens } from "./providers/codelens/moduleinfo";
+import { VersionCodeLens } from "./providers/codelens/version";
+import { UuidCodeLens } from "./providers/codelens/uuid";
 
 import {
   copyModuleInfoAsShortDesc,
@@ -45,7 +43,7 @@ export class MetaLsxController implements vscode.Disposable {
   private registerCommands() {
     this.disposables.push(
       vscode.commands.registerCommand(
-        meta.commands.metalsxCopyAsShortDesc,
+        meta.commands.metalsxCodelensCopyAsShortDesc,
         async () => {
           const editor = vscode.window.activeTextEditor;
           if (!editor) return;
@@ -54,7 +52,7 @@ export class MetaLsxController implements vscode.Disposable {
       ),
 
       vscode.commands.registerCommand(
-        meta.commands.metalsxInsertAsDependency,
+        meta.commands.metalsxCodelensInsertAsDependency,
         async () => {
           const editor = vscode.window.activeTextEditor;
           if (!editor) return;
@@ -62,7 +60,7 @@ export class MetaLsxController implements vscode.Disposable {
         },
       ),
       vscode.commands.registerCommand(
-        meta.commands.metalsxInsertAsConflict,
+        meta.commands.metalsxCodelensInsertAsConflict,
         async () => {
           const editor = vscode.window.activeTextEditor;
           if (!editor) return;
@@ -71,11 +69,11 @@ export class MetaLsxController implements vscode.Disposable {
       ),
 
       vscode.commands.registerCommand(
-        meta.commands.metalsxEditVersion64,
+        meta.commands.metalsxCodelensEditVersion64,
         editVersion64,
       ),
       vscode.commands.registerCommand(
-        meta.commands.metalsxGenerateUuid,
+        meta.commands.metalsxCodelensGenerateUUID,
         generateUuid,
       ),
     );
@@ -88,7 +86,12 @@ export class MetaLsxController implements vscode.Disposable {
       this.disposables,
       () => new DiagnosticProvider(),
     );
-
+    this.diagnosticsProvider = syncRegister(
+      this.diagnosticsProvider,
+      getExtensionConfig("metalsxDiagnosticsEnabled"),
+      this.disposables,
+      () => new DiagnosticProvider(),
+    );
     this.moduleInfoCodeLens = syncRegister(
       this.moduleInfoCodeLens,
       getExtensionConfig("metalsxCodelensModuleInfoEnabled"),
@@ -119,7 +122,6 @@ export class MetaLsxController implements vscode.Disposable {
           new UuidCodeLens(),
         ),
     );
-
     this.versionInlayHints = syncRegister(
       this.versionInlayHints,
       getExtensionConfig("metalsxInlayhintsVersionEnabled"),
@@ -130,7 +132,6 @@ export class MetaLsxController implements vscode.Disposable {
           new VersionInlayHintsProvider(),
         ),
     );
-
     this.hoverProvider = syncRegister(
       this.hoverProvider,
       getExtensionConfig("metalsxHoversEnabled"),

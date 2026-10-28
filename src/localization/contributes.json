@@ -1,0 +1,24 @@
+{
+  "contributes": {
+    "configuration": [
+      {
+        "title": "Локализация",
+        "properties": {
+          "localization.decorators.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить декораторы локализации"
+          }
+        }
+      }
+    ],
+    "commands": [
+      {
+        "command": "localization.goToTranslation",
+        "title": "Перейти к локализации",
+        "category": "Локализация",
+        "enablement": "config.localization.decorators.enabled"
+      }
+    ]
+  }
+}

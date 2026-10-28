@@ -1,3 +1,8 @@
-export * from "./moduleInfoCommands";
-export * from "./uuid";
-export * from "./version64";
+export {
+  copyModuleInfoAsShortDesc,
+  insertModuleShortDescInto,
+} from "./codelens/moduleInfoCommands";
+
+export { generateUuid } from "./codelens/uuid";
+
+export { editVersion64 } from "./codelens/version64";

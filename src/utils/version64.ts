@@ -1,3 +1,4 @@
+import * as vscode from "vscode";
 /**
  * Работа с версиями в формате Larian (64-битное целое).
  *
@@ -88,9 +89,9 @@ export function isValid(version64: string | number): boolean {
  */
 export function versionToString(
   version64: string | number | bigint,
-): string | null {
+): string | undefined {
   const decoded = decodeVersion64(version64);
-  if (!decoded) return null;
+  if (!decoded) return undefined;
   return `${decoded.major}.${decoded.minor}.${decoded.revision}.${decoded.build}`;
 }
 
@@ -117,4 +118,18 @@ export function parseVersionString(str: string): Version | null {
     revision: parts[2] ?? 0,
     build: parts[3] ?? 0,
   };
+}
+
+export async function showInput(value?: string) {
+  return await vscode.window.showInputBox({
+    prompt: "Введите версию",
+    placeHolder: "1.0",
+    value,
+    validateInput: (value) => {
+      if (!parseVersionString(value)) {
+        return "Неверный формат";
+      }
+      return null;
+    },
+  });
 }

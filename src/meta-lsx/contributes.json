@@ -1,0 +1,73 @@
+{
+  "contributes": {
+    "configuration": [
+      {
+        "title": "Meta.lsx: Общее",
+        "properties": {
+          "metalsx.diagnostics.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить диагностику"
+          },
+          "metalsx.inlayhints.version.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить показ декодированной версии"
+          },
+          "metalsx.hovers.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить подсказки при наведении мыши"
+          }
+        }
+      },
+      {
+        "title": "Meta.lsx: Быстрые действия",
+        "properties": {
+          "metalsx.codelens.moduleInfo.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить быстрые действия над блоком ModuleInfo"
+          },
+          "metalsx.codelens.uuid.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить быстрые действия над строкой UUID"
+          },
+          "metalsx.codelens.version.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить быстрые действия над строкой Version64"
+          }
+        }
+      }
+    ],
+    "commands": [
+      {
+        "title": "Скопировать ModuleInfo как ModuleShortDesc",
+        "command": "metalsx.codelens.copyAsShortDesc",
+        "category": "Meta.lsx"
+      },
+      {
+        "title": "Преобразовать ModuleInfo как ModuleShortDesc и вставить в зависимости",
+        "command": "metalsx.codelens.insertAsDependency",
+        "category": "Meta.lsx"
+      },
+      {
+        "title": "Преобразовать ModuleInfo как ModuleShortDesc и вставить в конфликты",
+        "command": "metalsx.codelens.insertAsConflict",
+        "category": "Meta.lsx"
+      },
+      {
+        "title": "Отредактировать версию",
+        "command": "metalsx.codelens.editVersion64",
+        "category": "Meta.lsx"
+      },
+      {
+        "title": "Сгенерировать UUID",
+        "command": "metalsx.codelens.generateUUID",
+        "category": "Meta.lsx"
+      }
+    ]
+  }
+}

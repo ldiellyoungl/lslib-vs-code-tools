@@ -24,21 +24,115 @@
     "onStartupFinished"
   ],
   "main": "./out/extension.js",
+  "scripts": {
+    "vscode:prepublish": "pnpm run compile",
+    "compile": "tsc -p ./ && tsc-alias -p ./tsconfig.json && node scripts/copy-assets.js",
+    "watch": "concurrently \"tsc -watch -p ./\" \"tsc-alias -w -p ./tsconfig.json\" \"node scripts/copy-assets.js --watch\"",
+    "pretest": "pnpm run compile && pnpm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test",
+    "update": "vscd --clean && vscode-ext-gen --output src/generated/meta.ts"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "24.x",
+    "@types/sax": "^1.2.7",
+    "@types/vscode": "^1.140.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.0.0",
+    "concurrently": "^10.0.6",
+    "copyfiles": "^2.4.1",
+    "eslint": "^10.5.0",
+    "tsc-alias": "^1.9.8",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.61.1",
+    "vscd": "^1.1.0",
+    "vscode-ext-gen": "^1.6.0"
+  },
+  "overrides": {
+    "diff": "^8.0.4",
+    "serialize-javascript": "^7.0.6"
+  },
+  "dependencies": {
+    "sax": "^1.6.1"
+  },
+  "extensionDependencies": [
+    "mikeburgh.xml-format"
+  ],
   "contributes": {
     "configuration": [
       {
-        "title": "Общее: Ресурсы",
+        "title": "Meta.lsx: Общее",
         "properties": {
-          "resources.documentLink.enabled": {
+          "metalsx.diagnostics.enabled": {
             "type": "boolean",
             "default": true,
-            "description": "Включить ссылки для ресурсных путей"
+            "description": "Включить диагностику"
+          },
+          "metalsx.inlayhints.version.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить показ декодированной версии"
+          },
+          "metalsx.hovers.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить подсказки при наведении мыши"
+          }
+        }
+      },
+      {
+        "title": "Meta.lsx: Быстрые действия",
+        "properties": {
+          "metalsx.codelens.moduleInfo.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить быстрые действия над блоком ModuleInfo"
+          },
+          "metalsx.codelens.uuid.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить быстрые действия над строкой UUID"
+          },
+          "metalsx.codelens.version.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить быстрые действия над строкой Version64"
+          }
+        }
+      },
+      {
+        "title": "Локализация",
+        "properties": {
+          "localization.decorators.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить декораторы локализации"
+          }
+        }
+      },
+      {
+        "title": "Глоссарий",
+        "properties": {
+          "glossary.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить поддержку глоссария (подсветку терминов и подсказки при наведении мыши)."
+          },
+          "glossary.searchFolders": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [
+              "Localization"
+            ],
+            "description": "Список папок, в которых ищутся термины глоссария (например, ['Localization', 'Scripts'])."
           }
         }
       },
       {
         "title": "Divine CLI: Аргументы",
-        "order": 0,
         "properties": {
           "divineCli.args.game": {
             "type": "string",
@@ -89,86 +183,65 @@
         }
       },
       {
-        "title": "Meta.lsx: Диагностика",
-        "order": 1,
+        "title": "Общее",
         "properties": {
-          "metalsx.diagnostics.enabled": {
+          "resources.documentLink.enabled": {
             "type": "boolean",
             "default": true,
-            "description": "Включить диагностику"
-          }
-        }
-      },
-      {
-        "title": "Meta.lsx: Codelens",
-        "order": 2,
-        "properties": {
-          "metalsx.codelens.moduleInfo.enabled": {
-            "type": "boolean",
-            "default": true,
-            "description": "Включить быстрые действия над блоком ModuleInfo"
-          },
-          "metalsx.codelens.uuid.enabled": {
-            "type": "boolean",
-            "default": true,
-            "description": "Включить быстрые действия над строкой UUID"
-          },
-          "metalsx.codelens.version.enabled": {
-            "type": "boolean",
-            "default": true,
-            "description": "Включить быстрые действия над строкой Version64"
-          }
-        }
-      },
-      {
-        "title": "Meta.lsx: Прочее",
-        "order": 3,
-        "properties": {
-          "metalsx.inlayhints.version.enabled": {
-            "type": "boolean",
-            "default": true,
-            "description": "Включить показ дешефрованной версии"
-          },
-          "metalsx.hovers.enabled": {
-            "type": "boolean",
-            "default": true,
-            "description": "Включить подсказки при наведении мыши"
-          }
-        }
-      },
-      {
-        "title": "Глоссарий: Общее",
-        "order": 4,
-        "properties": {
-          "glossary.enabled": {
-            "type": "boolean",
-            "default": true,
-            "description": "Включить  поддержку глоссария (подсветку терминов и подсказки при наведении мыши)."
-          },
-          "glossary.searchFolders": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "default": [
-              "Localization"
-            ],
-            "description": "Список папок, в которых ищутся термины глоссария (например, ['Localization', 'Scripts'])."
-          }
-        }
-      },
-      {
-        "title": "Работа с локализацией",
-        "properties": {
-          "localization.decorators.enabled": {
-            "type": "boolean",
-            "default": true,
-            "description": "Включить декораторы локализации"
+            "description": "Включить ссылки для ресурсных путей"
           }
         }
       }
     ],
     "commands": [
+      {
+        "title": "Скопировать ModuleInfo как ModuleShortDesc",
+        "command": "metalsx.codelens.copyAsShortDesc",
+        "category": "Meta.lsx"
+      },
+      {
+        "title": "Преобразовать ModuleInfo как ModuleShortDesc и вставить в зависимости",
+        "command": "metalsx.codelens.insertAsDependency",
+        "category": "Meta.lsx"
+      },
+      {
+        "title": "Преобразовать ModuleInfo как ModuleShortDesc и вставить в конфликты",
+        "command": "metalsx.codelens.insertAsConflict",
+        "category": "Meta.lsx"
+      },
+      {
+        "title": "Отредактировать версию",
+        "command": "metalsx.codelens.editVersion64",
+        "category": "Meta.lsx"
+      },
+      {
+        "title": "Сгенерировать UUID",
+        "command": "metalsx.codelens.generateUUID",
+        "category": "Meta.lsx"
+      },
+      {
+        "command": "localization.goToTranslation",
+        "title": "Перейти к локализации",
+        "category": "Локализация",
+        "enablement": "config.localization.decorators.enabled"
+      },
+      {
+        "command": "glossary.init",
+        "title": "Инициализировать",
+        "category": "Глоссарий"
+      },
+      {
+        "command": "glossary.showTerm",
+        "title": "Показать термин",
+        "category": "Глоссарий",
+        "enablement": "config.glossary.enabled"
+      },
+      {
+        "command": "glossary.addTermin",
+        "title": "Добавить термин",
+        "category": "Глоссарий",
+        "enablement": "config.glossary.enabled"
+      },
       {
         "command": "divineCli.extractPak",
         "title": "DivineCLI: Распаковать PAK",
@@ -190,59 +263,23 @@
         "category": "DivineCLI"
       },
       {
-        "command": "metalsx.copyAsShortDesc",
-        "title": "Скопировать как ModuleShortDesc",
-        "category": "Meta.lsx",
-        "enablement": "metalsx.codelens.moduleInfo.enabled"
+        "title": "Вставить версию в формате int64",
+        "command": "common.editor.context.insertVersion64",
+        "icon": "$(add-compact)"
       },
       {
-        "command": "metalsx.insertAsDependency",
-        "title": "Вставить как ModuleShortDesc в зависимости",
-        "category": "Meta.lsx",
-        "enablement": "metalsx.codelens.moduleInfo.enabled"
-      },
-      {
-        "command": "metalsx.insertAsConflict",
-        "title": "Вставить как ModuleShortDesc в конфликты",
-        "category": "Meta.lsx",
-        "enablement": "metalsx.codelens.moduleInfo.enabled"
-      },
-      {
-        "command": "glossary.init",
-        "title": "Инициализировать",
-        "category": "Глоссарий"
-      },
-      {
-        "command": "glossary.showTerm",
-        "title": "Показать термин",
-        "category": "Глоссарий",
-        "enablement": "config.glossary.enabled"
-      },
-      {
-        "command": "glossary.addTermin",
-        "title": "Добавить термин",
-        "category": "Глоссарий",
-        "enablement": "config.glossary.enabled"
-      },
-      {
-        "command": "metalsx.editVersion64",
-        "title": "Редактировать версию",
-        "category": "Общее"
-      },
-      {
-        "command": "metalsx.generateUuid",
         "title": "Сгенерировать и вставить UUID",
-        "category": "Общее"
-      },
-      {
-        "command": "localization.goToTranslation",
-        "title": "Перейти к локализации",
-        "category": "Локализация",
-        "enablement": "config.decorators.enabled"
+        "command": "common.editor.context.insertUUID",
+        "icon": "$(add-compact)"
       }
     ],
     "menus": {
       "explorer/context": [
+        {
+          "command": "glossary.init",
+          "when": "explorerResourceIsFolder",
+          "group": "z_lslib@5"
+        },
         {
           "command": "divineCli.extractPak",
           "when": "resourceExtname == .pak",
@@ -262,58 +299,20 @@
           "command": "divineCli.convert-loca",
           "when": "resourceExtname == '.loca' || resourceExtname == '.xml'",
           "group": "z_lslib@4"
-        },
-        {
-          "command": "glossary.init",
-          "when": "explorerResourceIsFolder",
-          "group": "z_lslib@5"
         }
       ],
       "editor/context": [
         {
-          "command": "metalsx.generateUuid",
-          "group": "z_lslib@1"
-        },
-        {
-          "command": "metalsx.editVersion64",
-          "group": "z_lslib@2"
-        },
-        {
           "command": "glossary.addTermin",
           "group": "z_lslib@3"
+        },
+        {
+          "command": "common.editor.context.insertVersion64"
+        },
+        {
+          "command": "common.editor.context.insertUUID"
         }
       ]
     }
-  },
-  "scripts": {
-    "vscode:prepublish": "pnpm run compile",
-    "compile": "tsc -p ./ && tsc-alias -p ./tsconfig.json && node scripts/copy-assets.js",
-    "watch": "concurrently \"tsc -watch -p ./\" \"tsc-alias -w -p ./tsconfig.json\" \"node scripts/copy-assets.js --watch\"",
-    "pretest": "pnpm run compile && pnpm run lint",
-    "lint": "eslint src",
-    "test": "vscode-test",
-    "update": "vscode-ext-gen --output src/generated/meta.ts"
-  },
-  "devDependencies": {
-    "@types/mocha": "^10.0.10",
-    "@types/node": "24.x",
-    "@types/sax": "^1.2.7",
-    "@types/vscode": "^1.140.0",
-    "@vscode/test-cli": "^0.0.15",
-    "@vscode/test-electron": "^3.0.0",
-    "concurrently": "^10.0.6",
-    "copyfiles": "^2.4.1",
-    "eslint": "^10.5.0",
-    "tsc-alias": "^1.9.8",
-    "typescript": "^6.0.3",
-    "typescript-eslint": "^8.61.1",
-    "vscode-ext-gen": "^1.6.0"
-  },
-  "overrides": {
-    "diff": "^8.0.4",
-    "serialize-javascript": "^7.0.6"
-  },
-  "dependencies": {
-    "sax": "^1.6.1"
   }
 }

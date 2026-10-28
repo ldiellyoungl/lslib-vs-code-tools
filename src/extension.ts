@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 
 import { DivineController } from "@/divine";
 import { LocalizationController } from "@/localization";
-import { CommonFilesController } from "@/common-files";
+import { CommonFilesController } from "@/common";
 import { MetaLsxController } from "@/meta-lsx";
 import { GlossaryController } from "@/glossary";
 
