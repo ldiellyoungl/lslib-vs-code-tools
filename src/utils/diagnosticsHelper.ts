@@ -1,34 +1,24 @@
-import {
-  Diagnostic,
-  DiagnosticSeverity,
-  DiagnosticTag,
-  DiagnosticRelatedInformation,
-  Uri,
-  Range,
-} from "vscode";
-
-export interface DiagnosticConfig {
-  range: Range;
-  message: string;
-  severity?: DiagnosticSeverity;
-  code?: string | number | { value: string | number; target: Uri };
-  tags?: DiagnosticTag[];
-  relatedInformation?: DiagnosticRelatedInformation[];
+import * as vscode from "vscode";
+declare module "vscode" {
+  export interface Diagnostic {
+    data?: any;
+  }
 }
 
-export function createDiagnostic(config: DiagnosticConfig): Diagnostic {
-  const diagnostic = new Diagnostic(
+export function createDiagnostic(
+  config: Omit<vscode.Diagnostic, "source" | "severity"> & {
+    severity?: vscode.DiagnosticSeverity;
+  },
+): vscode.Diagnostic {
+  const diagnostic = new vscode.Diagnostic(
     config.range,
     config.message,
-    config.severity ?? DiagnosticSeverity.Error,
+    config.severity ?? vscode.DiagnosticSeverity.Error,
   );
 
-  diagnostic.source = "LSLib Tools";
+  Object.assign(diagnostic, config);
 
-  if (config.code) diagnostic.code = config.code;
-  if (config.tags) diagnostic.tags = config.tags;
-  if (config.relatedInformation)
-    diagnostic.relatedInformation = config.relatedInformation;
+  diagnostic.source = "LSLib Tools";
 
   return diagnostic;
 }

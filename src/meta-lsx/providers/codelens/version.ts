@@ -1,15 +1,11 @@
 import * as vscode from "vscode";
 import * as meta from "@/generated/meta";
 
-import { isMetaLsx } from "../helpers";
-
 export class VersionCodeLens implements vscode.CodeLensProvider {
   provideCodeLenses(
     document: vscode.TextDocument,
     token: vscode.CancellationToken,
   ): vscode.ProviderResult<vscode.CodeLens[]> {
-    if (!isMetaLsx(document)) return [];
-
     const lenses: vscode.CodeLens[] = [];
     const text = document.getText();
 

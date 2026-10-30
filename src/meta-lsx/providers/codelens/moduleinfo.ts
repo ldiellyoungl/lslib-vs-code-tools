@@ -1,40 +1,40 @@
 import * as vscode from "vscode";
-import { isMetaLsx } from "../helpers";
+import * as meta from "@/generated/meta";
 
 export class ModuleInfoCodeLens implements vscode.CodeLensProvider {
   provideCodeLenses(
     document: vscode.TextDocument,
     token: vscode.CancellationToken,
   ): vscode.ProviderResult<vscode.CodeLens[]> {
-    if (!isMetaLsx(document)) return [];
-
     const lenses: vscode.CodeLens[] = [];
     const text = document.getText();
 
-    const match = /<node\b[^>]*\bid\s*=\s*"ModuleInfo"/.exec(text);
+    const tagRegex = /<node\b[^>]*\bid\s*=\s*"ModuleInfo"[^>]*\/?>/g;
 
-    if (match) {
-      const startPos = document.positionAt(match.index);
-      const range = new vscode.Range(startPos.line, 0, startPos.line, 0);
+    for (const match of text.matchAll(tagRegex)) {
+      if (match.index === undefined) continue;
 
-      const commands: vscode.Command[] = [
-        {
-          title: "$(copy) Скопировать как 'ModuleShortInfo'",
-          command: "metalsx.codelens.copyAsShortDesc",
-        },
-        {
-          title: "$(add-small) Вставить как зависимость",
-          command: "metalsx.codelens.insertAsDependency",
-        },
-        {
-          title: "$(add-small) Вставить как конфликт",
-          command: "metalsx.codelens.insertAsConflict",
-        },
-      ];
+      const tagStart = match.index;
+      const tagPos = document.positionAt(tagStart);
+      const lensRange = new vscode.Range(tagPos.line, 0, tagPos.line, 0);
 
-      commands.forEach((command) => {
-        lenses.push(new vscode.CodeLens(range, command));
-      });
+      lenses.push(
+        new vscode.CodeLens(lensRange, {
+          title: "$(copy) Скопировать как ModuleShrotDesc",
+          command: meta.commands.metalsxCodelensCopyAsShortDesc,
+          arguments: [tagStart],
+        }),
+        new vscode.CodeLens(lensRange, {
+          title: "$(add-compact) Вставить как зависимость",
+          command: meta.commands.metalsxCodelensInsertAsDependency,
+          arguments: [tagStart],
+        }),
+        new vscode.CodeLens(lensRange, {
+          title: "$(add-compact) Вставить как конфликт",
+          command: meta.commands.metalsxCodelensInsertAsConflict,
+          arguments: [tagStart],
+        }),
+      );
     }
 
     return lenses;

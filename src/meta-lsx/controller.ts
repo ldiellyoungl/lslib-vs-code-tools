@@ -4,6 +4,7 @@ import * as meta from "@/generated/meta";
 import { getExtensionConfig, syncRegister } from "@/utils/common";
 
 import { DiagnosticProvider } from "./providers/diagnostics/provider";
+import { CodeActionProvider } from "./providers/diagnostics/codeActions";
 import { HoverProvider } from "./providers/hover/provider";
 import { VersionInlayHintsProvider } from "./providers/inlayhints";
 import { ModuleInfoCodeLens } from "./providers/codelens/moduleinfo";
@@ -20,6 +21,7 @@ import {
 export class MetaLsxController implements vscode.Disposable {
   private disposables: vscode.Disposable[] = [];
   private diagnosticsProvider: vscode.Disposable | undefined;
+  private codeActionsProvider: vscode.Disposable | undefined;
   private hoverProvider: vscode.Disposable | undefined;
   private versionInlayHints: vscode.Disposable | undefined;
   private moduleInfoCodeLens: vscode.Disposable | undefined;
@@ -44,27 +46,35 @@ export class MetaLsxController implements vscode.Disposable {
     this.disposables.push(
       vscode.commands.registerCommand(
         meta.commands.metalsxCodelensCopyAsShortDesc,
-        async () => {
+        async (tagStart: number) => {
           const editor = vscode.window.activeTextEditor;
           if (!editor) return;
-          await copyModuleInfoAsShortDesc(editor.document);
+          await copyModuleInfoAsShortDesc(editor.document, tagStart);
         },
       ),
 
       vscode.commands.registerCommand(
         meta.commands.metalsxCodelensInsertAsDependency,
-        async () => {
+        async (tagStart: number) => {
           const editor = vscode.window.activeTextEditor;
           if (!editor) return;
-          await insertModuleShortDescInto(editor.document, "Dependencies");
+          await insertModuleShortDescInto(
+            editor.document,
+            tagStart,
+            "Dependencies",
+          );
         },
       ),
       vscode.commands.registerCommand(
         meta.commands.metalsxCodelensInsertAsConflict,
-        async () => {
+        async (tagStart: number) => {
           const editor = vscode.window.activeTextEditor;
           if (!editor) return;
-          await insertModuleShortDescInto(editor.document, "Conflicts");
+          await insertModuleShortDescInto(
+            editor.document,
+            tagStart,
+            "Conflicts",
+          );
         },
       ),
 
@@ -86,12 +96,18 @@ export class MetaLsxController implements vscode.Disposable {
       this.disposables,
       () => new DiagnosticProvider(),
     );
-    this.diagnosticsProvider = syncRegister(
-      this.diagnosticsProvider,
+
+    this.codeActionsProvider = syncRegister(
+      this.codeActionsProvider,
       getExtensionConfig("metalsxDiagnosticsEnabled"),
       this.disposables,
-      () => new DiagnosticProvider(),
+      () =>
+        vscode.languages.registerCodeActionsProvider(
+          this.pattern,
+          new CodeActionProvider(),
+        ),
     );
+
     this.moduleInfoCodeLens = syncRegister(
       this.moduleInfoCodeLens,
       getExtensionConfig("metalsxCodelensModuleInfoEnabled"),
@@ -102,6 +118,7 @@ export class MetaLsxController implements vscode.Disposable {
           new ModuleInfoCodeLens(),
         ),
     );
+
     this.versionCodeLens = syncRegister(
       this.versionCodeLens,
       getExtensionConfig("metalsxCodelensVersionEnabled"),
@@ -112,6 +129,7 @@ export class MetaLsxController implements vscode.Disposable {
           new VersionCodeLens(),
         ),
     );
+
     this.uuidCodeLens = syncRegister(
       this.uuidCodeLens,
       getExtensionConfig("metalsxCodelensUuidEnabled"),
@@ -122,6 +140,7 @@ export class MetaLsxController implements vscode.Disposable {
           new UuidCodeLens(),
         ),
     );
+
     this.versionInlayHints = syncRegister(
       this.versionInlayHints,
       getExtensionConfig("metalsxInlayhintsVersionEnabled"),
@@ -132,16 +151,17 @@ export class MetaLsxController implements vscode.Disposable {
           new VersionInlayHintsProvider(),
         ),
     );
-    this.hoverProvider = syncRegister(
-      this.hoverProvider,
-      getExtensionConfig("metalsxHoversEnabled"),
-      this.disposables,
-      () =>
-        vscode.languages.registerHoverProvider(
-          this.pattern,
-          new HoverProvider(),
-        ),
-    );
+
+    // this.hoverProvider = syncRegister(
+    //   this.hoverProvider,
+    //   getExtensionConfig("metalsxHoversEnabled"),
+    //   this.disposables,
+    //   () =>
+    //     vscode.languages.registerHoverProvider(
+    //       this.pattern,
+    //       new HoverProvider(),
+    //     ),
+    // );
   }
 
   dispose() {

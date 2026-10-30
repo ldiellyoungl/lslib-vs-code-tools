@@ -5,20 +5,24 @@ export interface XmlNode {
   name: string;
   attributes: Record<string, string>;
   isSelfClosing: boolean;
-  /** Абсолютный offset в документе, где начинается `<` */
-  start: number;
-  /** Абсолютный offset, где заканчивается открывающий тег `>` (exclusive) */
-  openEnd: number;
-  /** Абсолютный offset, где заканчивается закрывающий тег `>` (exclusive) */
-  end: number;
+
+  startLine: number;
+  startPosition: number;
+  startTagPosition: number;
+  startColumn: number;
+
+  endLine: number;
+  endPosition: number;
+  endColumn: number;
+
   children: XmlNode[];
 }
 
 export interface XmlParseError {
   line: number;
   column: number;
-  position: number;
   message: string;
+  char: string;
 }
 
 export interface XmlParseResult {
@@ -36,60 +40,51 @@ export function parseXml(text: string): XmlParseResult {
     trim: false,
     normalize: false,
     position: true,
+    xmlns: false,
   });
 
   const roots: XmlNode[] = [];
   const stack: XmlNode[] = [];
+  const pendingSelfClosing: boolean[] = [];
   const errors: XmlParseError[] = [];
-  let pendingSelfClosing = false;
 
-  parser.onerror = function (this: any, err: Error) {
-    const line = Math.max(0, this.line - 1);
-    const column = Math.max(0, this.column);
+  parser.onerror = function (err: Error) {
+    const raw = err.message;
+    const message = raw.split("\n")[0].trim();
 
-    // Отрезаем всё, что идёт после "Line:" (или до него), оставляя только суть
-    // Например: "No whitespace between attributes\nLine: 21..." -> "No whitespace between attributes"
-    const shortMessage = err.message.split("\n")[0].trim();
+    const lineMatch = /Line:\s*(\d+)/.exec(raw);
+    const columnMatch = /Column:\s*(\d+)/.exec(raw);
+    const charMatch = /Char:\s*(.)/.exec(raw);
 
-    errors.push({
-      line,
-      column,
-      position: this.position,
-      message: shortMessage,
-    });
+    const line = lineMatch ? Math.max(0, parseInt(lineMatch[1], 10) - 1) : 0;
+    const column = columnMatch
+      ? Math.max(0, parseInt(columnMatch[1], 10) - 1)
+      : 0;
+    const char = charMatch ? charMatch[1] : "";
+
+    errors.push({ message, line, column, char });
 
     this.resume();
   };
 
-  parser.onopentag = function (this: any, tag: sax.Tag) {
+  parser.onopentag = function (this: sax.SAXParser, tag: sax.Tag) {
     const node: XmlNode = {
       name: tag.name,
       attributes: { ...tag.attributes } as Record<string, string>,
       isSelfClosing: tag.isSelfClosing,
-      start: this.startTagPosition,
-      openEnd: -1, // вычислим ниже
-      end: -1,
+
+      startLine: this.line,
+      startPosition: this.position,
+      startTagPosition: this.startTagPosition,
+      startColumn: this.column,
+
+      endLine: this.line,
+      endPosition: this.position,
+      endColumn: this.column,
+
       children: [],
     };
 
-    // Вычисляем позицию конца открывающего тега '>'
-    // Идём посимвольно с учётом кавычек, чтобы не наткнуться на '>' внутри значения атрибута
-    let inQuote: string | null = null;
-    let openEnd = node.start;
-    for (let i = node.start; i < text.length; i++) {
-      const ch = text[i];
-      if (inQuote) {
-        if (ch === inQuote) inQuote = null;
-      } else if (ch === '"' || ch === "'") {
-        inQuote = ch;
-      } else if (ch === ">") {
-        openEnd = i + 1;
-        break;
-      }
-    }
-    node.openEnd = openEnd;
-
-    // Добавляем ноду в дерево
     const parent = stack[stack.length - 1];
     if (parent) {
       parent.children.push(node);
@@ -97,80 +92,29 @@ export function parseXml(text: string): XmlParseResult {
       roots.push(node);
     }
 
-    if (tag.isSelfClosing) {
-      // Если тег самозакрывающийся, мы НЕ кладём его в стек.
-      // Но sax СРАЗУ вызовет onclosetag для него.
-      node.end = node.openEnd;
-      pendingSelfClosing = true; // Запоминаем, что следующий closetag — фантомный
-    } else {
+    // Запоминаем для каждого onclosetag, был ли onopentag self-closing
+    pendingSelfClosing.push(tag.isSelfClosing);
+
+    if (!tag.isSelfClosing) {
       stack.push(node);
     }
   };
 
-  parser.onclosetag = function (this: any, tagName: string) {
-    // Если предыдущий тег был самозакрывающимся, sax вызывает onclosetag
-    // сразу после onopentag. Нам нужно просто проигнорировать это событие.
-    if (pendingSelfClosing) {
-      pendingSelfClosing = false;
-      return;
-    }
+  parser.onclosetag = function (this: sax.SAXParser, tagName: string) {
+    const isSelf = pendingSelfClosing.pop();
+    if (isSelf) return; // self-closing: стек не трогаем
 
     const node = stack.pop();
     if (!node) return;
 
-    // Вычисляем позицию закрывающего тега '</name>'
-    // Ищем с позиции конца открывающего тега (node.openEnd)
-    const closeTag = `</${node.name}`;
-    const closeStart = text.indexOf(closeTag, node.openEnd);
-
-    if (closeStart !== -1) {
-      const closeEnd = text.indexOf(">", closeStart);
-      node.end = closeEnd === -1 ? text.length : closeEnd + 1;
-    } else {
-      // Если закрывающий тег не найден (битый XML), ставим конец на openEnd
-      node.end = node.openEnd;
-    }
+    node.endLine = this.line;
+    node.endPosition = this.position;
+    node.endColumn = this.column;
   };
 
   parser.write(text).close();
 
   return { roots, errors, hasErrors: errors.length > 0 };
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Функции выборки (Selectors)
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Вспомогательная функция для проверки совпадения ноды по имени и атрибутам.
- * Если attributes не передан — проверяется только имя.
- */
-export function matches(
-  node: XmlNode,
-  name: string,
-  attributes?: Record<string, string>,
-): boolean {
-  if (node.name !== name) return false;
-  if (!attributes) return true;
-
-  return Object.entries(attributes).every(
-    ([key, value]) => node.attributes[key] === value,
-  );
-}
-
-/**
- * Возвращает ПЕРВЫЙ узел, удовлетворяющий предикату (поиск в глубину).
- */
-export function findNode(
-  nodes: XmlNode[],
-  predicate: (node: XmlNode) => boolean,
-): XmlNode | undefined {
-  for (const node of nodes) {
-    if (predicate(node)) return node;
-    const found = findNode(node.children, predicate);
-    if (found) return found;
-  }
-  return undefined;
 }
 
 /**
@@ -188,69 +132,89 @@ export function findAllNodes(
   return result;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Удобные обертки для типичных задач
-// ─────────────────────────────────────────────────────────────────────────────
-
 /**
- * Ищет ПЕРВЫЙ узел по имени и (опционально) атрибутам на ВСЮ глубину дерева.
- * Пример: findOne(tree, "node", { id: "ModuleInfo" })
+ * Range для узла или его атрибута.
+ *
+ * nodeToRange(document, node)                  === весь узел
+ * nodeToRange(document, node, "Author")        === Author="Exaen"
+ * nodeToRange(document, node, "Author", "name") === Author
+ * nodeToRange(document, node, "Author", "value") === Exaen
  */
-export function findOne(
-  nodes: XmlNode[],
-  name: string,
-  attributes?: Record<string, string>,
-): XmlNode | undefined {
-  return findNode(nodes, (n) => matches(n, name, attributes));
-}
-
-/**
- * Ищет ВСЕ узлы по имени и (опционально) атрибутам на ВСЮ глубину дерева.
- * Пример: findAll(tree, "attribute", { type: "LSString" })
- */
-export function findAll(
-  nodes: XmlNode[],
-  name: string,
-  attributes?: Record<string, string>,
-): XmlNode[] {
-  return findAllNodes(nodes, (n) => matches(n, name, attributes));
-}
-
-/**
- * Возвращает ПРЯМЫХ детей с указанным именем (без глубокого поиска).
- * Полезно, когда нужно взять только <attribute> внутри конкретного <node>,
- * не задевая вложенные <node>.
- * Пример: getChildren(moduleInfo, "attribute")
- */
-export function getChildren(node: XmlNode, name?: string): XmlNode[] {
-  if (!name) return node.children;
-  return node.children.filter((child) => child.name === name);
-}
-
-/**
- * Возвращает первого ПРЯМОГО ребенка с указанным именем.
- * Пример: getChild(moduleInfo, "children")
- */
-export function getChild(node: XmlNode, name: string): XmlNode | undefined {
-  return node.children.find((child) => child.name === name);
-}
-
-/**
- * Вспомогательная функция для получения значения атрибута.
- * Пример: getAttr(moduleInfo, "id") // "ModuleInfo"
- */
-export function getAttr(node: XmlNode, attrName: string): string | undefined {
-  return node.attributes[attrName];
-}
-
 export function nodeToRange(
   document: vscode.TextDocument,
   node: XmlNode,
+  attr?: string,
+  part: "name" | "value" | "full" = "full",
 ): vscode.Range {
-  if (node.start && node.end) {
-    return new vscode.Range(
-      document.positionAt(node.start),
-      document.positionAt(node.end),
-    );
-  } else return new vscode.Range(0, 0, 0, 10000);
+  if (!attr) {
+    if (node.startTagPosition && node.endPosition) {
+      return new vscode.Range(
+        document.positionAt(node.startTagPosition),
+        document.positionAt(node.endPosition),
+      );
+    }
+    return new vscode.Range(0, 0, 0, 10000);
+  }
+
+  const text = document.getText();
+  const openEnd = findOpenEnd(text, node.startTagPosition);
+  if (openEnd === -1) return new vscode.Range(0, 0, 0, 10000);
+
+  const m = findAttribute(text, node.startTagPosition, openEnd, attr);
+  if (!m) return new vscode.Range(0, 0, 0, 10000);
+
+  const start =
+    part === "name"
+      ? m.nameStart
+      : part === "value"
+        ? m.valueStart
+        : m.fullStart;
+  const end =
+    part === "name" ? m.nameEnd : part === "value" ? m.valueEnd : m.fullEnd;
+
+  return new vscode.Range(document.positionAt(start), document.positionAt(end));
+}
+
+function findOpenEnd(text: string, from: number): number {
+  const re = /("([^"]*)"|'([^']*)'|>)/g;
+  re.lastIndex = from;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text))) {
+    if (m[0] === ">") return m.index + 1;
+  }
+  return -1;
+}
+
+function findAttribute(
+  text: string,
+  from: number,
+  to: number,
+  attr: string,
+):
+  | {
+      nameStart: number;
+      nameEnd: number;
+      valueStart: number;
+      valueEnd: number;
+      fullStart: number;
+      fullEnd: number;
+    }
+  | undefined {
+  const safe = attr.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const re = new RegExp(`\\b${safe}\\s*=\\s*("([^"]*)"|'([^']*)')`, "g");
+  re.lastIndex = from;
+
+  const m = re.exec(text);
+  if (!m || m.index + m[0].length > to) return undefined;
+
+  const fullStart = m.index;
+  const fullEnd = fullStart + m[0].length;
+  const nameStart = fullStart;
+  const nameEnd = nameStart + attr.length;
+
+  const quoteStart = text.indexOf(m[1][0], nameEnd + 1);
+  const valueStart = quoteStart + 1;
+  const valueEnd = valueStart + (m[2] ?? m[3] ?? "").length;
+
+  return { nameStart, nameEnd, valueStart, valueEnd, fullStart, fullEnd };
 }

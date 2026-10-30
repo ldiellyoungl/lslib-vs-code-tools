@@ -1,7 +1,5 @@
 import * as vscode from "vscode";
 
-import { isMetaLsx } from "../helpers";
-
 import { compactXml } from "@/utils/strings";
 
 import {

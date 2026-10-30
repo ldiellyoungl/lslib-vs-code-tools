@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-import { isMetaLsx } from "./helpers";
 
 import { isValid, decodeVersion64 } from "@/utils/version64";
 
@@ -9,10 +8,6 @@ export class VersionInlayHintsProvider implements vscode.InlayHintsProvider {
     range: vscode.Range,
     token: vscode.CancellationToken,
   ): vscode.ProviderResult<vscode.InlayHint[]> {
-    if (!isMetaLsx(document)) {
-      return [];
-    }
-
     const hints: vscode.InlayHint[] = [];
     const text = document.getText();
 

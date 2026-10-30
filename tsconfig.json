@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     "module": "Node16",
-    "target": "ES2022",
+    "target": "ESNext",
     "outDir": "out",
-    "lib": ["ES2022"],
+    "lib": ["ESNext"],
     "types": ["node", "mocha"],
     "sourceMap": true,
     "rootDir": "src",

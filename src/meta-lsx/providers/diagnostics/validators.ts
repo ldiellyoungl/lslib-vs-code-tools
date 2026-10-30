@@ -10,13 +10,15 @@ import {
 
 import { getModFolder } from "@/utils/files";
 
+// TODO id -> обязательный к заполнению
+
 export interface NodeAttributeValidationRules {
   /** Обязательные атрибуты для каждого <attribute> */
   reqAttrs: readonly string[];
   /** Разрешённые значения для атрибута type */
   typesEnum: ReadonlySet<string>;
   /** id, у которых value не должен быть пустым */
-  nonEmpty: ReadonlySet<string>;
+  reqValue: ReadonlySet<string>;
 }
 
 export const NODE_ATTRIBUTE_RULES: NodeAttributeValidationRules = {
@@ -30,14 +32,7 @@ export const NODE_ATTRIBUTE_RULES: NodeAttributeValidationRules = {
     "int64",
     "FixedString",
   ]),
-  nonEmpty: new Set([
-    "Folder",
-    "MD5",
-    "Name",
-    "PublishHandle",
-    "UUID",
-    "Version64",
-  ]),
+  reqValue: new Set(["Folder", "Name", "UUID", "Version64"]),
 };
 
 export interface ValidationContext {
@@ -51,11 +46,10 @@ export type AttributeValidator = (ctx: ValidationContext) => void;
 export function validateBasicAttributes(ctx: ValidationContext) {
   const nodes = findAllNodes(ctx.roots, (n) => n.name === "attribute");
 
-  const { nonEmpty, reqAttrs, typesEnum } = NODE_ATTRIBUTE_RULES;
+  const { reqAttrs, typesEnum, reqValue } = NODE_ATTRIBUTE_RULES;
 
   for (const node of nodes) {
     const attrs = node.attributes;
-    const range = nodeToRange(ctx.document, node);
 
     const missing = reqAttrs.filter((req) => !(req in attrs));
 
@@ -64,6 +58,8 @@ export function validateBasicAttributes(ctx: ValidationContext) {
         createDiagnostic({
           message: `Отсутствуют обязательные атрибуты: ${missing.join(", ")}`,
           range: nodeToRange(ctx.document, node),
+          code: `MISSING_ATTRIBUTE`,
+          data: missing,
         }),
       );
     }
@@ -73,20 +69,22 @@ export function validateBasicAttributes(ctx: ValidationContext) {
       ctx.diagnostics.push(
         createDiagnostic({
           message: `Недопустимый type="${type}". Разрешено: ${[...typesEnum].join(", ")}`,
-          range: nodeToRange(ctx.document, node),
+          range: nodeToRange(ctx.document, node, "type", "value"),
+          code: `INVALID_TYPE`,
         }),
       );
     }
 
     if (
       attrs.id !== undefined &&
-      nonEmpty.has(attrs.id) &&
-      attrs.value === ""
+      reqValue.has(attrs.id) &&
+      (attrs.value === "" || attrs.value === undefined)
     ) {
       ctx.diagnostics.push(
         createDiagnostic({
-          message: `Атрибут "value" не должен быть пустым`,
-          range,
+          message: `Атрибут "value" должен быть заполнен`,
+          range: nodeToRange(ctx.document, node, "value", "value"),
+          code: `REQUIRED_VALUE`,
         }),
       );
     }
@@ -105,15 +103,17 @@ export function validateUuidAttribute(ctx: ValidationContext) {
       ctx.diagnostics.push(
         createDiagnostic({
           message: `Невалидный формат UUID`,
-          range: nodeToRange(ctx.document, node),
+          range: nodeToRange(ctx.document, node, "value", "value"),
+          code: `INVALID_UUID`,
         }),
       );
     } else if (!isValidUUIDv4(value)) {
       ctx.diagnostics.push(
         createDiagnostic({
           message: `UUID валиден но не соответствует спецификации 4ой версии`,
-          range: nodeToRange(ctx.document, node),
+          range: nodeToRange(ctx.document, node, "value", "value"),
           severity: vscode.DiagnosticSeverity.Hint,
+          code: `INVALID_UUID_V4`,
         }),
       );
     }
@@ -132,13 +132,15 @@ export function validateVersion64Attribute(ctx: ValidationContext) {
       ctx.diagnostics.push(
         createDiagnostic({
           message: `Невалидный формат версии`,
-          range: nodeToRange(ctx.document, node),
+          range: nodeToRange(ctx.document, node, "value", "value"),
+          code: `INVALID_VERSION`,
         }),
       );
     }
   }
 }
 
+// TODO Нжуно подсветить если больше одного moduleinfo
 export function validateModuleInfoFolder(ctx: ValidationContext) {
   const moduleInfo = findAllNodes(
     ctx.roots,
@@ -162,8 +164,18 @@ export function validateModuleInfoFolder(ctx: ValidationContext) {
     ctx.diagnostics.push(
       createDiagnostic({
         message: `Некоректное имя папки`,
-        range: nodeToRange(ctx.document, folderAttr),
+        range: nodeToRange(ctx.document, folderAttr, "value", "value"),
+        code: `INVALID_FOLDER`,
       }),
     );
   }
 }
+
+// TODO Валидация MD5
+// export function validateMD5(ctx: ValidationContext) {
+//   const nodes = findAllNodes(
+//     ctx.roots,
+//     (n) => n.name === "attribute" && n.attributes.id === "MD5",
+//   );
+//   console.log(nodes);
+// }
