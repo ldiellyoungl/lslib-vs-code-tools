@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import * as fs from "node:fs";
 import * as path from "node:path";
+
 import {
   GlossaryTerm,
   GlossaryFile,
@@ -10,12 +11,9 @@ import {
 
 export class GlossaryManager implements vscode.Disposable {
   private index: GlossaryIndex = new Map();
-  private termsCache = new Map<string, GlossaryTerm>();
-
-  private categoryIcons = new Map<string, string>();
-
+  private outputChannel: vscode.OutputChannel =
+    vscode.window.createOutputChannel("Glossary");
   private disposables: vscode.Disposable[] = [];
-  private timeout: NodeJS.Timeout | undefined;
 
   constructor() {
     this.reload();
@@ -26,7 +24,7 @@ export class GlossaryManager implements vscode.Disposable {
           doc.uri.fsPath.includes(".glossary") &&
           doc.uri.fsPath.endsWith(".json")
         ) {
-          this.scheduleReload();
+          this.reload();
         }
       }),
 
@@ -35,7 +33,7 @@ export class GlossaryManager implements vscode.Disposable {
           (f) => f.fsPath.includes(".glossary") && f.fsPath.endsWith(".json"),
         );
         if (hasGlossaryFile) {
-          this.scheduleReload();
+          this.reload();
         }
       }),
 
@@ -46,7 +44,7 @@ export class GlossaryManager implements vscode.Disposable {
             f.newUri.fsPath.includes(".glossary"),
         );
         if (hasGlossaryFile) {
-          this.scheduleReload();
+          this.reload();
         }
       }),
 
@@ -55,15 +53,10 @@ export class GlossaryManager implements vscode.Disposable {
           (f) => f.fsPath.includes(".glossary") && f.fsPath.endsWith(".json"),
         );
         if (hasGlossaryFile) {
-          this.scheduleReload();
+          this.reload();
         }
       }),
     );
-  }
-
-  private scheduleReload() {
-    if (this.timeout) clearTimeout(this.timeout);
-    this.timeout = setTimeout(() => this.reload(), 100);
   }
 
   private normalize(str: string): string {
@@ -72,8 +65,6 @@ export class GlossaryManager implements vscode.Disposable {
 
   public async reload() {
     this.index.clear();
-    this.termsCache.clear();
-    this.categoryIcons.clear();
 
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders || workspaceFolders.length === 0) return;
@@ -94,30 +85,24 @@ export class GlossaryManager implements vscode.Disposable {
           const data = JSON.parse(content) as GlossaryFile;
           this.processFile(data);
         } catch (err) {
-          console.error(`[Glossary] Ошибка чтения ${file}:`, err);
+          this.outputChannel?.appendLine(
+            `[Glossary] Ошибка чтения ${file}:\n${err}\n`,
+          );
         }
       }
     } catch (err) {
-      console.error(`[Glossary] Ошибка чтения папки .glossary:`, err);
+      this.outputChannel?.appendLine(
+        `[Glossary] Ошибка чтения папки .glossary:\n${err}\n`,
+      );
     }
   }
 
   private processFile(fileData: GlossaryFile) {
-    if (!fileData.terms || typeof fileData.terms !== "object") {
-      console.warn("[Glossary] Файл имеет старую структуру (без поля terms)");
-      return;
-    }
-
     const fileCategory = fileData.category || "Без категории";
-    const fileCategoryIcon = fileData.icon;
-
-    if (fileCategoryIcon) {
-      this.categoryIcons.set(fileCategory, fileCategoryIcon);
-    }
 
     for (const [key, term] of Object.entries(fileData.terms)) {
       if (!term.shortDescription) {
-        console.warn(
+        this.outputChannel?.appendLine(
           `[Glossary] Термин "${key}" пропущен: отсутствует shortDescription`,
         );
         continue;
@@ -127,11 +112,9 @@ export class GlossaryManager implements vscode.Disposable {
         term.category = fileCategory;
       }
 
-      this.termsCache.set(key, term);
-
       this.index.set(this.normalize(key), term);
-      if (term.translation)
-        this.index.set(this.normalize(term.translation), term);
+      if (term.shortDescription)
+        this.index.set(this.normalize(term.shortDescription), term);
       if (term.aliases) {
         for (const alias of term.aliases) {
           this.index.set(this.normalize(alias), term);
@@ -140,13 +123,8 @@ export class GlossaryManager implements vscode.Disposable {
     }
   }
 
-  public getCategoryIcon(categoryName?: string): string | undefined {
-    if (!categoryName) return undefined;
-    return this.categoryIcons.get(categoryName);
-  }
-
   public getTerm(originalKey: string): GlossaryTerm | undefined {
-    return this.termsCache.get(originalKey);
+    return this.index.get(originalKey);
   }
 
   public findMatch(word: string): GlossaryMatch | undefined {
@@ -155,7 +133,7 @@ export class GlossaryManager implements vscode.Disposable {
     if (!term) return undefined;
 
     let originalKey = "";
-    for (const [key, t] of this.termsCache.entries()) {
+    for (const [key, t] of this.index.entries()) {
       if (t === term) {
         originalKey = key;
         break;
@@ -170,7 +148,7 @@ export class GlossaryManager implements vscode.Disposable {
     const term = this.index.get(normalizedText);
     if (term) {
       let originalKey = "";
-      for (const [key, t] of this.termsCache.entries()) {
+      for (const [key, t] of this.index.entries()) {
         if (t === term) {
           originalKey = key;
           break;
@@ -186,7 +164,7 @@ export class GlossaryManager implements vscode.Disposable {
         const foundTerm = this.index.get(this.normalize(phrase));
         if (foundTerm) {
           let originalKey = "";
-          for (const [key, t] of this.termsCache.entries()) {
+          for (const [key, t] of this.index.entries()) {
             if (t === foundTerm) {
               originalKey = key;
               break;
@@ -200,7 +178,6 @@ export class GlossaryManager implements vscode.Disposable {
   }
 
   dispose() {
-    if (this.timeout) clearTimeout(this.timeout);
     this.disposables.forEach((d) => d.dispose());
   }
 }

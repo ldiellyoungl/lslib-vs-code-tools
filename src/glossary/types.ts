@@ -4,9 +4,6 @@ export interface GlossarySource {
 }
 
 export interface GlossaryTerm {
-  /** Перевод термина (например, "Класс Доспеха") */
-  translation?: string;
-
   /** Краткое описание (1-2 предложения) — показывается в Hover */
   shortDescription: string;
   /** Подробное описание механики — показывается только в Webview */

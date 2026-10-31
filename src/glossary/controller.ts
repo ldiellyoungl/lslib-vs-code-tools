@@ -5,37 +5,29 @@ import { syncRegister, getExtensionConfig } from "@/utils/common";
 
 import { GlossaryManager } from "./manager";
 
-import {
-  GlossaryHoverProvider,
-  GlossaryLinkProvider,
-  GlossaryWebviewProvider,
-} from "./providers";
+import { GlossaryHoverProvider, GlossaryLinkProvider } from "./providers";
 
-import { addTermin, initGlossary } from "./commands";
+import { addTermin, addAlias, initGlossary } from "./commands";
 
 export class GlossaryController implements vscode.Disposable {
   private disposables: vscode.Disposable[] = [];
   private manager!: GlossaryManager;
   private hoverProvider: vscode.Disposable | undefined;
   private linkProvider: vscode.Disposable | undefined;
-  private webviewProvider!: GlossaryWebviewProvider;
 
   constructor(context: vscode.ExtensionContext) {
     this.registerProvider();
-    this.webviewProvider = new GlossaryWebviewProvider(context, this.manager);
     this.registerCommands();
   }
 
   private registerCommands() {
     this.disposables.push(
+      vscode.commands.registerCommand(meta.commands.glossaryInit, initGlossary),
       vscode.commands.registerCommand(
         meta.commands.glossaryAddTermin,
         addTermin,
       ),
-      vscode.commands.registerCommand(meta.commands.glossaryInit, initGlossary),
-      vscode.commands.registerCommand(meta.commands.glossaryShowTerm, (key) =>
-        this.webviewProvider.showTerm(key),
-      ),
+      vscode.commands.registerCommand(meta.commands.glossaryAddAlias, addAlias),
     );
   }
 

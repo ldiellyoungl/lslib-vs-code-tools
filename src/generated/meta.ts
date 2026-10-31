@@ -4,7 +4,7 @@
 // Meta info
 export const publisher = "LeoBlock"
 export const name = "lslib-tools"
-export const version = "2.1.1"
+export const version = "2.1.4"
 export const displayName = "LSLib Tools"
 export const description = "Набор инструментов для моддинга игр от Larian Studios прямо в VS Code"
 export const extensionId = `${publisher}.${name}`
@@ -20,8 +20,8 @@ export type CommandKey =
   | "metalsx.codelens.generateUUID"
   | "localization.goToTranslation"
   | "glossary.init"
-  | "glossary.showTerm"
   | "glossary.addTermin"
+  | "glossary.addAlias"
   | "divineCli.extractPak"
   | "divineCli.createPak"
   | "divineCli.convert-resource"
@@ -64,20 +64,20 @@ export const commands = {
    */
   localizationGoToTranslation: "localization.goToTranslation",
   /**
-   * Инициализировать
+   * Глоссарий: Инициализировать
    * @value `glossary.init`
    */
   glossaryInit: "glossary.init",
   /**
-   * Показать термин
-   * @value `glossary.showTerm`
-   */
-  glossaryShowTerm: "glossary.showTerm",
-  /**
-   * Добавить термин
+   * Глоссарий: Добавить термин
    * @value `glossary.addTermin`
    */
   glossaryAddTermin: "glossary.addTermin",
+  /**
+   * Глоссарий: Добавить аллиас
+   * @value `glossary.addAlias`
+   */
+  glossaryAddAlias: "glossary.addAlias",
   /**
    * DivineCLI: Распаковать PAK
    * @value `divineCli.extractPak`
@@ -116,7 +116,6 @@ export const commands = {
 export type ConfigKey =
   | "metalsx.diagnostics.enabled"
   | "metalsx.inlayhints.version.enabled"
-  | "metalsx.hovers.enabled"
   | "metalsx.codelens.moduleInfo.enabled"
   | "metalsx.codelens.uuid.enabled"
   | "metalsx.codelens.version.enabled"
@@ -131,7 +130,6 @@ export type ConfigKey =
 export interface ConfigKeyTypeMap {
   "metalsx.diagnostics.enabled": boolean,
   "metalsx.inlayhints.version.enabled": boolean,
-  "metalsx.hovers.enabled": boolean,
   "metalsx.codelens.moduleInfo.enabled": boolean,
   "metalsx.codelens.uuid.enabled": boolean,
   "metalsx.codelens.version.enabled": boolean,
@@ -147,7 +145,6 @@ export interface ConfigKeyTypeMap {
 export interface ConfigShorthandMap {
   metalsxDiagnosticsEnabled: "metalsx.diagnostics.enabled",
   metalsxInlayhintsVersionEnabled: "metalsx.inlayhints.version.enabled",
-  metalsxHoversEnabled: "metalsx.hovers.enabled",
   metalsxCodelensModuleInfoEnabled: "metalsx.codelens.moduleInfo.enabled",
   metalsxCodelensUuidEnabled: "metalsx.codelens.uuid.enabled",
   metalsxCodelensVersionEnabled: "metalsx.codelens.version.enabled",
@@ -163,7 +160,6 @@ export interface ConfigShorthandMap {
 export interface ConfigShorthandTypeMap {
   metalsxDiagnosticsEnabled: boolean,
   metalsxInlayhintsVersionEnabled: boolean,
-  metalsxHoversEnabled: boolean,
   metalsxCodelensModuleInfoEnabled: boolean,
   metalsxCodelensUuidEnabled: boolean,
   metalsxCodelensVersionEnabled: boolean,
@@ -206,16 +202,6 @@ export const configs = {
     key: "metalsx.inlayhints.version.enabled",
     default: true,
   } as ConfigItem<"metalsx.inlayhints.version.enabled">,
-  /**
-   * Включить подсказки при наведении мыши
-   * @key `metalsx.hovers.enabled`
-   * @default `true`
-   * @type `boolean`
-   */
-  metalsxHoversEnabled: {
-    key: "metalsx.hovers.enabled",
-    default: true,
-  } as ConfigItem<"metalsx.hovers.enabled">,
   /**
    * Включить быстрые действия над блоком ModuleInfo
    * @key `metalsx.codelens.moduleInfo.enabled`
@@ -336,9 +322,6 @@ export interface NestedConfigs {
       "version": {
         "enabled": boolean,
       },
-    },
-    "hovers": {
-      "enabled": boolean,
     },
     "codelens": {
       "moduleInfo": {

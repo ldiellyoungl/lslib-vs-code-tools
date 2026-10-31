@@ -23,18 +23,18 @@
     "commands": [
       {
         "command": "glossary.init",
-        "title": "Инициализировать",
+        "title": "Глоссарий: Инициализировать",
         "category": "Глоссарий"
       },
       {
-        "command": "glossary.showTerm",
-        "title": "Показать термин",
+        "command": "glossary.addTermin",
+        "title": "Глоссарий: Добавить термин",
         "category": "Глоссарий",
         "enablement": "config.glossary.enabled"
       },
       {
-        "command": "glossary.addTermin",
-        "title": "Добавить термин",
+        "command": "glossary.addAlias",
+        "title": "Глоссарий: Добавить аллиас",
         "category": "Глоссарий",
         "enablement": "config.glossary.enabled"
       }
@@ -49,8 +49,10 @@
       ],
       "editor/context": [
         {
-          "command": "glossary.addTermin",
-          "group": "z_lslib@3"
+          "command": "glossary.addTermin"
+        },
+        {
+          "command": "glossary.addAlias"
         }
       ]
     }

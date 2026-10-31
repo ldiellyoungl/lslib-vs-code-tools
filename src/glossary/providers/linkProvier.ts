@@ -57,15 +57,16 @@ export class GlossaryLinkProvider implements vscode.DocumentLinkProvider {
           const endPos = document.positionAt(phraseEnd);
           const range = new vscode.Range(startPos, endPos);
 
-          const commandArgs = encodeURIComponent(
-            JSON.stringify([termData.originalKey]),
-          );
-          const commandUri = vscode.Uri.parse(
-            `command:glossary.showTerm?${commandArgs}`,
-          );
+          // const commandArgs = encodeURIComponent(
+          //   JSON.stringify([termData.originalKey]),
+          // );
+          // const commandUri = vscode.Uri.parse(
+          //   `command:glossary.showTerm?${commandArgs}`,
+          // );
 
-          const link = new vscode.DocumentLink(range, commandUri);
-          link.tooltip = `Открыть карточку термина: ${termData.originalKey}`;
+          const link = new vscode.DocumentLink(range);
+          // const link = new vscode.DocumentLink(range, commandUri);
+          // link.tooltip = `Открыть карточку термина: ${termData.originalKey}`;
 
           links.push(link);
 

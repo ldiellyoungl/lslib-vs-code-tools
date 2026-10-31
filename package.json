@@ -3,7 +3,7 @@
   "displayName": "LSLib Tools",
   "description": "Набор инструментов для моддинга игр от Larian Studios прямо в VS Code",
   "publisher": "LeoBlock",
-  "version": "2.1.1",
+  "version": "2.1.4",
   "categories": [
     "Other"
   ],
@@ -73,11 +73,6 @@
             "type": "boolean",
             "default": true,
             "description": "Включить показ декодированной версии"
-          },
-          "metalsx.hovers.enabled": {
-            "type": "boolean",
-            "default": true,
-            "description": "Включить подсказки при наведении мыши"
           }
         }
       },
@@ -227,18 +222,18 @@
       },
       {
         "command": "glossary.init",
-        "title": "Инициализировать",
+        "title": "Глоссарий: Инициализировать",
         "category": "Глоссарий"
       },
       {
-        "command": "glossary.showTerm",
-        "title": "Показать термин",
+        "command": "glossary.addTermin",
+        "title": "Глоссарий: Добавить термин",
         "category": "Глоссарий",
         "enablement": "config.glossary.enabled"
       },
       {
-        "command": "glossary.addTermin",
-        "title": "Добавить термин",
+        "command": "glossary.addAlias",
+        "title": "Глоссарий: Добавить аллиас",
         "category": "Глоссарий",
         "enablement": "config.glossary.enabled"
       },
@@ -303,8 +298,10 @@
       ],
       "editor/context": [
         {
-          "command": "glossary.addTermin",
-          "group": "z_lslib@3"
+          "command": "glossary.addTermin"
+        },
+        {
+          "command": "glossary.addAlias"
         },
         {
           "command": "common.editor.context.insertVersion64"

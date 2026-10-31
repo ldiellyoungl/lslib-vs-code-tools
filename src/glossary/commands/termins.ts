@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { initGlossary } from "./init";
 
 export async function addTermin() {
   const editor = vscode.window.activeTextEditor;
@@ -33,18 +32,6 @@ export async function addTermin() {
   }
 
   const glossaryDir = path.join(workspaceFolders[0].uri.fsPath, ".glossary");
-  const schemaPath = path.join(glossaryDir, "schema.json");
-
-  // Проверяем наличие папки и schema.json, если нет — инициализируем
-  if (!fs.existsSync(glossaryDir) || !fs.existsSync(schemaPath)) {
-    // Вызываем initGlossary (она создаст папку, schema.json и включит настройку)
-    await initGlossary();
-
-    // Если после инициализации папки все еще нет (например, пользователь отменил или произошла ошибка)
-    if (!fs.existsSync(glossaryDir)) {
-      return;
-    }
-  }
 
   // Собираем список существующих категорий
   const files = fs
@@ -130,14 +117,6 @@ export async function addTermin() {
     fs.writeFileSync(checkPath, JSON.stringify(newFileData, null, 2), "utf8");
   }
 
-  // Ввод перевода
-  const translation = await vscode.window.showInputBox({
-    title: "Глоссарий",
-    prompt: `Введите перевод для "${selectedText}"`,
-    placeHolder: "Перевод...",
-  });
-  if (translation === undefined) return;
-
   // Ввод описания
   const shortDesc = await vscode.window.showInputBox({
     title: "Глоссарий",
@@ -165,7 +144,6 @@ export async function addTermin() {
 
     // Добавляем термин
     fileData.terms[selectedText] = {
-      translation: translation,
       shortDescription: shortDesc,
     };
 
@@ -174,6 +152,148 @@ export async function addTermin() {
 
     vscode.window.showInformationMessage(
       `Термин "${selectedText}" добавлен в категорию "${categoryName}".`,
+    );
+
+    // Открываем файл, чтобы пользователь увидел результат
+    const doc = await vscode.workspace.openTextDocument(targetFilePath);
+    vscode.window.showTextDocument(doc, vscode.ViewColumn.Beside);
+  } catch (err: any) {
+    vscode.window.showErrorMessage(`Ошибка сохранения: ${err.message}`);
+  }
+}
+
+export async function addAlias() {
+  // ---- 1. Получаем алиас (из выделения или через InputBox) ----
+  const editor = vscode.window.activeTextEditor;
+
+  let selectedText = "";
+
+  if (editor && !editor.selection.isEmpty) {
+    selectedText = editor.document.getText(editor.selection).trim();
+  }
+
+  if (!selectedText) {
+    const input = await vscode.window.showInputBox({
+      title: "Глоссарий",
+      prompt: "Введите алиас, который хотите добавить",
+      placeHolder: "Например: ST",
+      validateInput: (value) =>
+        value && value.trim() ? null : "Алиас не может быть пустым",
+    });
+    if (!input) return;
+    selectedText = input.trim();
+  }
+
+  if (!selectedText) return;
+
+  // ---- Проверяем рабочую область ----
+  const workspaceFolders = vscode.workspace.workspaceFolders;
+  if (!workspaceFolders || workspaceFolders.length === 0) {
+    vscode.window.showErrorMessage(
+      "Откройте папку проекта, чтобы добавить алиас.",
+    );
+    return;
+  }
+
+  const glossaryDir = path.join(workspaceFolders[0].uri.fsPath, ".glossary");
+
+  if (!fs.existsSync(glossaryDir)) {
+    vscode.window.showErrorMessage("Папка .glossary не найдена в проекте.");
+    return;
+  }
+
+  // ---- 2. Собираем список всех терминов с подписью категории ----
+  type TermPick = vscode.QuickPickItem & {
+    file: string;
+    termKey: string;
+  };
+
+  const files = fs
+    .readdirSync(glossaryDir)
+    .filter((f) => f.endsWith(".json") && f !== "schema.json");
+
+  const termPicks: TermPick[] = [];
+
+  for (const file of files) {
+    try {
+      const content = fs.readFileSync(path.join(glossaryDir, file), "utf8");
+      const data = JSON.parse(content);
+      const terms = data?.terms as Record<string, unknown> | undefined;
+      if (!terms) continue;
+
+      for (const [termKey, term] of Object.entries(terms)) {
+        const t = term as { shortDescription?: string; aliases?: string[] };
+
+        // Если у термина уже есть такой алиас — пропускаем,
+        // чтобы не предлагать пользователю заведомо бесполезный вариант
+        if (Array.isArray(t.aliases) && t.aliases.includes(selectedText)) {
+          continue;
+        }
+
+        termPicks.push({
+          label: termKey, // сам термин
+          description: data.category, // категория — подпись справа
+          detail: t.shortDescription, // краткое описание — строкой ниже
+          file,
+          termKey,
+        });
+      }
+    } catch {
+      /* игнорируем битые файлы */
+    }
+  }
+
+  if (termPicks.length === 0) {
+    vscode.window.showWarningMessage(
+      `Не найдено терминов, к которым можно добавить алиас "${selectedText}".`,
+    );
+    return;
+  }
+
+  // Сортируем по алфавиту для удобства навигации
+  termPicks.sort((a, b) => a.label.localeCompare(b.label));
+
+  // ---- 3. Выбор термина и добавление алиаса ----
+  const selectedTerm = await vscode.window.showQuickPick(termPicks, {
+    placeHolder: `К какому термину добавить алиас "${selectedText}"?`,
+    matchOnDescription: true, // поиск по категории
+    matchOnDetail: true, // поиск по описанию
+  });
+
+  if (!selectedTerm) return;
+
+  const targetFilePath = path.join(glossaryDir, selectedTerm.file);
+
+  try {
+    const fileContent = fs.readFileSync(targetFilePath, "utf8");
+    const fileData = JSON.parse(fileContent);
+
+    const term = fileData.terms?.[selectedTerm.termKey];
+    if (!term) {
+      vscode.window.showErrorMessage(
+        `Термин "${selectedTerm.termKey}" не найден в файле ${selectedTerm.file}.`,
+      );
+      return;
+    }
+
+    if (!Array.isArray(term.aliases)) {
+      term.aliases = [];
+    }
+
+    // Дополнительная защита (на случай гонки или если пропустили на этапе сбора)
+    if (term.aliases.includes(selectedText)) {
+      vscode.window.showInformationMessage(
+        `Алиас "${selectedText}" уже существует у термина "${selectedTerm.termKey}".`,
+      );
+      return;
+    }
+
+    term.aliases.push(selectedText);
+
+    fs.writeFileSync(targetFilePath, JSON.stringify(fileData, null, 2), "utf8");
+
+    vscode.window.showInformationMessage(
+      `Алиас "${selectedText}" добавлен к термину "${selectedTerm.termKey}".`,
     );
 
     // Открываем файл, чтобы пользователь увидел результат

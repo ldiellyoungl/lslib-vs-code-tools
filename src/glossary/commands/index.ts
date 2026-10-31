@@ -1,2 +1,2 @@
-export { addTermin } from "./addTermin";
+export { addTermin, addAlias } from "./termins";
 export { initGlossary } from "./init";

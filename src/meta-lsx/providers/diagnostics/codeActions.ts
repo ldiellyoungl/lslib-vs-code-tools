@@ -1,5 +1,7 @@
 import * as vscode from "vscode";
+
 import { getModFolder } from "@/utils/files";
+
 import { NODE_ATTRIBUTE_RULES } from "./validators";
 
 export class CodeActionProvider implements vscode.CodeActionProvider {

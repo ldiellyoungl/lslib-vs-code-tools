@@ -13,11 +13,6 @@
             "type": "boolean",
             "default": true,
             "description": "Включить показ декодированной версии"
-          },
-          "metalsx.hovers.enabled": {
-            "type": "boolean",
-            "default": true,
-            "description": "Включить подсказки при наведении мыши"
           }
         }
       },

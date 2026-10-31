@@ -25,6 +25,7 @@ export const NODE_ATTRIBUTE_RULES: NodeAttributeValidationRules = {
   reqAttrs: ["id", "type", "value"],
   typesEnum: new Set([
     "LSString",
+    "LSWString",
     "uint8",
     "uint64",
     "guid",

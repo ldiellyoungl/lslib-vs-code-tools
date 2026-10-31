@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { getExtensionConfig, setExtensionConfig } from "@/utils/common";
 
 export async function initGlossary() {
   const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -34,26 +35,17 @@ export async function initGlossary() {
             description:
               "Название категории для всего файла (например, 'Бой', 'Магия')",
           },
-          icon: {
-            type: "string",
-            description:
-              "Путь к иконке для всей категории (например, 'resources/icons/combat.png' или внешний URL)",
-          },
           terms: {
             type: "object",
-            description:
-              "Объект с терминами. Ключ — оригинальное название термина.",
+            description: "Объект с терминами. Ключ — название термина.",
             additionalProperties: {
               type: "object",
               properties: {
-                translation: { type: "string" },
                 shortDescription: { type: "string" },
                 fullDescription: { type: "string" },
                 category: { type: "string" },
-                icon: { type: "string" },
-                aliases: { type: "array", items: { type: "string" } },
-                doNotTranslate: { type: "boolean" },
                 example: { type: "string" },
+                aliases: { type: "array", items: { type: "string" } },
                 source: {
                   type: "array",
                   items: {
@@ -79,7 +71,7 @@ export async function initGlossary() {
         "utf8",
       );
       vscode.window.showInformationMessage(
-        "Глоссарий успешно инициализирован! Создана папка .glossary и schema.json.",
+        "Глоссарий успешно инициализирован. Создана папка .glossary и schema.json.",
       );
     } else {
       vscode.window.showInformationMessage(
@@ -105,27 +97,25 @@ export async function initGlossary() {
         vscode.ConfigurationTarget.Workspace,
       );
       vscode.window.showInformationMessage(
-        "[Glossary] Схема JSON подключена к настройкам рабочей области.",
+        "JSON схема глоссария подключена к настройкам рабочей области.",
       );
     }
 
-    const glossaryConfig = vscode.workspace.getConfiguration("glossary");
-    const isEnabled = glossaryConfig.get<boolean>("enabled", true);
+    const glossaryEnabled = getExtensionConfig("glossaryEnabled");
 
-    if (!isEnabled) {
-      await glossaryConfig.update(
-        "enabled",
+    if (!glossaryEnabled) {
+      await setExtensionConfig(
+        "glossaryEnabled",
         true,
         vscode.ConfigurationTarget.Workspace,
       );
       vscode.window.showInformationMessage(
-        "Глоссарий включен в настройках рабочей области.",
+        "У вас глобально отключен глоссарий.\nГлоссарий включен только для рабочей области.",
       );
     }
   } catch (error: any) {
     vscode.window.showErrorMessage(
       `Ошибка при инициализации: ${error.message}`,
     );
-    console.error("[Glossary] Ошибка инициализации:", error);
   }
 }

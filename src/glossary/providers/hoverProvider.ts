@@ -2,6 +2,8 @@ import * as vscode from "vscode";
 import { GlossaryManager } from "../manager";
 import { GlossaryMatch } from "../types";
 
+// TODO Учитывать конфиг
+
 export class GlossaryHoverProvider implements vscode.HoverProvider {
   constructor(private manager: GlossaryManager) {}
 
@@ -87,16 +89,8 @@ export class GlossaryHoverProvider implements vscode.HoverProvider {
       md.appendMarkdown(`*Вы навели на синоним: "${matchedWord}"*\n\n`);
     }
 
-    // Перевод
-    if (term.translation) {
-      md.appendMarkdown(`**Перевод:** ${term.translation}\n\n`);
-    }
-
-    // Предупреждение для doNotTranslate
-    if (term.doNotTranslate) {
-      md.appendMarkdown(
-        `> ⚠️ **Не переводить!** (Оставить как \`${originalKey}\`)\n\n`,
-      );
+    if (term.shortDescription) {
+      md.appendMarkdown(`**Краткое описание:** ${term.shortDescription}\n\n`);
     }
 
     // Описание
@@ -105,7 +99,7 @@ export class GlossaryHoverProvider implements vscode.HoverProvider {
     // Синонимы
     if (term.aliases && term.aliases.length > 0) {
       md.appendMarkdown(
-        `**Синонимы:** ${term.aliases.map((a) => `\`${a}\``).join(", ")}\n\n`,
+        `**Алиасы:** ${term.aliases.map((a) => `\`${a}\``).join(", ")}\n\n`,
       );
     }
 

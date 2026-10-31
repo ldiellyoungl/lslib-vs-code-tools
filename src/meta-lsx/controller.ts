@@ -152,6 +152,7 @@ export class MetaLsxController implements vscode.Disposable {
         ),
     );
 
+    // TODO Нужен ли он вообщ?
     // this.hoverProvider = syncRegister(
     //   this.hoverProvider,
     //   getExtensionConfig("metalsxHoversEnabled"),
