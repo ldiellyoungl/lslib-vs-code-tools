@@ -1,8 +1,7 @@
 import * as vscode from "vscode";
 import { GlossaryManager } from "../manager";
 import { GlossaryMatch } from "../types";
-
-// TODO Учитывать конфиг
+import { getExtensionConfig } from "@/utils/common";
 
 export class GlossaryHoverProvider implements vscode.HoverProvider {
   constructor(private manager: GlossaryManager) {}
@@ -12,12 +11,22 @@ export class GlossaryHoverProvider implements vscode.HoverProvider {
     position: vscode.Position,
     token: vscode.CancellationToken,
   ): vscode.ProviderResult<vscode.Hover> {
-    if (!document.uri.fsPath.includes("Localization")) {
+    const folders = getExtensionConfig("glossarySearchFolders") ?? [];
+    const filePath = document.uri.fsPath;
+
+    const isInGlossaryFolder = folders.some((folder) =>
+      filePath.includes(folder),
+    );
+
+    if (!isInGlossaryFolder) {
       return undefined;
     }
 
     // 1. Пробуем найти одно слово под курсором (стандартный метод VS Code)
-    const wordRange = document.getWordRangeAtPosition(position);
+    const wordRange = document.getWordRangeAtPosition(
+      position,
+      /[\w\u0400-\u04FF-]+/,
+    );
     if (wordRange) {
       const word = document.getText(wordRange);
       if (word && word.length >= 2) {
@@ -73,39 +82,44 @@ export class GlossaryHoverProvider implements vscode.HoverProvider {
     return undefined;
   }
 
-  /**
-   * Строит Markdown-карточку для Hover.
-   */
+  private escapeMarkdown(text: string): string {
+    return text.replace(/[\\`*_{}\[\]()#+\-.!|]/g, "\\$&");
+  }
+
   private buildHover(match: GlossaryMatch, range: vscode.Range): vscode.Hover {
     const { term, originalKey, matchedWord } = match;
     const md = new vscode.MarkdownString();
     md.isTrusted = true;
 
-    // Заголовок
-    md.appendMarkdown(`### **${originalKey}**\n\n`);
+    md.appendMarkdown(`### ${this.escapeMarkdown(originalKey)}\n\n`);
 
-    // Уточнение синонима
-    if (matchedWord.toLowerCase() !== originalKey.toLowerCase()) {
-      md.appendMarkdown(`*Вы навели на синоним: "${matchedWord}"*\n\n`);
+    // Синоним показываем только если это реально алиас
+    const isAlias =
+      term.aliases?.some(
+        (a) => a.toLowerCase() === matchedWord.toLowerCase(),
+      ) ?? false;
+    if (isAlias) {
+      md.appendMarkdown(`*Вы навели на синоним: \`${matchedWord}\`*\n\n`);
     }
 
     if (term.shortDescription) {
-      md.appendMarkdown(`**Краткое описание:** ${term.shortDescription}\n\n`);
+      md.appendMarkdown(`${this.escapeMarkdown(term.shortDescription)}\n\n`);
     }
 
-    // Описание
-    md.appendMarkdown(`${term.shortDescription}\n\n`);
+    if (term.example) {
+      md.appendMarkdown(`**Пример:** ${this.escapeMarkdown(term.example)}\n\n`);
+    }
 
-    // Синонимы
     if (term.aliases && term.aliases.length > 0) {
       md.appendMarkdown(
         `**Алиасы:** ${term.aliases.map((a) => `\`${a}\``).join(", ")}\n\n`,
       );
     }
 
-    // Категория внизу
     if (term.category) {
-      md.appendMarkdown(`---\n*Категория: ${term.category}*`);
+      md.appendMarkdown(
+        `---\n*Категория: ${this.escapeMarkdown(term.category)}*`,
+      );
     }
 
     return new vscode.Hover(md, range);

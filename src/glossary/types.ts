@@ -16,8 +16,6 @@ export interface GlossaryTerm {
   category?: string;
   aliases?: string[];
 
-  /** Если true, термин не переводится (остается на английском) */
-  doNotTranslate?: boolean;
   example?: string;
   source?: GlossarySource[];
   /** Ссылка на иконку термина (например, "https://...") */
@@ -31,11 +29,27 @@ export interface GlossaryFile {
 }
 
 /**
+ * Запись внутреннего индекса.
+ * Хранит не только сам термин, но и метаданные о том, откуда он прочитан,
+ * чтобы findMatch и showTerm работали за O(1) без повторного сканирования.
+ */
+export interface IndexEntry {
+  /** Данные термина из JSON */
+  term: GlossaryTerm;
+  /** Настоящее имя термина в файле (ключ в terms) */
+  originalKey: string;
+  /** Абсолютный путь к файлу, откуда прочитан термин */
+  sourceFile: string;
+  /** Ключ, под которым термин записан в файле (для позиционирования) */
+  sourceKeyInFile: string;
+}
+
+/**
  * Внутренний индекс для поиска.
  * Ключ — нормализованный термин (без пробелов, дефисов и в нижнем регистре).
- * Значение — ссылка на оригинальный объект GlossaryTerm.
+ * Значение — запись с термином и метаданными источника.
  */
-export type GlossaryIndex = Map<string, GlossaryTerm>;
+export type GlossaryIndex = Map<string, IndexEntry>;
 
 /**
  * Результат поиска термина в индексе.
@@ -46,6 +60,11 @@ export interface GlossaryMatch {
 
   /** То, что именно мы нашли (может быть translation или alias) */
   matchedWord: string;
+
+  /** Абсолютный путь к файлу-источнику термина */
+  sourceFile: string;
+  /** Ключ термина в файле-источнике (для позиционирования) */
+  sourceKeyInFile: string;
 }
 
 /**

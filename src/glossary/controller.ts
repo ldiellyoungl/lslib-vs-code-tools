@@ -1,64 +1,94 @@
 import * as vscode from "vscode";
 import * as meta from "@/generated/meta";
 
-import { syncRegister, getExtensionConfig } from "@/utils/common";
+import {
+  getExtensionConfig,
+  syncRegistration,
+  SyncRegistration,
+} from "@/utils/common";
 
 import { GlossaryManager } from "./manager";
 
 import { GlossaryHoverProvider, GlossaryLinkProvider } from "./providers";
 
-import { addTermin, addAlias, initGlossary } from "./commands";
+import { initGlossary, addTermin, addAlias, showTerm } from "./commands";
 
 export class GlossaryController implements vscode.Disposable {
   private disposables: vscode.Disposable[] = [];
-  private manager!: GlossaryManager;
-  private hoverProvider: vscode.Disposable | undefined;
-  private linkProvider: vscode.Disposable | undefined;
+  private manager: GlossaryManager | undefined;
+  private managerReg!: SyncRegistration<GlossaryManager>;
 
-  constructor(context: vscode.ExtensionContext) {
-    this.registerProvider();
+  constructor() {
+    this.registerManager();
+    this.registerProviders();
     this.registerCommands();
+  }
+
+  private registerManager() {
+    this.managerReg = syncRegistration(
+      "glossaryEnabled",
+      () => getExtensionConfig("glossaryEnabled"),
+      () => new GlossaryManager(),
+      (m) => {
+        this.manager = m;
+      },
+    );
+  }
+
+  private registerProviders() {
+    const enabled = () => getExtensionConfig("glossaryEnabled");
+
+    const hoverReg = syncRegistration("glossaryEnabled", enabled, () => {
+      if (!this.managerReg.current) {
+        throw new Error("[Glossary] Manager not init");
+      }
+      return vscode.languages.registerHoverProvider(
+        "*",
+        new GlossaryHoverProvider(this.managerReg.current),
+      );
+    });
+    this.disposables.push(hoverReg);
+
+    const linkReg = syncRegistration("glossaryEnabled", enabled, () => {
+      if (!this.managerReg.current) {
+        throw new Error("[Glossary] Manager not init");
+      }
+      return vscode.languages.registerDocumentLinkProvider(
+        "*",
+        new GlossaryLinkProvider(this.managerReg.current),
+      );
+    });
+
+    this.disposables.push(linkReg);
   }
 
   private registerCommands() {
     this.disposables.push(
+      // TODO Через новую функцию можно не пускать дальше пользователя уже здесь
       vscode.commands.registerCommand(meta.commands.glossaryInit, initGlossary),
+      vscode.commands.registerCommand(meta.commands.glossaryTerminAdd, () => {
+        if (!this.manager) {
+          //TODO открыть настройки кнопка
+          vscode.window.showWarningMessage("Глоссарий выключен в настройках");
+          return;
+        }
+        return addTermin(this.manager);
+      }),
       vscode.commands.registerCommand(
-        meta.commands.glossaryAddTermin,
-        addTermin,
+        meta.commands.glossaryTerminAliasAdd,
+        () => {
+          if (!this.manager) {
+            //TODO открыть настройки кнопка
+            vscode.window.showWarningMessage("Глоссарий выключен в настройках");
+            return;
+          }
+          return addAlias(this.manager);
+        },
       ),
-      vscode.commands.registerCommand(meta.commands.glossaryAddAlias, addAlias),
-    );
-  }
-
-  private registerProvider() {
-    this.manager = syncRegister(
-      this.manager,
-      getExtensionConfig("glossaryEnabled"),
-      this.disposables,
-      () => new GlossaryManager(),
-    ) as GlossaryManager;
-
-    this.hoverProvider = syncRegister(
-      this.hoverProvider,
-      getExtensionConfig("glossaryEnabled"),
-      this.disposables,
-      () =>
-        vscode.languages.registerHoverProvider(
-          "*",
-          new GlossaryHoverProvider(this.manager),
-        ),
-    );
-
-    this.linkProvider = syncRegister(
-      this.linkProvider,
-      getExtensionConfig("glossaryEnabled"),
-      this.disposables,
-      () =>
-        vscode.languages.registerDocumentLinkProvider(
-          "*",
-          new GlossaryLinkProvider(this.manager),
-        ),
+      vscode.commands.registerCommand(
+        meta.commands.glossaryTerminShow,
+        showTerm,
+      ),
     );
   }
 

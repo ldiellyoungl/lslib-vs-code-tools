@@ -2,12 +2,13 @@
   "contributes": {
     "configuration": [
       {
-        "title": "Общее",
+        "title": "Файлы",
         "properties": {
           "resources.documentLink.enabled": {
             "type": "boolean",
             "default": true,
-            "description": "Включить ссылки для ресурсных путей"
+            "description": "Включить ссылки для ресурсных путей",
+            "order": 0
           }
         }
       }
@@ -16,21 +17,25 @@
       {
         "title": "Вставить версию в формате int64",
         "command": "common.editor.context.insertVersion64",
-        "icon": "$(add-compact)"
+        "icon": "$(add)",
+        "category": "Общее"
       },
       {
         "title": "Сгенерировать и вставить UUID",
         "command": "common.editor.context.insertUUID",
-        "icon": "$(add-compact)"
+        "icon": "$(add)",
+        "category": "Общее"
       }
     ],
     "menus": {
       "editor/context": [
         {
-          "command": "common.editor.context.insertVersion64"
+          "command": "common.editor.context.insertVersion64",
+          "group": "z_lslib@1"
         },
         {
-          "command": "common.editor.context.insertUUID"
+          "command": "common.editor.context.insertUUID",
+          "group": "z_lslib@2"
         }
       ]
     }

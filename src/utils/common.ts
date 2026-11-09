@@ -18,22 +18,60 @@ export async function setExtensionConfig<K extends keyof typeof meta.configs>(
   await vscode.workspace.getConfiguration().update(fullKey, value, target);
 }
 
-// функция для проверки конфига и провайдера
-export function syncRegister(
-  provider: vscode.Disposable | undefined,
-  enabled: boolean,
-  disposables: vscode.Disposable[],
-  factory: () => vscode.Disposable,
-): vscode.Disposable | undefined {
-  if (enabled && !provider) {
-    const d = factory();
-    disposables.push(d);
-    return d;
-  }
-  if (!enabled && provider) {
-    provider.dispose();
-    disposables = disposables.filter((x) => x !== provider);
-    return undefined;
-  }
-  return provider;
+export interface SyncRegistration<T extends vscode.Disposable> {
+  /** Текущий активный экземпляр (undefined, если настройка выключена) */
+  readonly current: T | undefined;
+  /** Отписывает от изменений конфига и уничтожает текущий экземпляр */
+  dispose(): void;
+}
+
+/**
+ * Создаёт провайдер/менеджер и автоматически включает/выключает его
+ * при изменении булевой настройки.
+ *
+ * @param configKey   Полный ключ настройки, например "glossary.enabled"
+ * @param readEnabled Функция чтения текущего значения настройки
+ * @param factory     Создаёт новый экземпляр, когда настройка включена
+ * @param onChange    Опционально: вызывается при каждом переключении
+ */
+export function syncRegistration<T extends vscode.Disposable>(
+  configName: keyof typeof meta.configs,
+  readEnabled: () => boolean,
+  factory: () => T,
+  onChange?: (current: T | undefined) => void,
+): SyncRegistration<T> {
+  const fullKey = meta.configs[configName].key;
+
+  let current: T | undefined;
+
+  const apply = () => {
+    const enabled = readEnabled();
+    if (enabled && !current) {
+      current = factory();
+    } else if (!enabled && current) {
+      current.dispose();
+      current = undefined;
+    }
+    onChange?.(current);
+  };
+
+  apply();
+
+  const listener = vscode.workspace.onDidChangeConfiguration((e) => {
+    if (e.affectsConfiguration(fullKey)) {
+      apply();
+    }
+  });
+
+  return {
+    get current() {
+      return current;
+    },
+    dispose() {
+      listener.dispose();
+      current?.dispose();
+      current = undefined;
+      onChange?.(undefined);
+    },
+  };
 }

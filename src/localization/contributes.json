@@ -7,7 +7,8 @@
           "localization.decorators.enabled": {
             "type": "boolean",
             "default": true,
-            "description": "Включить декораторы локализации"
+            "description": "Включить декораторы локализации",
+            "order": 0
           }
         }
       }
@@ -16,6 +17,7 @@
       {
         "command": "localization.goToTranslation",
         "title": "Перейти к локализации",
+        "icon": "$(go-to-file)",
         "category": "Локализация",
         "enablement": "config.localization.decorators.enabled"
       }

@@ -7,7 +7,8 @@
           "glossary.enabled": {
             "type": "boolean",
             "default": true,
-            "description": "Включить поддержку глоссария (подсветку терминов и подсказки при наведении мыши)."
+            "description": "Включить глоссарий (подсветку терминов и подсказки при наведении мыши).",
+            "order": 0
           },
           "glossary.searchFolders": {
             "type": "array",
@@ -15,7 +16,8 @@
               "type": "string"
             },
             "default": ["Localization"],
-            "description": "Список папок, в которых ищутся термины глоссария (например, ['Localization', 'Scripts'])."
+            "description": "Список папок, в которых ищутся термины глоссария (например, ['Localization', 'Scripts']).",
+            "order": 1
           }
         }
       }
@@ -24,17 +26,27 @@
       {
         "command": "glossary.init",
         "title": "Глоссарий: Инициализировать",
+        "icon": "new-folder",
         "category": "Глоссарий"
       },
       {
-        "command": "glossary.addTermin",
+        "command": "glossary.termin.add",
         "title": "Глоссарий: Добавить термин",
+        "icon": "add",
         "category": "Глоссарий",
         "enablement": "config.glossary.enabled"
       },
       {
-        "command": "glossary.addAlias",
+        "command": "glossary.termin.show",
+        "title": "Глоссарий: показать термин",
+        "icon": "$(eye)",
+        "category": "Глоссарий",
+        "enablement": "config.glossary.enabled"
+      },
+      {
+        "command": "glossary.termin.alias.add",
         "title": "Глоссарий: Добавить аллиас",
+        "icon": "add",
         "category": "Глоссарий",
         "enablement": "config.glossary.enabled"
       }
@@ -44,17 +56,25 @@
         {
           "command": "glossary.init",
           "when": "explorerResourceIsFolder",
-          "group": "z_lslib@5"
+          "group": "z_lslib@1"
         }
       ],
       "editor/context": [
         {
-          "command": "glossary.addTermin"
+          "command": "glossary.termin.add",
+          "group": "z_lslib@3"
         },
         {
-          "command": "glossary.addAlias"
+          "command": "glossary.termin.alias.add",
+          "group": "z_lslib@4"
         }
       ]
-    }
+    },
+    "jsonValidation": [
+      {
+        "url": "./src/glossary/schema.json",
+        "fileMatch": ".glossary/*.json"
+      }
+    ]
   }
 }

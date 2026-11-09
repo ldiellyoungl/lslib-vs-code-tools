@@ -1,5 +1,7 @@
 import * as vscode from "vscode";
 import { GlossaryManager } from "../manager";
+import { getExtensionConfig } from "@/utils/common";
+import * as meta from "@/generated/meta";
 
 export class GlossaryLinkProvider implements vscode.DocumentLinkProvider {
   constructor(private manager: GlossaryManager) {}
@@ -8,8 +10,15 @@ export class GlossaryLinkProvider implements vscode.DocumentLinkProvider {
     document: vscode.TextDocument,
     token: vscode.CancellationToken,
   ): vscode.ProviderResult<vscode.DocumentLink[]> {
-    if (!document.uri.fsPath.includes("Localization")) {
-      return [];
+    const folders = getExtensionConfig("glossarySearchFolders") ?? [];
+    const filePath = document.uri.fsPath;
+
+    const isInGlossaryFolder = folders.some((folder) =>
+      filePath.includes(folder),
+    );
+
+    if (!isInGlossaryFolder) {
+      return undefined;
     }
 
     const links: vscode.DocumentLink[] = [];
@@ -52,27 +61,26 @@ export class GlossaryLinkProvider implements vscode.DocumentLinkProvider {
         const termData = this.manager.findMatch(cleanPhrase);
 
         if (termData) {
-          // Нашли термин! Создаем ссылку
           const startPos = document.positionAt(phraseStart);
           const endPos = document.positionAt(phraseEnd);
           const range = new vscode.Range(startPos, endPos);
 
-          // const commandArgs = encodeURIComponent(
-          //   JSON.stringify([termData.originalKey]),
-          // );
-          // const commandUri = vscode.Uri.parse(
-          //   `command:glossary.showTerm?${commandArgs}`,
-          // );
+          const commandArgs = encodeURIComponent(
+            JSON.stringify([
+              {
+                termKey: termData.originalKey,
+                sourceFile: termData.sourceFile,
+                sourceKeyInFile: termData.sourceKeyInFile,
+              },
+            ]),
+          );
+          const commandUri = vscode.Uri.parse(
+            `command:${meta.commands.glossaryTerminShow}?${commandArgs}`,
+          );
 
-          const link = new vscode.DocumentLink(range);
-          // const link = new vscode.DocumentLink(range, commandUri);
-          // link.tooltip = `Открыть карточку термина: ${termData.originalKey}`;
-
+          const link = new vscode.DocumentLink(range, commandUri);
+          link.tooltip = `Открыть термин: ${termData.originalKey}`;
           links.push(link);
-
-          // Сдвигаем индекс на количество слов в найденной фразе
-          i += len;
-          foundPhrase = true;
           break;
         }
       }

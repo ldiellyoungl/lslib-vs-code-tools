@@ -3,7 +3,7 @@
   "displayName": "LSLib Tools",
   "description": "Набор инструментов для моддинга игр от Larian Studios прямо в VS Code",
   "publisher": "LeoBlock",
-  "version": "2.1.4",
+  "version": "2.1.6",
   "categories": [
     "Other"
   ],
@@ -62,37 +62,37 @@
   "contributes": {
     "configuration": [
       {
-        "title": "Meta.lsx: Общее",
+        "title": "Meta.lsx",
         "properties": {
           "metalsx.diagnostics.enabled": {
             "type": "boolean",
             "default": true,
-            "description": "Включить диагностику"
+            "description": "Включить диагностику",
+            "order": 0
           },
           "metalsx.inlayhints.version.enabled": {
             "type": "boolean",
             "default": true,
-            "description": "Включить показ декодированной версии"
-          }
-        }
-      },
-      {
-        "title": "Meta.lsx: Быстрые действия",
-        "properties": {
+            "description": "Включить показ декодированной версии",
+            "order": 1
+          },
           "metalsx.codelens.moduleInfo.enabled": {
             "type": "boolean",
             "default": true,
-            "description": "Включить быстрые действия над блоком ModuleInfo"
-          },
-          "metalsx.codelens.uuid.enabled": {
-            "type": "boolean",
-            "default": true,
-            "description": "Включить быстрые действия над строкой UUID"
+            "description": "Включить быстрые действия над блоком ModuleInfo",
+            "order": 2
           },
           "metalsx.codelens.version.enabled": {
             "type": "boolean",
             "default": true,
-            "description": "Включить быстрые действия над строкой Version64"
+            "description": "Включить быстрые действия над строкой Version64",
+            "order": 3
+          },
+          "metalsx.codelens.uuid.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить быстрые действия над строкой UUID",
+            "order": 4
           }
         }
       },
@@ -102,7 +102,8 @@
           "localization.decorators.enabled": {
             "type": "boolean",
             "default": true,
-            "description": "Включить декораторы локализации"
+            "description": "Включить декораторы локализации",
+            "order": 0
           }
         }
       },
@@ -112,7 +113,8 @@
           "glossary.enabled": {
             "type": "boolean",
             "default": true,
-            "description": "Включить поддержку глоссария (подсветку терминов и подсказки при наведении мыши)."
+            "description": "Включить глоссарий (подсветку терминов и подсказки при наведении мыши).",
+            "order": 0
           },
           "glossary.searchFolders": {
             "type": "array",
@@ -122,12 +124,30 @@
             "default": [
               "Localization"
             ],
-            "description": "Список папок, в которых ищутся термины глоссария (например, ['Localization', 'Scripts'])."
+            "description": "Список папок, в которых ищутся термины глоссария (например, ['Localization', 'Scripts']).",
+            "order": 1
           }
         }
       },
       {
-        "title": "Divine CLI: Аргументы",
+        "title": "Viewers",
+        "properties": {
+          "viewers.pak.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить просмотр .pak",
+            "order": 0
+          },
+          "viewers.gr2.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить просмотр GR2",
+            "order": 0
+          }
+        }
+      },
+      {
+        "title": "Divine CLI",
         "properties": {
           "divineCli.args.game": {
             "type": "string",
@@ -146,7 +166,8 @@
               "Divinity: Original Sin 2 - Definitive Edition",
               "Baldur's Gate 3"
             ],
-            "description": "Целевая игра для операций Divine CLI"
+            "description": "Целевая игра для операций Divine CLI",
+            "order": 0
           },
           "divineCli.args.compressionMethod": {
             "type": "string",
@@ -158,7 +179,8 @@
               "lz4hc",
               "none"
             ],
-            "description": "Метод сжатия по умолочанию при создании PAK"
+            "description": "Метод сжатия по умолочанию при создании PAK",
+            "order": 1
           },
           "divineCli.args.logLevel": {
             "type": "string",
@@ -173,17 +195,19 @@
               "trace",
               "all"
             ],
-            "description": "Уровень детализации логов Divine CLI"
+            "description": "Уровень детализации логов Divine CLI",
+            "order": 2
           }
         }
       },
       {
-        "title": "Общее",
+        "title": "Файлы",
         "properties": {
           "resources.documentLink.enabled": {
             "type": "boolean",
             "default": true,
-            "description": "Включить ссылки для ресурсных путей"
+            "description": "Включить ссылки для ресурсных путей",
+            "order": 0
           }
         }
       }
@@ -192,80 +216,107 @@
       {
         "title": "Скопировать ModuleInfo как ModuleShortDesc",
         "command": "metalsx.codelens.copyAsShortDesc",
-        "category": "Meta.lsx"
+        "icon": "$(copy)",
+        "category": "Meta.lsx",
+        "enablement": "config.metalsx.codelens.moduleInfo.enabled"
       },
       {
         "title": "Преобразовать ModuleInfo как ModuleShortDesc и вставить в зависимости",
         "command": "metalsx.codelens.insertAsDependency",
-        "category": "Meta.lsx"
+        "icon": "$(clippy)",
+        "category": "Meta.lsx",
+        "enablement": "config.metalsx.codelens.moduleInfo.enabled"
       },
       {
         "title": "Преобразовать ModuleInfo как ModuleShortDesc и вставить в конфликты",
         "command": "metalsx.codelens.insertAsConflict",
-        "category": "Meta.lsx"
+        "icon": "$(clippy)",
+        "category": "Meta.lsx",
+        "enablement": "config.metalsx.codelens.moduleInfo.enabled"
       },
       {
         "title": "Отредактировать версию",
         "command": "metalsx.codelens.editVersion64",
-        "category": "Meta.lsx"
+        "icon": "$(edit)",
+        "category": "Meta.lsx",
+        "enablement": "config.metalsx.codelens.version.enabled"
       },
       {
         "title": "Сгенерировать UUID",
         "command": "metalsx.codelens.generateUUID",
-        "category": "Meta.lsx"
+        "icon": "$(refresh)",
+        "category": "Meta.lsx",
+        "enablement": "config.metalsx.codelens.uuid.enabled"
       },
       {
         "command": "localization.goToTranslation",
         "title": "Перейти к локализации",
+        "icon": "$(go-to-file)",
         "category": "Локализация",
         "enablement": "config.localization.decorators.enabled"
       },
       {
         "command": "glossary.init",
         "title": "Глоссарий: Инициализировать",
+        "icon": "new-folder",
         "category": "Глоссарий"
       },
       {
-        "command": "glossary.addTermin",
+        "command": "glossary.termin.add",
         "title": "Глоссарий: Добавить термин",
+        "icon": "add",
         "category": "Глоссарий",
         "enablement": "config.glossary.enabled"
       },
       {
-        "command": "glossary.addAlias",
+        "command": "glossary.termin.show",
+        "title": "Глоссарий: показать термин",
+        "icon": "$(eye)",
+        "category": "Глоссарий",
+        "enablement": "config.glossary.enabled"
+      },
+      {
+        "command": "glossary.termin.alias.add",
         "title": "Глоссарий: Добавить аллиас",
+        "icon": "add",
         "category": "Глоссарий",
         "enablement": "config.glossary.enabled"
       },
       {
         "command": "divineCli.extractPak",
         "title": "DivineCLI: Распаковать PAK",
+        "icon": "$(unarchive)",
         "category": "DivineCLI"
       },
       {
         "command": "divineCli.createPak",
         "title": "DivineCLI: Создать PAK",
+        "icon": "$(archive)",
         "category": "DivineCLI"
       },
       {
         "command": "divineCli.convert-resource",
         "title": "DivineCLI: Конвертировать ресурс",
+        "icon": "$(sync)",
         "category": "DivineCLI"
       },
       {
         "command": "divineCli.convert-loca",
         "title": "DivineCLI: Конвертировать локализацию",
+        "icon": "$(sync)",
         "category": "DivineCLI"
       },
       {
         "title": "Вставить версию в формате int64",
         "command": "common.editor.context.insertVersion64",
-        "icon": "$(add-compact)"
+        "icon": "$(add)",
+        "category": "Общее"
       },
       {
         "title": "Сгенерировать и вставить UUID",
         "command": "common.editor.context.insertUUID",
-        "icon": "$(add-compact)"
+        "icon": "$(add)",
+        "category": "Общее"
       }
     ],
     "menus": {
@@ -273,7 +324,7 @@
         {
           "command": "glossary.init",
           "when": "explorerResourceIsFolder",
-          "group": "z_lslib@5"
+          "group": "z_lslib@1"
         },
         {
           "command": "divineCli.extractPak",
@@ -298,18 +349,70 @@
       ],
       "editor/context": [
         {
-          "command": "glossary.addTermin"
+          "command": "glossary.termin.add",
+          "group": "z_lslib@3"
         },
         {
-          "command": "glossary.addAlias"
+          "command": "glossary.termin.alias.add",
+          "group": "z_lslib@4"
         },
         {
-          "command": "common.editor.context.insertVersion64"
+          "command": "common.editor.context.insertVersion64",
+          "group": "z_lslib@1"
         },
         {
-          "command": "common.editor.context.insertUUID"
+          "command": "common.editor.context.insertUUID",
+          "group": "z_lslib@2"
         }
       ]
-    }
+    },
+    "jsonValidation": [
+      {
+        "url": "./src/glossary/schema.json",
+        "fileMatch": ".glossary/*.json"
+      }
+    ],
+    "customEditors": [
+      {
+        "viewType": "lslib.pak",
+        "displayName": "LSLib PAK Viewer",
+        "selector": [
+          {
+            "filenamePattern": "*.pak"
+          }
+        ],
+        "priority": "default"
+      },
+      {
+        "viewType": "lslib.gr2",
+        "displayName": "LSLib GR2 viewer",
+        "selector": [
+          {
+            "filenamePattern": "*.gr2"
+          }
+        ],
+        "priority": "default"
+      },
+      {
+        "viewType": "lslib.lsfx",
+        "displayName": "LSLib GR2 lsfx viewer",
+        "selector": [
+          {
+            "filenamePattern": "*.lsfx"
+          }
+        ],
+        "priority": "default"
+      },
+      {
+        "viewType": "lslib.lsf",
+        "displayName": "LSLib GR2 lsfx viewer",
+        "selector": [
+          {
+            "filenamePattern": "*.lsf"
+          }
+        ],
+        "priority": "default"
+      }
+    ]
   }
 }

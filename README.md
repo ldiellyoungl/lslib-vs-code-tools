@@ -103,6 +103,8 @@
 
 </div>
 
+<!-- commands-table -->
+
 ### 🙏 Благодарности
 
 - **Norbyte** — за создание LSLib.

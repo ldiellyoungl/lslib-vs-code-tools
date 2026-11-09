@@ -1,0 +1,49 @@
+{
+  "contributes": {
+    "configuration": [
+      {
+        "title": "Viewers",
+        "properties": {
+          "viewers.pak.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить просмотр .pak",
+            "order": 0
+          },
+          "viewers.gr2.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить просмотр GR2",
+            "order": 0
+          }
+        }
+      }
+    ],
+    "customEditors": [
+      {
+        "viewType": "lslib.pak",
+        "displayName": "LSLib PAK Viewer",
+        "selector": [{ "filenamePattern": "*.pak" }],
+        "priority": "default"
+      },
+      {
+        "viewType": "lslib.gr2",
+        "displayName": "LSLib GR2 viewer",
+        "selector": [{ "filenamePattern": "*.gr2" }],
+        "priority": "default"
+      },
+      {
+        "viewType": "lslib.lsfx",
+        "displayName": "LSLib GR2 lsfx viewer",
+        "selector": [{ "filenamePattern": "*.lsfx" }],
+        "priority": "default"
+      },
+      {
+        "viewType": "lslib.lsf",
+        "displayName": "LSLib GR2 lsfx viewer",
+        "selector": [{ "filenamePattern": "*.lsf" }],
+        "priority": "default"
+      }
+    ]
+  }
+}

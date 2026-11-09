@@ -2,37 +2,37 @@
   "contributes": {
     "configuration": [
       {
-        "title": "Meta.lsx: Общее",
+        "title": "Meta.lsx",
         "properties": {
           "metalsx.diagnostics.enabled": {
             "type": "boolean",
             "default": true,
-            "description": "Включить диагностику"
+            "description": "Включить диагностику",
+            "order": 0
           },
           "metalsx.inlayhints.version.enabled": {
             "type": "boolean",
             "default": true,
-            "description": "Включить показ декодированной версии"
-          }
-        }
-      },
-      {
-        "title": "Meta.lsx: Быстрые действия",
-        "properties": {
+            "description": "Включить показ декодированной версии",
+            "order": 1
+          },
           "metalsx.codelens.moduleInfo.enabled": {
             "type": "boolean",
             "default": true,
-            "description": "Включить быстрые действия над блоком ModuleInfo"
-          },
-          "metalsx.codelens.uuid.enabled": {
-            "type": "boolean",
-            "default": true,
-            "description": "Включить быстрые действия над строкой UUID"
+            "description": "Включить быстрые действия над блоком ModuleInfo",
+            "order": 2
           },
           "metalsx.codelens.version.enabled": {
             "type": "boolean",
             "default": true,
-            "description": "Включить быстрые действия над строкой Version64"
+            "description": "Включить быстрые действия над строкой Version64",
+            "order": 3
+          },
+          "metalsx.codelens.uuid.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Включить быстрые действия над строкой UUID",
+            "order": 4
           }
         }
       }
@@ -41,27 +41,37 @@
       {
         "title": "Скопировать ModuleInfo как ModuleShortDesc",
         "command": "metalsx.codelens.copyAsShortDesc",
-        "category": "Meta.lsx"
+        "icon": "$(copy)",
+        "category": "Meta.lsx",
+        "enablement": "config.metalsx.codelens.moduleInfo.enabled"
       },
       {
         "title": "Преобразовать ModuleInfo как ModuleShortDesc и вставить в зависимости",
         "command": "metalsx.codelens.insertAsDependency",
-        "category": "Meta.lsx"
+        "icon": "$(clippy)",
+        "category": "Meta.lsx",
+        "enablement": "config.metalsx.codelens.moduleInfo.enabled"
       },
       {
         "title": "Преобразовать ModuleInfo как ModuleShortDesc и вставить в конфликты",
         "command": "metalsx.codelens.insertAsConflict",
-        "category": "Meta.lsx"
+        "icon": "$(clippy)",
+        "category": "Meta.lsx",
+        "enablement": "config.metalsx.codelens.moduleInfo.enabled"
       },
       {
         "title": "Отредактировать версию",
         "command": "metalsx.codelens.editVersion64",
-        "category": "Meta.lsx"
+        "icon": "$(edit)",
+        "category": "Meta.lsx",
+        "enablement": "config.metalsx.codelens.version.enabled"
       },
       {
         "title": "Сгенерировать UUID",
         "command": "metalsx.codelens.generateUUID",
-        "category": "Meta.lsx"
+        "icon": "$(refresh)",
+        "category": "Meta.lsx",
+        "enablement": "config.metalsx.codelens.uuid.enabled"
       }
     ]
   }

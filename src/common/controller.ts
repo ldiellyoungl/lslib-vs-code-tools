@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as meta from "@/generated/meta";
 
-import { syncRegister, getExtensionConfig } from "@/utils/common";
+import { getExtensionConfig, syncRegistration } from "@/utils/common";
 
 import { DocumentLinkProvider } from "./documentLinkProvider";
 
@@ -9,11 +9,24 @@ import { insertUUID, insertVersion64 } from "./commands";
 
 export class CommonFilesController implements vscode.Disposable {
   private disposables: vscode.Disposable[] = [];
-  private documentLinkProvider: vscode.Disposable | undefined;
 
-  constructor(context: vscode.ExtensionContext) {
+  constructor() {
     this.registerCommand();
     this.registerProvider();
+  }
+
+  private registerProvider() {
+    this.disposables.push(
+      syncRegistration(
+        "resourcesDocumentLinkEnabled",
+        () => getExtensionConfig("resourcesDocumentLinkEnabled"),
+        () =>
+          vscode.languages.registerDocumentLinkProvider(
+            "*",
+            new DocumentLinkProvider(),
+          ),
+      ),
+    );
   }
 
   private registerCommand() {
@@ -26,19 +39,6 @@ export class CommonFilesController implements vscode.Disposable {
         meta.commands.commonEditorContextInsertUUID,
         () => insertUUID(),
       ),
-    );
-  }
-
-  private registerProvider() {
-    this.documentLinkProvider = syncRegister(
-      this.documentLinkProvider,
-      getExtensionConfig("resourcesDocumentLinkEnabled"),
-      this.disposables,
-      () =>
-        vscode.languages.registerDocumentLinkProvider(
-          "*",
-          new DocumentLinkProvider(),
-        ),
     );
   }
 
