@@ -3,6 +3,7 @@
     "configuration": [
       {
         "title": "Divine CLI",
+        "order": 0,
         "properties": {
           "divineCli.args.game": {
             "type": "string",
@@ -15,14 +16,14 @@
               "Divinity: Original Sin 2 - Definitive Edition",
               "Baldur's Gate 3"
             ],
-            "description": "Целевая игра для операций Divine CLI",
+            "markdownDescription": "Target game for Divine CLI operations\n\n*See [documentation](https://github.com/Norbyte/lslib/blob/master/Divine/CLI/CommandLineArguments.cs)*",
             "order": 0
           },
           "divineCli.args.compressionMethod": {
             "type": "string",
             "default": "lz4",
             "enum": ["zlib", "zlibfast", "lz4", "lz4hc", "none"],
-            "description": "Метод сжатия по умолочанию при создании PAK",
+            "markdownDescription": "Default compression method when creating a `.pak`",
             "order": 1
           },
           "divineCli.args.logLevel": {
@@ -38,7 +39,7 @@
               "trace",
               "all"
             ],
-            "description": "Уровень детализации логов Divine CLI",
+            "description": "Log detail level",
             "order": 2
           }
         }
@@ -47,25 +48,25 @@
     "commands": [
       {
         "command": "divineCli.extractPak",
-        "title": "DivineCLI: Распаковать PAK",
+        "title": "Extract .pak",
         "icon": "$(unarchive)",
         "category": "DivineCLI"
       },
       {
         "command": "divineCli.createPak",
-        "title": "DivineCLI: Создать PAK",
+        "title": "Create .pak",
         "icon": "$(archive)",
         "category": "DivineCLI"
       },
       {
         "command": "divineCli.convert-resource",
-        "title": "DivineCLI: Конвертировать ресурс",
+        "title": "Convert resource(s)",
         "icon": "$(sync)",
         "category": "DivineCLI"
       },
       {
         "command": "divineCli.convert-loca",
-        "title": "DivineCLI: Конвертировать локализацию",
+        "title": "Convert loca",
         "icon": "$(sync)",
         "category": "DivineCLI"
       }

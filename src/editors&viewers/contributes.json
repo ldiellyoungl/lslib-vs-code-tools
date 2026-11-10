@@ -3,17 +3,18 @@
     "configuration": [
       {
         "title": "Viewers",
+        "order": 10,
         "properties": {
           "viewers.pak.enabled": {
             "type": "boolean",
             "default": true,
-            "description": "Включить просмотр .pak",
+            "markdownDescription": "Enable `.pak` file viewing",
             "order": 0
           },
           "viewers.gr2.enabled": {
             "type": "boolean",
             "default": true,
-            "description": "Включить просмотр GR2",
+            "markdownDescription": "Enable `.gr2` viewing",
             "order": 0
           }
         }
@@ -33,15 +34,14 @@
         "priority": "default"
       },
       {
-        "viewType": "lslib.lsfx",
-        "displayName": "LSLib GR2 lsfx viewer",
-        "selector": [{ "filenamePattern": "*.lsfx" }],
-        "priority": "default"
-      },
-      {
-        "viewType": "lslib.lsf",
-        "displayName": "LSLib GR2 lsfx viewer",
-        "selector": [{ "filenamePattern": "*.lsf" }],
+        "viewType": "lslib.lsfxViewer",
+        "displayName": "LSLib LSFX/LSF Editor",
+        "selector": [
+          { "filenamePattern": "*.lsfx" },
+          { "filenamePattern": "*.lsf" },
+          { "filenamePattern": "*.lsb" },
+          { "filenamePattern": "*.loca" }
+        ],
         "priority": "default"
       }
     ]

@@ -2,12 +2,13 @@
   "contributes": {
     "configuration": [
       {
-        "title": "Глоссарий",
+        "title": "Glossary",
+        "order": 4,
         "properties": {
           "glossary.enabled": {
             "type": "boolean",
             "default": true,
-            "description": "Включить глоссарий (подсветку терминов и подсказки при наведении мыши).",
+            "description": "Enable glossary (decorators and hover providers).",
             "order": 0
           },
           "glossary.searchFolders": {
@@ -16,7 +17,7 @@
               "type": "string"
             },
             "default": ["Localization"],
-            "description": "Список папок, в которых ищутся термины глоссария (например, ['Localization', 'Scripts']).",
+            "markdownDescription": "List of folders in which terms are searched for.\n\\Example:`Localization`,`Scripts`",
             "order": 1
           }
         }
@@ -25,29 +26,29 @@
     "commands": [
       {
         "command": "glossary.init",
-        "title": "Глоссарий: Инициализировать",
+        "title": "Glossary: Initialize",
         "icon": "new-folder",
-        "category": "Глоссарий"
+        "category": "Glossary"
       },
       {
         "command": "glossary.termin.add",
-        "title": "Глоссарий: Добавить термин",
+        "title": "Glossary: Add termin",
         "icon": "add",
-        "category": "Глоссарий",
+        "category": "Glossary",
         "enablement": "config.glossary.enabled"
       },
       {
         "command": "glossary.termin.show",
-        "title": "Глоссарий: показать термин",
+        "title": "Glossary: Show termin",
         "icon": "$(eye)",
-        "category": "Глоссарий",
+        "category": "Glossary",
         "enablement": "config.glossary.enabled"
       },
       {
         "command": "glossary.termin.alias.add",
-        "title": "Глоссарий: Добавить аллиас",
+        "title": "Glossary: Add alias",
         "icon": "add",
-        "category": "Глоссарий",
+        "category": "Glossary",
         "enablement": "config.glossary.enabled"
       }
     ],

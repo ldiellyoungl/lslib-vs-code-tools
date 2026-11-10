@@ -7,7 +7,9 @@ import { MetaLsxController } from "@/meta-lsx";
 import { GlossaryController } from "@/glossary";
 
 // TODO Experemental
-import { PakController, StubController } from "@/editors&viewers";
+import { PakController } from "@/editors&viewers";
+import { DivineService } from "@/divine";
+import { LsfxController } from "@/editors&viewers/converterProvider";
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(new DivineController(context));
@@ -22,7 +24,9 @@ export function activate(context: vscode.ExtensionContext) {
 
   // TODO Experemental
   context.subscriptions.push(new PakController(context));
-  context.subscriptions.push(new StubController(context));
+  context.subscriptions.push(
+    new LsfxController(context, new DivineService(context.extensionPath)),
+  );
 }
 
 export function deactivate() {}

@@ -2,12 +2,13 @@
   "contributes": {
     "configuration": [
       {
-        "title": "Файлы",
+        "title": "Resources",
+        "order": 3,
         "properties": {
           "resources.documentLink.enabled": {
             "type": "boolean",
             "default": true,
-            "description": "Включить ссылки для ресурсных путей",
+            "description": "Enable links for resource paths",
             "order": 0
           }
         }
@@ -15,13 +16,13 @@
     ],
     "commands": [
       {
-        "title": "Вставить версию в формате int64",
+        "title": "Insert version in int64 format",
         "command": "common.editor.context.insertVersion64",
         "icon": "$(add)",
         "category": "Общее"
       },
       {
-        "title": "Сгенерировать и вставить UUID",
+        "title": "Generate and insert UUID",
         "command": "common.editor.context.insertUUID",
         "icon": "$(add)",
         "category": "Общее"

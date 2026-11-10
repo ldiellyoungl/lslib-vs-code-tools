@@ -16,7 +16,7 @@ export class LocalizationController implements vscode.Disposable {
 
   private registerProviders() {
     const decoratorReg = syncRegistration(
-      "localizationDecoratorsEnabled",
+      ["localizationDecoratorsEnabled"],
       () => getExtensionConfig("localizationDecoratorsEnabled"),
       () => {
         return new Decorator(this.context);

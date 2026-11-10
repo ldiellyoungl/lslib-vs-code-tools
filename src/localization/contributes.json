@@ -2,13 +2,23 @@
   "contributes": {
     "configuration": [
       {
-        "title": "Локализация",
+        "title": "Localization",
+        "order": 2,
         "properties": {
           "localization.decorators.enabled": {
             "type": "boolean",
             "default": true,
-            "description": "Включить декораторы локализации",
+            "markdownDescription": "Enable decorators. \n\n*Show translated string next to handles*",
             "order": 0
+          },
+          "localization.decorators.handles.blacklist": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": ["ls::TranslatedStringRepository::s_HandleUnknown"],
+            "markdownDescription": "List of handles to be ignored.\n\n*Example: `ls::TranslatedStringRepository::s_HandleUnknown`*",
+            "order": 1
           }
         }
       }

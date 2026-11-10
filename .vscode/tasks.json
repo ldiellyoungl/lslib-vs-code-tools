@@ -2,6 +2,12 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "update",
+      "type": "npm",
+      "script": "update",
+      "problemMatcher": []
+    },
+    {
       "label": "watch",
       "type": "npm",
       "script": "watch",
@@ -19,6 +25,12 @@
         "reveal": "never"
       },
       "group": "build"
+    },
+    {
+      "label": "update-and-watch",
+      "dependsOn": ["update", "watch"],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
     }
   ]
 }

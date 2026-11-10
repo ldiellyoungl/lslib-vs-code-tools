@@ -29,18 +29,19 @@ export interface SyncRegistration<T extends vscode.Disposable> {
  * Создаёт провайдер/менеджер и автоматически включает/выключает его
  * при изменении булевой настройки.
  *
- * @param configKey   Полный ключ настройки, например "glossary.enabled"
+ * @param configKeys  Ключ/и настроек на которые вешается вотчер
  * @param readEnabled Функция чтения текущего значения настройки
  * @param factory     Создаёт новый экземпляр, когда настройка включена
  * @param onChange    Опционально: вызывается при каждом переключении
  */
 export function syncRegistration<T extends vscode.Disposable>(
-  configName: keyof typeof meta.configs,
+  configNames: keyof typeof meta.configs | (keyof typeof meta.configs)[],
   readEnabled: () => boolean,
   factory: () => T,
   onChange?: (current: T | undefined) => void,
 ): SyncRegistration<T> {
-  const fullKey = meta.configs[configName].key;
+  const names = Array.isArray(configNames) ? configNames : [configNames];
+  const fullKeys = names.map((name) => meta.configs[name].key);
 
   let current: T | undefined;
 
@@ -58,7 +59,7 @@ export function syncRegistration<T extends vscode.Disposable>(
   apply();
 
   const listener = vscode.workspace.onDidChangeConfiguration((e) => {
-    if (e.affectsConfiguration(fullKey)) {
+    if (fullKeys.some((key) => e.affectsConfiguration(key))) {
       apply();
     }
   });

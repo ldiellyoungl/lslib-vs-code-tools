@@ -5,6 +5,11 @@
         "match": "package.json",
         "isAsync": true,
         "cmd": "pnpm run update"
+      },
+      {
+        "match": "contributes\\.json$",
+        "isAsync": true,
+        "cmd": "pnpm run update"
       }
     ]
   }
