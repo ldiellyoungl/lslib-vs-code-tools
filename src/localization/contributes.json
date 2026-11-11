@@ -17,7 +17,7 @@
               "type": "string"
             },
             "default": ["ls::TranslatedStringRepository::s_HandleUnknown"],
-            "markdownDescription": "List of handles to be ignored.\n\n*Example: `ls::TranslatedStringRepository::s_HandleUnknown`*",
+            "markdownDescription": "List of handles to be ignored. \n\n*Example: `ls::TranslatedStringRepository::s_HandleUnknown`*",
             "order": 1
           }
         }
@@ -26,7 +26,7 @@
     "commands": [
       {
         "command": "localization.goToTranslation",
-        "title": "Перейти к локализации",
+        "title": "Go to translation",
         "icon": "$(go-to-file)",
         "category": "Локализация",
         "enablement": "config.localization.decorators.enabled"

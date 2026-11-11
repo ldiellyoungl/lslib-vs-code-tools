@@ -8,6 +8,12 @@
       "problemMatcher": []
     },
     {
+      "label": "l10n-export",
+      "type": "npm",
+      "script": "l10n:export",
+      "problemMatcher": []
+    },
+    {
       "label": "watch",
       "type": "npm",
       "script": "watch",
@@ -27,8 +33,14 @@
       "group": "build"
     },
     {
+      "label": "prepare",
+      "dependsOn": ["update", "l10n-export"],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
+    },
+    {
       "label": "update-and-watch",
-      "dependsOn": ["update", "watch"],
+      "dependsOn": ["prepare", "watch"],
       "dependsOrder": "sequence",
       "problemMatcher": []
     }

@@ -55,7 +55,7 @@ export async function showOverwriteConfirmation(
  * Показывает финальное сообщение о результате пакетной операции.
  */
 export function showFinalMessage(
-  operationName: string,
+  operationName: string | undefined,
   statistics: Statistics,
   wasCancelled: boolean,
 ): void {

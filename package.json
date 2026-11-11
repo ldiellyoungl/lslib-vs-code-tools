@@ -24,17 +24,20 @@
     "onStartupFinished"
   ],
   "main": "./out/extension.js",
+  "l10n": "./l10n",
   "scripts": {
     "vscode:prepublish": "pnpm run compile",
     "compile": "tsc -p ./ && tsc-alias -p ./tsconfig.json && node scripts/copy-assets.js",
     "watch": "concurrently \"tsc -watch -p ./\" \"tsc-alias -w -p ./tsconfig.json\" \"node scripts/copy-assets.js --watch\"",
-    "update": "vscd --clean && vscode-ext-gen --output src/generated/meta.ts"
+    "update": "vscd --clean && vscode-ext-gen --output src/generated/meta.ts",
+    "l10n:export": "npx @vscode/l10n-dev export -o ./l10n ./src"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
     "@types/node": "~24.19.2",
     "@types/sax": "^1.2.7",
     "@types/vscode": "^1.145.0",
+    "@vscode/l10n-dev": "^0.0.35",
     "@vscode/test-cli": "^0.0.15",
     "@vscode/test-electron": "^3.1.0",
     "concurrently": "^10.0.7",
@@ -112,7 +115,7 @@
             "default": [
               "ls::TranslatedStringRepository::s_HandleUnknown"
             ],
-            "markdownDescription": "List of handles to be ignored.\n\n*Example: `ls::TranslatedStringRepository::s_HandleUnknown`*",
+            "markdownDescription": "List of handles to be ignored. \n\n*Example: `ls::TranslatedStringRepository::s_HandleUnknown`*",
             "order": 1
           }
         }
@@ -179,7 +182,7 @@
               "Divinity: Original Sin 2 - Definitive Edition",
               "Baldur's Gate 3"
             ],
-            "markdownDescription": "Target game for Divine CLI operations\n\n*See [documentation](https://github.com/Norbyte/lslib/blob/master/Divine/CLI/CommandLineArguments.cs)*",
+            "markdownDescription": "Target game for Divine CLI operations\n\n*[Documentation](https://github.com/Norbyte/lslib/blob/master/Divine/CLI/CommandLineArguments.cs#L25)*",
             "order": 0
           },
           "divineCli.args.compressionMethod": {
@@ -192,7 +195,7 @@
               "lz4hc",
               "none"
             ],
-            "markdownDescription": "Default compression method when creating a `.pak`",
+            "markdownDescription": "Default compression method when creating a `.pak`\n\n*[Documentation](https://github.com/Norbyte/lslib/blob/master/Divine/CLI/CommandLineArguments.cs#L92)*",
             "order": 1
           },
           "divineCli.args.logLevel": {
@@ -208,7 +211,7 @@
               "trace",
               "all"
             ],
-            "description": "Log detail level",
+            "markdownDescription": "Log detail level\n\n*[Documentation](https://github.com/Norbyte/lslib/blob/master/Divine/CLI/CommandLineArguments.cs#L15)*",
             "order": 2
           }
         }
@@ -264,7 +267,7 @@
       },
       {
         "command": "localization.goToTranslation",
-        "title": "Перейти к локализации",
+        "title": "Go to translation",
         "icon": "$(go-to-file)",
         "category": "Локализация",
         "enablement": "config.localization.decorators.enabled"
@@ -316,7 +319,7 @@
       },
       {
         "command": "divineCli.convert-loca",
-        "title": "Convert loca",
+        "title": "Convert localization(s)",
         "icon": "$(sync)",
         "category": "DivineCLI"
       },
@@ -352,7 +355,7 @@
         },
         {
           "command": "divineCli.convert-resource",
-          "when": "resourceExtname == '.lsf' || resourceExtname == '.lsfx' || resourceExtname == '.lsb' || resourceExtname == '.lsj' || resourceExtname == '.lsx' || resourceExtname == '.gr2'",
+          "when": "resourceExtname == '.lsf' || resourceExtname == '.lsfx' || resourceExtname == '.lsb' || resourceExtname == '.lsj' || resourceExtname == '.lsx'",
           "group": "z_lslib@3"
         },
         {

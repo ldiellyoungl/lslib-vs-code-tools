@@ -27,7 +27,9 @@ export type Format =
   | "lsx"
   | "lsb"
   | "lsf"
-  | "lsfx";
+  | "lsfx"
+  | "xml"
+  | "loca";
 
 export type CompressionMethod =
   meta.ConfigKeyTypeMap["divineCli.args.compressionMethod"];

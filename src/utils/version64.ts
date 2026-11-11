@@ -122,12 +122,12 @@ export function parseVersionString(str: string): Version | null {
 
 export async function showInput(value?: string) {
   return await vscode.window.showInputBox({
-    prompt: "Введите версию",
+    prompt: `${vscode.l10n.t("Enter version")}`,
     placeHolder: "1.0",
     value,
     validateInput: (value) => {
       if (!parseVersionString(value)) {
-        return "Неверный формат";
+        return `${vscode.l10n.t("Invalid format")}`;
       }
       return null;
     },

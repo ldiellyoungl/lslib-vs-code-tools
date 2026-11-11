@@ -103,7 +103,7 @@ export function validateUuidAttribute(ctx: ValidationContext) {
     if (!isValidUUID(value)) {
       ctx.diagnostics.push(
         createDiagnostic({
-          message: `Невалидный формат UUID`,
+          message: `${vscode.l10n.t("Invelid UUID")}`,
           range: nodeToRange(ctx.document, node, "value", "value"),
           code: `INVALID_UUID`,
         }),
@@ -111,7 +111,8 @@ export function validateUuidAttribute(ctx: ValidationContext) {
     } else if (!isValidUUIDv4(value)) {
       ctx.diagnostics.push(
         createDiagnostic({
-          message: `UUID валиден но не соответствует спецификации 4ой версии`,
+          // message: `UUID валиден но не соответствует спецификации 4ой версии`,
+          message: `${vscode.l10n.t("UUID is valid but not v4 version specification")}`,
           range: nodeToRange(ctx.document, node, "value", "value"),
           severity: vscode.DiagnosticSeverity.Hint,
           code: `INVALID_UUID_V4`,
@@ -132,7 +133,7 @@ export function validateVersion64Attribute(ctx: ValidationContext) {
     if (!isValidVersion64(value)) {
       ctx.diagnostics.push(
         createDiagnostic({
-          message: `Невалидный формат версии`,
+          message: `${vscode.l10n.t("Invalid version format")}`,
           range: nodeToRange(ctx.document, node, "value", "value"),
           code: `INVALID_VERSION`,
         }),
@@ -164,7 +165,7 @@ export function validateModuleInfoFolder(ctx: ValidationContext) {
   if (value !== getModFolder(ctx.document.uri.fsPath)) {
     ctx.diagnostics.push(
       createDiagnostic({
-        message: `Некоректное имя папки`,
+        message: `${vscode.l10n.t("Invalid folder name")}`,
         range: nodeToRange(ctx.document, folderAttr, "value", "value"),
         code: `INVALID_FOLDER`,
       }),

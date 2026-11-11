@@ -16,14 +16,14 @@
               "Divinity: Original Sin 2 - Definitive Edition",
               "Baldur's Gate 3"
             ],
-            "markdownDescription": "Target game for Divine CLI operations\n\n*See [documentation](https://github.com/Norbyte/lslib/blob/master/Divine/CLI/CommandLineArguments.cs)*",
+            "markdownDescription": "Target game for Divine CLI operations\n\n*[Documentation](https://github.com/Norbyte/lslib/blob/master/Divine/CLI/CommandLineArguments.cs#L25)*",
             "order": 0
           },
           "divineCli.args.compressionMethod": {
             "type": "string",
             "default": "lz4",
             "enum": ["zlib", "zlibfast", "lz4", "lz4hc", "none"],
-            "markdownDescription": "Default compression method when creating a `.pak`",
+            "markdownDescription": "Default compression method when creating a `.pak`\n\n*[Documentation](https://github.com/Norbyte/lslib/blob/master/Divine/CLI/CommandLineArguments.cs#L92)*",
             "order": 1
           },
           "divineCli.args.logLevel": {
@@ -39,7 +39,7 @@
               "trace",
               "all"
             ],
-            "description": "Log detail level",
+            "markdownDescription": "Log detail level\n\n*[Documentation](https://github.com/Norbyte/lslib/blob/master/Divine/CLI/CommandLineArguments.cs#L15)*",
             "order": 2
           }
         }
@@ -66,7 +66,7 @@
       },
       {
         "command": "divineCli.convert-loca",
-        "title": "Convert loca",
+        "title": "Convert localization(s)",
         "icon": "$(sync)",
         "category": "DivineCLI"
       }
@@ -85,7 +85,7 @@
         },
         {
           "command": "divineCli.convert-resource",
-          "when": "resourceExtname == '.lsf' || resourceExtname == '.lsfx' || resourceExtname == '.lsb' || resourceExtname == '.lsj' || resourceExtname == '.lsx' || resourceExtname == '.gr2'",
+          "when": "resourceExtname == '.lsf' || resourceExtname == '.lsfx' || resourceExtname == '.lsb' || resourceExtname == '.lsj' || resourceExtname == '.lsx'",
           "group": "z_lslib@3"
         },
         {

@@ -35,7 +35,7 @@ export class UuidCodeLens implements vscode.CodeLensProvider {
 
       lenses.push(
         new vscode.CodeLens(lensRange, {
-          title: "$(add-small) Сгенерировать",
+          title: `$(refresh) ${vscode.l10n.t("Generate new UUID")}`,
           command: meta.commands.metalsxCodelensGenerateUUID,
           arguments: [valueRange],
         }),

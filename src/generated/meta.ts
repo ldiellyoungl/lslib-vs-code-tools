@@ -60,7 +60,7 @@ export const commands = {
    */
   metalsxCodelensGenerateUUID: "metalsx.codelens.generateUUID",
   /**
-   * Перейти к локализации
+   * Go to translation
    * @value `localization.goToTranslation`
    */
   localizationGoToTranslation: "localization.goToTranslation",
@@ -100,7 +100,7 @@ export const commands = {
    */
   divineCliConvertResource: "divineCli.convert-resource",
   /**
-   * Convert loca
+   * Convert localization(s)
    * @value `divineCli.convert-loca`
    */
   divineCliConvertLoca: "divineCli.convert-loca",
@@ -238,7 +238,7 @@ export const configs = {
     default: "lz4",
   } as ConfigItem<"divineCli.args.compressionMethod">,
   /**
-   * Log detail level
+   *
    * @key `divineCli.args.logLevel`
    * @default `"info"`
    * @type `string`

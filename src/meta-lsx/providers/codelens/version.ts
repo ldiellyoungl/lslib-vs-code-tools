@@ -35,7 +35,7 @@ export class VersionCodeLens implements vscode.CodeLensProvider {
 
       lenses.push(
         new vscode.CodeLens(lensRange, {
-          title: "$(edit) Отредактировать версию",
+          title: `$(edit) ${vscode.l10n.t("Edit version")}`,
           command: meta.commands.metalsxCodelensEditVersion64,
           arguments: [valueRange],
         }),

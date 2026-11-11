@@ -58,7 +58,7 @@ export class DocumentLinkProvider implements vscode.DocumentLinkProvider {
         range,
         vscode.Uri.file(realFilePath),
       );
-      link.tooltip = `Открыть: ${path.basename(realFilePath)}`;
+      link.tooltip = `${vscode.l10n.t("open")}: ${path.basename(realFilePath)}`;
       links.push(link);
     }
 

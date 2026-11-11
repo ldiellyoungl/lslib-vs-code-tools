@@ -56,7 +56,6 @@ export function validateDivineArgs(args: DivineArgs): void {
       // destination не требуется
       break;
 
-    case "convert-model":
     case "convert-models":
       if (!args.inputFormat) {
         errors.push(`Для ${args.action} обязателен inputFormat`);
@@ -64,18 +63,13 @@ export function validateDivineArgs(args: DivineArgs): void {
       if (!args.outputFormat) {
         errors.push(`Для ${args.action} обязателен outputFormat`);
       }
-      if (
-        args.inputFormat &&
-        args.outputFormat &&
-        args.inputFormat === args.outputFormat
-      ) {
+      if (args.inputFormat === args.outputFormat) {
         errors.push(
           `inputFormat и outputFormat не могут быть одинаковыми (${args.inputFormat})`,
         );
       }
       break;
 
-    case "convert-resource":
     case "convert-resources":
       if (!args.inputFormat) {
         errors.push(`Для ${args.action} обязателен inputFormat`);
@@ -83,11 +77,7 @@ export function validateDivineArgs(args: DivineArgs): void {
       if (!args.outputFormat) {
         errors.push(`Для ${args.action} обязателен outputFormat`);
       }
-      if (
-        args.inputFormat &&
-        args.outputFormat &&
-        args.inputFormat === args.outputFormat
-      ) {
+      if (args.inputFormat === args.outputFormat) {
         errors.push(
           `inputFormat и outputFormat не могут быть одинаковыми (${args.inputFormat})`,
         );

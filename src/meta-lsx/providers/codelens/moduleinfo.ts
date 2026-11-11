@@ -20,17 +20,17 @@ export class ModuleInfoCodeLens implements vscode.CodeLensProvider {
 
       lenses.push(
         new vscode.CodeLens(lensRange, {
-          title: "$(copy) Скопировать как ModuleShrotDesc",
+          title: `$(copy) ${vscode.l10n.t("Copy as ModuleShortDesc")}`,
           command: meta.commands.metalsxCodelensCopyAsShortDesc,
           arguments: [tagStart],
         }),
         new vscode.CodeLens(lensRange, {
-          title: "$(add-compact) Вставить как зависимость",
+          title: `$(add) ${vscode.l10n.t("Insert as dependency")}`,
           command: meta.commands.metalsxCodelensInsertAsDependency,
           arguments: [tagStart],
         }),
         new vscode.CodeLens(lensRange, {
-          title: "$(add-compact) Вставить как конфликт",
+          title: `$(add) ${vscode.l10n.t("Insert as conflict")}`,
           command: meta.commands.metalsxCodelensInsertAsConflict,
           arguments: [tagStart],
         }),

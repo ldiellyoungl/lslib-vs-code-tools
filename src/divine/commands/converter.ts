@@ -12,7 +12,15 @@ import {
 
 import { getFileExtension } from "@/utils/files";
 
-export const RESOURCE_FORMATS: Format[] = ["lsx", "lsf", "lsb", "lsj", "lsfx"];
+export const RESOURCE_FORMATS: Format[] = [
+  "lsx",
+  "lsf",
+  "lsb",
+  "lsj",
+  "lsfx",
+  "loca",
+  "xml",
+];
 
 export async function convertResource(
   divineService: DivineService,
@@ -36,7 +44,7 @@ export async function convertResource(
 
   if (targetFormats.length === 0) {
     vscode.window.showInformationMessage(
-      "Все выделенные файлы уже в одном формате, конвертировать нечего.",
+      `${vscode.l10n.t("Files already in target format")}`,
     );
     return;
   }
@@ -44,12 +52,11 @@ export async function convertResource(
   const selectedFormat = await vscode.window.showQuickPick(
     targetFormats.map((fmt) => ({
       label: fmt.toUpperCase(),
-      description: `Конвертировать в .${fmt}`,
+      description: `${vscode.l10n.t("Convert into .{0}", fmt)}`,
       format: fmt,
     })),
     {
-      placeHolder: "Выберите целевой формат",
-      title: "Конвертация ресурсов",
+      placeHolder: `${vscode.l10n.t("Select target format")}`,
     },
   );
 
@@ -61,7 +68,7 @@ export async function convertResource(
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: `Конвертация в ${targetFormat.toUpperCase()} (${uris.length} шт.)`,
+        title: `${vscode.l10n.t("Converting into {0} ({1})", targetFormat.toUpperCase(), uris.length)}`,
         cancellable: true,
       },
       async (progress, token) => {
@@ -83,7 +90,7 @@ export async function convertResource(
           const targetPath = path.join(dirName, `${baseName}.${targetFormat}`);
 
           progress.report({
-            message: `Обработка ${i + 1}/${uris.length}: ${baseName}.${sourceExt}`,
+            message: `${vscode.l10n.t("Processing {0}/{1}", i + 1, uris.length)}:${baseName}, ${sourceExt}`,
             increment: 100 / uris.length,
           });
 
@@ -134,20 +141,22 @@ export async function convertResource(
             }
 
             console.error(
-              `Ошибка при конвертации ${baseName}.${sourceExt}:`,
+              `${vscode.l10n.t("Convert error: {0}.{1}", baseName, sourceExt)}`,
               error.message,
             );
             statistics.errorCount++;
           }
         }
         showFinalMessage(
-          "Конвертация ресурсов",
+          `${vscode.l10n.t("Converting")}`,
           statistics,
           token.isCancellationRequested,
         );
       },
     );
   } catch (error: any) {
-    vscode.window.showErrorMessage(`Критическая ошибка: ${error.message}`);
+    vscode.window.showErrorMessage(
+      `${vscode.l10n.t("Critical error: {0}", error.message)}`,
+    );
   }
 }

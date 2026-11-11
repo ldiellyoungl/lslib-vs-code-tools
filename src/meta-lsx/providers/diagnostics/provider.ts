@@ -59,7 +59,7 @@ export class DiagnosticProvider implements vscode.Disposable {
 
       diagnostics.push(
         createDiagnostic({
-          message: `Ошибка XML: ${err.message}`,
+          message: `${vscode.l10n.t("XML error: ${0}", err.message)}`,
           range: new vscode.Range(start, end),
           code: "XML_PARSE_ERROR",
         }),

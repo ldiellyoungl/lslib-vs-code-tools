@@ -5,7 +5,6 @@ import { getExtensionConfig, syncRegistration } from "@/utils/common";
 
 import { DiagnosticProvider } from "./providers/diagnostics/provider";
 import { CodeActionProvider } from "./providers/diagnostics/codeActions";
-import { HoverProvider } from "./providers/hover/provider";
 import { VersionInlayHintsProvider } from "./providers/inlayhints";
 import { ModuleInfoCodeLens } from "./providers/codelens/moduleinfo";
 import { VersionCodeLens } from "./providers/codelens/version";
@@ -92,18 +91,6 @@ export class MetaLsxController implements vscode.Disposable {
       ),
     );
   }
-
-  // TODO Нужен ли он вообщ?
-  // this.hoverProvider = syncRegister(
-  //   this.hoverProvider,
-  //   getExtensionConfig("metalsxHoversEnabled"),
-  //   this.disposables,
-  //   () =>
-  //     vscode.languages.registerHoverProvider(
-  //       this.pattern,
-  //       new HoverProvider(),
-  //     ),
-  // );
 
   private registerCommands() {
     this.disposables.push(

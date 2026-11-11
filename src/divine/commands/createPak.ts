@@ -15,6 +15,8 @@ export async function createPak(
   divineService: DivineService,
   uris: vscode.Uri[],
 ): Promise<void> {
+  if (uris.length === 0) return;
+
   try {
     await vscode.window.withProgress(
       {

@@ -17,7 +17,7 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
         case "INVALID_FOLDER": {
           const correctFolder = getModFolder(document.uri.fsPath);
           const action = new vscode.CodeAction(
-            `Заменить на "${correctFolder}"`,
+            `${vscode.l10n.t("Replace with {0}", String(correctFolder))}`,
             vscode.CodeActionKind.QuickFix,
           );
           action.diagnostics = [diagnostic];
@@ -51,7 +51,7 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
           const missingAttrs = diagnostic.data as string[];
 
           const action = new vscode.CodeAction(
-            `Добавить недостающие атрибуты: ${missingAttrs.join(", ")}`,
+            `${vscode.l10n.t("Add missing attributes: {0}", missingAttrs.join(", "))}`,
             vscode.CodeActionKind.QuickFix,
           );
 
