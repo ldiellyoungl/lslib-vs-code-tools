@@ -1,54 +1,29 @@
 import * as vscode from "vscode";
-import * as path from "path";
+
+import { DivineArgs } from "./args";
+
 import { spawn, ChildProcess } from "child_process";
-
-import { DivineArgs, buildDivineArgs } from "./args";
-
-import { validateDivineArgs } from "./validator";
 
 export interface DivineRunOptions {
   args: DivineArgs;
   cwd?: string;
   onProgress?: (line: string) => void;
+  token?: vscode.CancellationToken;
 }
 
 export class DivineRunner implements vscode.Disposable {
   private readonly divinePath: string;
   private outputChannel: vscode.OutputChannel =
     vscode.window.createOutputChannel("Divine CLI");
-  private disposables: vscode.Disposable[] = [];
 
-  constructor(extensionPath: string) {
-    this.divinePath = path.join(
-      extensionPath,
-      "src",
-      "resources",
-      "lslib-tools",
-      "divine.exe",
-    );
+  constructor(divinePath: string) {
+    this.divinePath = divinePath;
   }
 
-  public async runDivineCommand(options: DivineRunOptions): Promise<string> {
-    validateDivineArgs(options.args);
-    const cliArgs = buildDivineArgs(options.args);
-
-    return this.executeProcess({
-      args: cliArgs,
-      cwd: options.cwd,
-      onProgress: options.onProgress,
-    });
-  }
-
-  private executeProcess(options: {
-    args: string[];
-    cwd?: string;
-    onProgress?: (line: string) => void;
-  }): Promise<string> {
+  public run(
+    options: Omit<DivineRunOptions, "args"> & { args: string[] },
+  ): Promise<string> {
     return new Promise((resolve, reject) => {
-      this.outputChannel?.clear();
-      this.outputChannel?.appendLine(
-        `[Divine CLI] Путь к executable: ${this.divinePath}`,
-      );
       this.outputChannel?.appendLine(
         `[Divine CLI] Аргументы CLI: ${options.args.join(" ")}`,
       );
@@ -62,6 +37,24 @@ export class DivineRunner implements vscode.Disposable {
         windowsHide: true,
       });
 
+      let cancellationListener: vscode.Disposable | undefined;
+      let wasCancelled = false;
+
+      if (options.token) {
+        if (options.token.isCancellationRequested) {
+          child.kill();
+          reject(new Error("[Divine CLI] Операция отменена пользователем."));
+          return;
+        }
+        cancellationListener = options.token.onCancellationRequested(() => {
+          wasCancelled = true;
+          this.outputChannel.appendLine(
+            "[Divine CLI] Получен запрос на отмену, завершаем процесс...",
+          );
+          child.kill();
+        });
+      }
+
       let stdoutData = "";
       let stderrData = "";
 
@@ -69,36 +62,39 @@ export class DivineRunner implements vscode.Disposable {
       const stderrDecoder = new TextDecoder("ibm866");
 
       child.stdout?.on("data", (data: Buffer) => {
-        const text = stdoutDecoder.decode(data, { stream: true });
+        const text = stdoutDecoder.decode(data, { stream: false });
         stdoutData += text;
         this.outputChannel?.append(text);
         if (options.onProgress) options.onProgress(text);
       });
 
       child.stderr?.on("data", (data: Buffer) => {
-        const text = stderrDecoder.decode(data, { stream: true });
+        const text = stderrDecoder.decode(data, { stream: false });
         stderrData += text;
         this.outputChannel?.append(text);
         if (options.onProgress) options.onProgress(text);
       });
 
-      child.on("close", (code: number) => {
-        this.outputChannel?.appendLine(
-          "--------------------------------------------------",
-        );
+      child.on("close", (code, signal) => {
+        cancellationListener?.dispose();
+
+        if (wasCancelled) {
+          reject(new Error("[Divine CLI] Операция отменена пользователем."));
+          return;
+        }
+
         if (code === 0) {
-          this.outputChannel?.appendLine(
-            "[Divine CLI] Успешно завершено (код 0).",
-          );
           resolve(stdoutData);
         } else {
-          const errorMsg = `[Divine CLI] Ошибка: процесс завершен с кодом ${code}.\nДетали: ${stderrData || stdoutData || "Нет данных"}`;
-          this.outputChannel?.appendLine(errorMsg);
+          const reason = signal ? `сигнал ${signal}` : `код ${code}`;
+          const errorMsg = `[Divine CLI] Процесс завершён (${reason}).\n${stderrData || stdoutData || "Нет данных"}`;
+          this.outputChannel.appendLine(errorMsg);
           reject(new Error(errorMsg));
         }
       });
 
       child.on("error", (err: Error) => {
+        cancellationListener?.dispose();
         const errorMsg = `[Divine CLI] Не удалось запустить процесс: ${err.message}. Проверьте, существует ли файл по пути: ${this.divinePath}`;
         this.outputChannel?.appendLine(errorMsg);
         reject(new Error(errorMsg));
@@ -107,8 +103,6 @@ export class DivineRunner implements vscode.Disposable {
   }
 
   dispose() {
-    this.disposables.forEach((d) => d.dispose());
-    this.disposables = [];
     this.outputChannel.dispose();
   }
 }

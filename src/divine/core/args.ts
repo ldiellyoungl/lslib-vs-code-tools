@@ -1,7 +1,4 @@
-import { getExtensionConfig } from "@/utils/common";
 import * as meta from "@/generated/meta";
-
-export type Game = meta.ConfigKeyTypeMap["divineCli.args.game"];
 
 export type Action =
   | "create-package"
@@ -16,62 +13,32 @@ export type Action =
   | "convert-loca"
   | "build-vt";
 
-export type LogLevel = meta.ConfigKeyTypeMap["divineCli.args.logLevel"];
+export const RESOURCE_FORMATS = [
+  "dae",
+  "gr2",
+  "lsv",
+  "pak",
+  "lsj",
+  "lsx",
+  "lsb",
+  "lsf",
+  "lsfx",
+] as const;
 
-export type Format =
-  | "dae"
-  | "gr2"
-  | "lsv"
-  | "pak"
-  | "lsj"
-  | "lsx"
-  | "lsb"
-  | "lsf"
-  | "lsfx"
-  | "xml"
-  | "loca";
-
-export type CompressionMethod =
-  meta.ConfigKeyTypeMap["divineCli.args.compressionMethod"];
+export type Format = (typeof RESOURCE_FORMATS)[number];
 
 export interface DivineArgs {
-  game: Game;
+  game: meta.ConfigKeyTypeMap["divineCli.args.game"];
   source: string;
   action: Action;
-  logLevel?: LogLevel;
+  logLevel?: meta.ConfigKeyTypeMap["divineCli.args.logLevel"];
   destination?: string;
   inputFormat?: Format;
   outputFormat?: Format;
-  compressionMethod?: CompressionMethod;
+  compressionMethod?: meta.ConfigKeyTypeMap["divineCli.args.compressionMethod"];
   conformPath?: boolean;
   usePackageName?: boolean;
   useRegex?: boolean;
-}
-
-export function createDivineArgs(
-  source: string,
-  action: Action,
-  options?: Partial<Omit<DivineArgs, "source" | "action">>,
-): DivineArgs {
-  return {
-    game: getExtensionConfig("divineCliArgsGame"),
-    source,
-    action,
-    logLevel: getExtensionConfig("divineCliArgsLogLevel"),
-    compressionMethod: getExtensionConfig("divineCliArgsCompressionMethod"),
-    conformPath: false,
-    usePackageName: false,
-    useRegex: false,
-    ...options,
-  };
-}
-
-/**
- * TODO ЧЕТА НЕ РАБОТАЕТ Маппит lsfx -> lsf для CLI, так как Divine не различает эти форматы.
- */
-function toCliFormat(format?: Format): string | undefined {
-  if (!format) return undefined;
-  return format === "lsfx" ? "lsf" : format;
 }
 
 export function buildDivineArgs(args: DivineArgs): string[] {
@@ -89,8 +56,8 @@ export function buildDivineArgs(args: DivineArgs): string[] {
   push("--destination", args.destination);
   push("--loglevel", args.logLevel);
 
-  push("--input-format", toCliFormat(args.inputFormat));
-  push("--output-format", toCliFormat(args.outputFormat));
+  push("--input-format", args.inputFormat);
+  push("--output-format", args.outputFormat);
 
   if (args.action === "create-package") {
     push("--compression-method", args.compressionMethod);

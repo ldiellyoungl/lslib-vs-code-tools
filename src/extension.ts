@@ -24,9 +24,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   // TODO Experemental
   context.subscriptions.push(new PakController(context));
-  context.subscriptions.push(
-    new LsfxController(context, new DivineService(context.extensionPath)),
-  );
+  context.subscriptions.push(new LsfxController(context, new DivineService()));
 }
 
 export function deactivate() {}

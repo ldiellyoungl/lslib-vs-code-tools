@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
-import { DivineService, createDivineArgs } from "@/divine/core";
+import { DivineRunner, createDivineArgs } from "@/divine/core";
 import {
   createStatistics,
   showOverwriteConfirmation,
@@ -11,10 +11,7 @@ import {
 /**
  * Выполняет команду распаковки PAK файлов.
  */
-export async function extractPak(
-  divineService: DivineService,
-  uris: vscode.Uri[],
-): Promise<void> {
+export async function extractPak(uris: vscode.Uri[]): Promise<void> {
   if (uris.length === 0) return;
 
   try {
@@ -67,8 +64,8 @@ export async function extractPak(
               destination: dirName,
               usePackageName: true,
             });
-
-            await divineService.runCommand(args);
+            const runner = new DivineRunner();
+            runner.run({ args });
             statistics.successCount++;
           } catch (error: any) {
             if (token.isCancellationRequested) {

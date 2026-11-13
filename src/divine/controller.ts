@@ -6,18 +6,19 @@ import { getFileExtension } from "@/utils/files";
 
 import { DivineService } from "./";
 
-import { convertResource, createPak, extractPak } from "./commands";
+import { convertResources, createPak, extractPak } from "./commands";
 
 export class DivineController implements vscode.Disposable {
+  public readonly service = new DivineService();
   private disposables: vscode.Disposable[] = [];
+
   constructor(context: vscode.ExtensionContext) {
-    const divineService = new DivineService(context.extensionPath);
+    this.disposables.push(this.service);
 
     const extractPakCommand = vscode.commands.registerCommand(
       meta.commands.divineCliExtractPak,
       (uri: vscode.Uri, selectedUris: vscode.Uri[]) => {
         // const urisToProcess = selectedUris ?? [uri];
-
         // const pakUris = urisToProcess.filter(
         //   (u) => getFileExtension(u.fsPath) === "pak",
         // );
@@ -27,15 +28,14 @@ export class DivineController implements vscode.Disposable {
         //   );
         //   return;
         // }
-
-        extractPak(divineService, selectedUris ?? [uri]);
+        // extractPak(this.service, selectedUris ?? [uri]);
       },
     );
+
     const createPakCommand = vscode.commands.registerCommand(
       meta.commands.divineCliCreatePak,
       (uri: vscode.Uri, selectedUris: vscode.Uri[]) => {
         // const urisToProcess = selectedUris ?? [uri];
-
         // const folderUris = urisToProcess.filter((u) => {
         //   try {
         //     return fs.statSync(u.fsPath).isDirectory();
@@ -43,16 +43,20 @@ export class DivineController implements vscode.Disposable {
         //     return false;
         //   }
         // });
-
         // if (urisToProcess.length === 0) {
         //   vscode.window.showWarningMessage(
         //     "Не выбрано ни одной папки для создания PAK.",
         //   );
         //   return;
         // }
-
-        createPak(divineService, selectedUris ?? [uri]);
+        // createPak(this.service, selectedUris ?? [uri]);
       },
+    );
+
+    const convertCommand = vscode.commands.registerCommand(
+      meta.commands.divineCliConvertResource,
+      (uri: vscode.Uri, selectedUris: vscode.Uri[]) =>
+        convertResources(this.service, selectedUris ?? [uri]),
     );
     // const convertResourceCommand = vscode.commands.registerCommand(
     //   meta.commands.divineCliConvertResource,
@@ -63,11 +67,7 @@ export class DivineController implements vscode.Disposable {
     //   (uri: vscode.Uri, selectedUris: vscode.Uri[]) => convert(divineService, selectedUris ?? [uri], { kind: "opposite" })
     // );
 
-    this.disposables.push(
-      extractPakCommand,
-      createPakCommand,
-      // convertResourceCommand,
-    );
+    this.disposables.push(extractPakCommand, createPakCommand, convertCommand);
   }
 
   dispose() {
