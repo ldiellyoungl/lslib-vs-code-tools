@@ -1,91 +1,91 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
-import { DivineRunner, createDivineArgs } from "@/divine/core";
-import {
-  createStatistics,
-  showOverwriteConfirmation,
-  showFinalMessage,
-} from "./helpers";
+
+import { DivineService } from "@/divine/core";
+import { DivineCommandContext } from "./helpers";
 
 /**
  * Выполняет команду распаковки PAK файлов.
  */
-export async function extractPak(uris: vscode.Uri[]): Promise<void> {
+export async function extractPak(
+  service: DivineService,
+  uris: vscode.Uri[],
+): Promise<void> {
   if (uris.length === 0) return;
+
+  const context = new DivineCommandContext(vscode.l10n.t("Extract .pak"));
+
+  const markCancelled = (fromIndex: number) => {
+    context.isCanceled = true;
+    context.statistics.cancelledCount = uris.length - fromIndex;
+  };
 
   try {
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: `Распаковка PAK (${uris.length} шт.)`,
+        title: vscode.l10n.t("Extract .pak"),
         cancellable: true,
       },
       async (progress, token) => {
-        const statistics = createStatistics();
-
-        for (let i = 0; i < uris.length; i++) {
-          if (token.isCancellationRequested) {
-            statistics.cancelledCount = uris.length - i;
+        for (let [i, uri] of uris.entries()) {
+          if (token.isCancellationRequested || context.isCanceled) {
+            markCancelled(i);
             break;
           }
-          const uri = uris[i];
           const pakPath = uri.fsPath;
           const baseName = path.basename(pakPath, ".pak");
           const dirName = path.dirname(pakPath);
           const extractedFolderPath = path.join(dirName, baseName);
 
           progress.report({
-            message: `Обработка ${i + 1}/${uris.length}: ${baseName}.pak`,
+            message: vscode.l10n.t("{0}/{1}", i + 1, uris.length),
             increment: 100 / uris.length,
           });
 
-          if (fs.existsSync(extractedFolderPath) && !statistics.overwriteAll) {
-            const action = await showOverwriteConfirmation(extractedFolderPath);
+          if (fs.existsSync(extractedFolderPath) && !context.overwriteAll) {
+            const action =
+              await context.showOverwriteConfirmation(extractedFolderPath);
 
             switch (action) {
               case "cancel":
-                statistics.cancelledCount = uris.length - i;
-                i = uris.length;
-                continue;
-              case "overwriteAll":
-                statistics.overwriteAll = true;
+                markCancelled(i);
                 break;
-              case "skip":
-                statistics.skippedCount++;
-                continue;
               case "overwrite":
                 break;
+              case "overwriteAll":
+                context.overwriteAll = true;
+                break;
+              case "skip":
+                context.statistics.skippedCount++;
+                continue;
             }
           }
 
+          if (context.isCanceled) break;
+
           try {
-            const args = createDivineArgs(pakPath, "extract-package", {
+            const args = service.createDivineArgs(pakPath, "extract-package", {
               destination: dirName,
               usePackageName: true,
             });
-            const runner = new DivineRunner();
-            runner.run({ args });
-            statistics.successCount++;
+
+            await service.runCommand({ args, token });
+            context.statistics.successCount++;
           } catch (error: any) {
             if (token.isCancellationRequested) {
-              statistics.cancelledCount = uris.length - i;
+              markCancelled(i);
               break;
             }
-
-            console.error(`Ошибка при извлечении ${baseName}:`, error.message);
-            statistics.errorCount++;
+            context.statistics.errorCount++;
           }
         }
 
-        showFinalMessage(
-          "Распаковка PAK",
-          statistics,
-          token.isCancellationRequested,
-        );
+        context.statistics.showMessage();
       },
     );
   } catch (error: any) {
-    vscode.window.showErrorMessage(`Критическая ошибка: ${error.message}`);
+    vscode.window.showErrorMessage(vscode.l10n.t("Critical error: {0}", error));
   }
 }

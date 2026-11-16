@@ -4,13 +4,8 @@ import * as fs from "node:fs";
 
 import { DivineService } from "@/divine/core";
 import { Format, RESOURCE_FORMATS } from "@/divine/core/args";
-import { showOverwriteConfirmation, Statistics } from "./helpers";
+import { DivineCommandContext } from "./helpers";
 import { getFileExtension } from "@/utils/files";
-
-interface ConversionContext {
-  overwriteAll: boolean;
-  statistics: Statistics;
-}
 
 export async function convertResource(
   service: DivineService,
@@ -53,24 +48,17 @@ export async function convertResource(
 
   const targetFormat = selectedFormat.format;
 
-  const context: ConversionContext = {
-    overwriteAll: false,
-    statistics: new Statistics(),
-  };
+  const context = new DivineCommandContext(vscode.l10n.t("Conversion"));
 
   try {
     await vscode.window.withProgress(
       {
-        location: vscode.ProgressLocation.Notification,
-        title: vscode.l10n.t(
-          "Converting into {0} ({1})",
-          targetFormat.toUpperCase(),
-          uris.length,
-        ),
+        location: vscode.ProgressLocation.Window,
+        title: vscode.l10n.t("Conversion"),
         cancellable: true,
       },
       async (progress, token) => {
-        for (let i = 0; i < uris.length; i++) {
+        for (let [i, uri] of uris.entries()) {
           if (token.isCancellationRequested) {
             context.statistics.cancelledCount = uris.length - i;
             break;
@@ -78,7 +66,7 @@ export async function convertResource(
 
           const result = await processSingleFile(
             service,
-            uris[i],
+            uri,
             targetFormat,
             context,
             progress,
@@ -110,7 +98,7 @@ async function processSingleFile(
   service: DivineService,
   uri: vscode.Uri,
   targetFormat: Format,
-  context: ConversionContext,
+  context: DivineCommandContext,
   progress: vscode.Progress<{ message?: string; increment?: number }>,
   index: number,
   total: number,
@@ -123,13 +111,7 @@ async function processSingleFile(
   const targetPath = path.join(dirName, `${baseName}.${targetFormat}`);
 
   progress.report({
-    message: vscode.l10n.t(
-      "Processing {0}/{1}: {2}.{3}",
-      index + 1,
-      total,
-      baseName,
-      sourceExt,
-    ),
+    message: vscode.l10n.t("{0}/{1}", index + 1, total),
     increment: 100 / total,
   });
 
@@ -143,7 +125,7 @@ async function processSingleFile(
   }
 
   if (fs.existsSync(targetPath) && !context.overwriteAll) {
-    const action = await showOverwriteConfirmation(targetPath);
+    const action = await context.showOverwriteConfirmation(targetPath);
 
     switch (action) {
       case "cancel":

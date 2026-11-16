@@ -13,17 +13,8 @@ export type Action =
   | "convert-loca"
   | "build-vt";
 
-export const RESOURCE_FORMATS = [
-  "dae",
-  "gr2",
-  "lsv",
-  "pak",
-  "lsj",
-  "lsx",
-  "lsb",
-  "lsf",
-  "lsfx",
-] as const;
+// TODO Отдать пользователю
+export const RESOURCE_FORMATS = ["lsf", "lsx", "lsv", "lsfx"] as const;
 
 export type Format = (typeof RESOURCE_FORMATS)[number];
 

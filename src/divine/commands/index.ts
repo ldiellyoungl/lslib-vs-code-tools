@@ -1,3 +1,3 @@
 export { extractPak } from "./extractPak";
 export { createPak } from "./createPak";
-export { convertResources } from "./converter";
+export { convertResource } from "./converter";

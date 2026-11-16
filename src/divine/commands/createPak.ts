@@ -1,36 +1,33 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
-import { DivineRunner, createDivineArgs } from "@/divine/core";
-import {
-  createStatistics,
-  showOverwriteConfirmation,
-  showFinalMessage,
-} from "./helpers";
+
+import { DivineService } from "@/divine/core";
+import { DivineCommandContext } from "./helpers";
 
 /**
  * Выполняет команду создания PAK файлов из одной или нескольких папок.
  */
-export async function createPak(uris: vscode.Uri[]): Promise<void> {
+export async function createPak(
+  service: DivineService,
+  uris: vscode.Uri[],
+): Promise<void> {
   if (uris.length === 0) return;
 
   try {
+    const context = new DivineCommandContext(vscode.l10n.t("Create .pak"));
     await vscode.window.withProgress(
       {
-        location: vscode.ProgressLocation.Notification,
-        title: `Создание PAK файлов (${uris.length} шт.)`,
+        location: vscode.ProgressLocation.Window,
+        title: vscode.l10n.t("Create .pak"),
         cancellable: true,
       },
       async (progress, token) => {
-        const statistics = createStatistics();
-
-        for (let i = 0; i < uris.length; i++) {
+        for (let [i, uri] of uris.entries()) {
           if (token.isCancellationRequested) {
-            statistics.cancelledCount = uris.length - i;
+            context.statistics.cancelledCount = uris.length - i;
             break;
           }
-
-          const uri = uris[i];
           const folderPath = uri.fsPath;
           const baseName = path.basename(folderPath);
           const dirName = path.dirname(folderPath);
@@ -38,60 +35,51 @@ export async function createPak(uris: vscode.Uri[]): Promise<void> {
           const pakFilePath = path.join(dirName, `${baseName}.pak`);
 
           progress.report({
-            message: `Обработка ${i + 1}/${uris.length}: ${baseName}`,
+            message: vscode.l10n.t("{0}/{1}", i + 1, uris.length),
             increment: 100 / uris.length,
           });
 
-          if (fs.existsSync(pakFilePath) && !statistics.overwriteAll) {
-            const action = await showOverwriteConfirmation(pakFilePath);
+          if (fs.existsSync(pakFilePath) && !context.overwriteAll) {
+            const action = await context.showOverwriteConfirmation(pakFilePath);
 
             switch (action) {
               case "cancel":
-                statistics.cancelledCount = uris.length - i;
-                i = uris.length;
-                continue;
+                return "cancelled";
               case "overwriteAll":
-                statistics.overwriteAll = true;
+                context.overwriteAll = true;
                 break;
               case "skip":
-                statistics.skippedCount++;
-                continue;
+                context.statistics.skippedCount++;
+                return "skipped";
               case "overwrite":
                 break;
             }
           }
 
           try {
-            const args = createDivineArgs(folderPath, "create-package", {
-              destination: pakFilePath,
-            });
+            const args = service.createDivineArgs(
+              folderPath,
+              "create-package",
+              {
+                destination: pakFilePath,
+              },
+            );
 
-            const runner = new DivineRunner();
-
-            await runner.run({ args });
-            statistics.successCount++;
+            await service.runCommand({ args, token });
+            context.statistics.successCount++;
           } catch (error: any) {
             if (token.isCancellationRequested) {
-              statistics.cancelledCount = uris.length - i;
+              context.statistics.cancelledCount = uris.length - i;
               break;
             }
 
-            console.error(
-              `Ошибка при создании PAK из ${baseName}:`,
-              error.message,
-            );
-            statistics.errorCount++;
+            context.statistics.errorCount++;
           }
         }
-
-        showFinalMessage(
-          "Создание PAK",
-          statistics,
-          token.isCancellationRequested,
-        );
+        context.statistics.showMessage();
       },
     );
   } catch (error: any) {
-    vscode.window.showErrorMessage(`Критическая ошибка: ${error.message}`);
+    vscode.window.showErrorMessage(vscode.l10n.t("Critical error: {0}", error));
   }
 }
