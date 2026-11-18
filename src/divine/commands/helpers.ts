@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import * as path from "node:path";
+import { getExtensionConfig } from "@/utils/common";
 
 class Statistics {
   public title: string;
@@ -31,31 +32,33 @@ class Statistics {
 
   public showMessage(): void {
     const lines = this.toLines();
-    if (this.hasProblems) {
+
+    if (lines.length === 0) return;
+
+    const summary = lines.join(", ");
+
+    if (this.cancelledCount > 0) {
+      vscode.window.showInformationMessage(
+        vscode.l10n.t("{0} was cancelled. {1}", this.title, summary),
+      );
+    } else if (this.errorCount > 0) {
       vscode.window.showWarningMessage(
-        vscode.l10n.t("{0} completed. {1}", this.title, lines.join(", ")),
+        vscode.l10n.t("{0} completed with errors. {1}", this.title, summary),
       );
     } else {
       vscode.window.showInformationMessage(
-        vscode.l10n.t("{0} completed. {1}", this.title, lines.join(", ")),
+        vscode.l10n.t("{0} completed. {1}", this.title, summary),
       );
     }
-  }
-
-  private get hasProblems(): boolean {
-    return this.errorCount > 0;
   }
 }
 
 export class DivineCommandContext {
   public name: string;
-  public statistics: Statistics;
-  public overwriteAll: boolean = false;
-  public isCanceled: boolean = false;
+  public isCanceled = false;
 
   constructor(name: string) {
     this.name = name;
-    this.statistics = new Statistics(name);
   }
 
   public async showOverwriteConfirmation(
@@ -80,4 +83,27 @@ export class DivineCommandContext {
 
     return buttons.find((b) => b.label === picked)?.action ?? "overwrite";
   }
+}
+
+export class DivineBatchCommandContext extends DivineCommandContext {
+  public statistics: Statistics;
+  public overwriteAll = false;
+  private readonly total: number;
+
+  constructor(name: string, total: number) {
+    super(name);
+    this.total = total;
+    this.statistics = new Statistics(name);
+  }
+
+  public markCancelled(fromIndex: number): void {
+    this.isCanceled = true;
+    this.statistics.cancelledCount = this.total - fromIndex;
+  }
+}
+
+export function getProgressLocation() {
+  return getExtensionConfig("divineCliProgressLocation") === "Notification"
+    ? vscode.ProgressLocation.Notification
+    : vscode.ProgressLocation.Window;
 }

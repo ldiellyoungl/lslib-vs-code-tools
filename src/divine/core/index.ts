@@ -24,6 +24,7 @@ export class DivineService implements vscode.Disposable {
     this.runner = new DivineRunner(divinePath);
   }
 
+  // возможно сделать static
   public createDivineArgs(
     source: string,
     action: DivineArgs["action"],

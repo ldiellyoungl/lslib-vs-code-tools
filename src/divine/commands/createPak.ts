@@ -1,85 +1,103 @@
 import * as vscode from "vscode";
-import * as path from "path";
-import * as fs from "fs";
+import * as fs from "node:fs";
 
 import { DivineService } from "@/divine/core";
-import { DivineCommandContext } from "./helpers";
+import { DivineBatchCommandContext, getProgressLocation } from "./helpers";
 
-/**
- * Выполняет команду создания PAK файлов из одной или нескольких папок.
- */
-export async function createPak(
-  service: DivineService,
-  uris: vscode.Uri[],
-): Promise<void> {
-  if (uris.length === 0) return;
+import { PathInfo, getWorkspaceRootUri } from "@/utils/files";
+
+export async function createPaks(service: DivineService, uris: vscode.Uri[]) {
+  const context = new DivineBatchCommandContext(
+    vscode.l10n.t("Create pak(s)"),
+    uris.length,
+  );
+
+  if (uris.length === 0) {
+    const selected = await vscode.window.showOpenDialog({
+      canSelectMany: true,
+      canSelectFolders: true,
+      canSelectFiles: false,
+      openLabel: context.name,
+      defaultUri: getWorkspaceRootUri(),
+    });
+    if (!selected || selected.length === 0) return;
+    uris = selected;
+  }
 
   try {
-    const context = new DivineCommandContext(vscode.l10n.t("Create .pak"));
     await vscode.window.withProgress(
       {
-        location: vscode.ProgressLocation.Window,
-        title: vscode.l10n.t("Create .pak"),
+        location: getProgressLocation(),
+        title: context.name,
         cancellable: true,
       },
       async (progress, token) => {
-        for (let [i, uri] of uris.entries()) {
-          if (token.isCancellationRequested) {
-            context.statistics.cancelledCount = uris.length - i;
+        outer: for (const [index, uri] of uris.entries()) {
+          const pathInfo = new PathInfo(uri);
+
+          if (token.isCancellationRequested || context.isCanceled) {
+            context.markCancelled(index);
             break;
           }
-          const folderPath = uri.fsPath;
-          const baseName = path.basename(folderPath);
-          const dirName = path.dirname(folderPath);
 
-          const pakFilePath = path.join(dirName, `${baseName}.pak`);
+          const destination = pathInfo.siblingWith(".pak");
 
           progress.report({
-            message: vscode.l10n.t("{0}/{1}", i + 1, uris.length),
+            message: vscode.l10n.t("{0}/{1}", index + 1, uris.length),
             increment: 100 / uris.length,
           });
 
-          if (fs.existsSync(pakFilePath) && !context.overwriteAll) {
-            const action = await context.showOverwriteConfirmation(pakFilePath);
+          if (fs.existsSync(destination) && !context.overwriteAll) {
+            const action = await context.showOverwriteConfirmation(destination);
+
+            if (token.isCancellationRequested) {
+              context.markCancelled(index);
+              break;
+            }
 
             switch (action) {
               case "cancel":
-                return "cancelled";
+                context.markCancelled(index);
+                break outer;
+              case "overwrite":
+                break;
               case "overwriteAll":
                 context.overwriteAll = true;
                 break;
               case "skip":
                 context.statistics.skippedCount++;
-                return "skipped";
-              case "overwrite":
-                break;
+                continue;
             }
           }
 
-          try {
-            const args = service.createDivineArgs(
-              folderPath,
-              "create-package",
-              {
-                destination: pakFilePath,
-              },
-            );
+          const args = service.createDivineArgs(
+            pathInfo.path,
+            "create-package",
+            {
+              destination,
+            },
+          );
 
-            await service.runCommand({ args, token });
-            context.statistics.successCount++;
-          } catch (error: any) {
-            if (token.isCancellationRequested) {
-              context.statistics.cancelledCount = uris.length - i;
+          const result = await service.runCommand({ args, token });
+
+          switch (result.status) {
+            case "success":
+              context.statistics.successCount++;
               break;
-            }
-
-            context.statistics.errorCount++;
+            case "cancelled":
+              context.markCancelled(index);
+              break outer;
+            case "error":
+              context.statistics.errorCount++;
+              break;
           }
         }
         context.statistics.showMessage();
       },
     );
   } catch (error: any) {
-    vscode.window.showErrorMessage(vscode.l10n.t("Critical error: {0}", error));
+    vscode.window.showErrorMessage(
+      vscode.l10n.t("Critical error: {0}", error?.message ?? error),
+    );
   }
 }

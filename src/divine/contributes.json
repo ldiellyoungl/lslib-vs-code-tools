@@ -41,25 +41,32 @@
             ],
             "markdownDescription": "Log detail level\n\n*[Documentation](https://github.com/Norbyte/lslib/blob/master/Divine/CLI/CommandLineArguments.cs#L15)*",
             "order": 2
+          },
+          "divineCli.progressLocation": {
+            "type": "string",
+            "default": "Notification",
+            "enum": ["Notification", "Window"],
+            "markdownDescription": "Where to place progress about CLI operations\n\n*[Documentation](https://code.visualstudio.com/api/extension-capabilities/common-capabilities#progress-api)*",
+            "order": 3
           }
         }
       }
     ],
     "commands": [
       {
-        "command": "divineCli.extractPak",
-        "title": "Extract .pak",
+        "command": "divineCli.extractPaks",
+        "title": "Extract pak(s)",
         "icon": "$(unarchive)",
         "category": "DivineCLI"
       },
       {
-        "command": "divineCli.createPak",
-        "title": "Create .pak",
+        "command": "divineCli.createPaks",
+        "title": "Create pak(s)",
         "icon": "$(archive)",
         "category": "DivineCLI"
       },
       {
-        "command": "divineCli.convert-resource",
+        "command": "divineCli.convert-resources",
         "title": "Convert resource(s)",
         "icon": "$(sync)",
         "category": "DivineCLI"
@@ -74,17 +81,17 @@
     "menus": {
       "explorer/context": [
         {
-          "command": "divineCli.extractPak",
+          "command": "divineCli.extractPaks",
           "when": "resourceExtname == .pak",
           "group": "z_lslib@1"
         },
         {
-          "command": "divineCli.createPak",
+          "command": "divineCli.createPaks",
           "when": "explorerResourceIsFolder == true",
           "group": "z_lslib@2"
         },
         {
-          "command": "divineCli.convert-resource",
+          "command": "divineCli.convert-resources",
           "when": "resourceExtname == '.lsf' || resourceExtname == '.lsfx' || resourceExtname == '.lsb' || resourceExtname == '.lsj' || resourceExtname == '.lsx'",
           "group": "z_lslib@3"
         },

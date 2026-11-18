@@ -1,78 +1,37 @@
 import * as path from "node:path";
 import * as fs from "node:fs";
+import * as vscode from "vscode";
 
-/**
- * Извлекает расширение файла (в нижнем регистре, без точки).
- * Пример: "C:/mods/Test.GR2" -> "gr2"
- */
-export function getFileExtension(filePath: string): string {
-  return path.extname(filePath).toLowerCase().replace(".", "");
+// возвращает рабочую область
+export function getWorkspaceRootUri(): vscode.Uri | undefined {
+  return vscode.workspace.workspaceFolders?.[0]?.uri;
 }
 
-/**
- * Возвращает путь до папки, в которой находится указанный якорь.
- * Например, для "C:/Mods/MyMod/Public/Test.xml" и якоря "public" вернет "C:/Mods/MyMod".
- */
-function getParentOfAnchor(
-  filePath: string,
-  anchor: string,
-): string | undefined {
-  const parts = filePath.split(/[\\/]/);
-  for (let i = parts.length - 1; i >= 0; i--) {
-    if (parts[i].toLowerCase() === anchor.toLowerCase()) {
-      const root = parts.slice(0, i).join(path.sep);
-      return root || path.sep; // Возвращаем корень диска, если это самый верх
+export function normalizeUris(...args: unknown[]): vscode.Uri[] {
+  const uris: vscode.Uri[] = [];
+
+  const push = (value: unknown) => {
+    if (value instanceof vscode.Uri) {
+      uris.push(value);
+    } else if (Array.isArray(value)) {
+      for (const item of value) {
+        if (item instanceof vscode.Uri) uris.push(item);
+      }
     }
-  }
-  return undefined;
+  };
+
+  for (const arg of args) push(arg);
+
+  const seen = new Set<string>();
+  return uris.filter((u) => {
+    const key = u.toString();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
-/**
- * Находит корень мода (папку, содержащую Public, Generated или Mods).
- * Работает как для meta.lsx (внутри Mods), так и для ассетов (внутри Public).
- */
-export function getModRootPath(filePath: string): string | undefined {
-  const parts = filePath.split(/[\\/]/);
-  const anchors = ["public", "generated", "mods"];
-
-  // Ищем ближайший якорь с конца пути
-  for (let i = parts.length - 1; i >= 0; i--) {
-    if (anchors.includes(parts[i].toLowerCase())) {
-      const root = parts.slice(0, i).join(path.sep);
-      return root || path.sep;
-    }
-  }
-  return undefined;
-}
-
-/**
- * Находит полный путь до папки конкретного мода (например, "Mods/MyMod_UUID").
- * Ищет якорь "Mods" и берет следующую за ним папку.
- */
-export function getModFolderPath(filePath: string): string | undefined {
-  const parts = filePath.split(/[\\/]/);
-  for (let i = parts.length - 1; i >= 0; i--) {
-    if (parts[i].toLowerCase() === "mods" && i + 1 < parts.length) {
-      return parts.slice(0, i + 2).join(path.sep);
-    }
-  }
-  return undefined;
-}
-
-/**
- * Возвращает имя папки мода (например, "MyMod_UUID").
- */
-export function getModFolder(filePath: string): string | undefined {
-  const folderPath = getModFolderPath(filePath);
-  return folderPath ? path.basename(folderPath) : undefined;
-}
-
-// Кэш для ускорения поиска (VS Code дергает DocumentLinkProvider очень часто)
-const fileCache = new Map<string, string | null>();
-
-/**
- * Асинхронно ищет реальный файл на диске по относительному пути.
- */
+//Асинхронно ищет реальный файл на диске по относительному пути.
 export async function findFile(
   modRoot: string,
   relativePath: string,
@@ -133,4 +92,106 @@ export async function findFile(
   }
 
   return null;
+}
+
+export class PathInfo {
+  public path: string;
+  public dirName: string;
+
+  constructor(uri: vscode.Uri) {
+    this.path = uri.fsPath;
+    this.dirName = path.dirname(this.path);
+  }
+
+  // имя файла: "Test.GR2"
+  public get name(): string {
+    return path.basename(this.path);
+  }
+
+  // расширение с точкой: ".pak" (или "" если нет)
+  public get ext(): string {
+    return path.extname(this.path).toLowerCase();
+  }
+
+  // расширение без точки: "pak" (или "" если нет)
+  public get extName(): string {
+    return this.ext.replace(/^\./, "");
+  }
+
+  // "parent/foo.pak" -> "parent/foo"
+  public get pathWithoutExt(): string {
+    const baseName = path.basename(this.path, path.extname(this.path));
+    return path.join(this.dirName, baseName);
+  }
+
+  // "parent/foo" + ".pak" -> "parent/foo.pak"
+  public siblingWith(extension: string): string {
+    const baseName = path.basename(this.path, extension);
+    return path.join(this.dirName, `${baseName}${extension}`);
+  }
+
+  // "parent/foo.pak" + ".pak" -> "parent/foo"
+  public siblingWithout(extension: string): string {
+    const baseName = path.basename(this.path, extension);
+    return path.join(this.dirName, baseName);
+  }
+}
+
+export class ModPathInfo {
+  public readonly pathInfo: PathInfo;
+
+  constructor(uri: vscode.Uri) {
+    this.pathInfo = new PathInfo(uri);
+  }
+
+  // делегаты просто чтоб удобнее
+  public get path(): string {
+    return this.pathInfo.path;
+  }
+  public get dirName(): string {
+    return this.pathInfo.dirName;
+  }
+  public get name(): string {
+    return this.pathInfo.name;
+  }
+  public get ext(): string {
+    return this.pathInfo.ext;
+  }
+  public get extName(): string {
+    return this.pathInfo.extName;
+  }
+
+  // "SGT_.../Mods/SGT_.../meta.lsx" -> "SGT_..." (верхний корень)
+  // "SGT_.../Generated/Public/SGT_.../foo" -> "SGT_..."
+  // "SGT_.../Public/SGT_.../Assets/foo" -> "SGT_..."
+  public get modRoot(): string | undefined {
+    const parts = this.path.split(/[\\/]/);
+    const anchors = ["public", "generated", "mods"];
+
+    for (let i = 0; i < parts.length; i++) {
+      if (anchors.includes(parts[i].toLowerCase())) {
+        return parts.slice(0, i).join(path.sep) || path.sep;
+      }
+    }
+    return undefined;
+  }
+
+  // "SGT_.../Mods/SGT_.../meta.lsx" -> "SGT_.../Mods/SGT_..."
+  // "SGT_.../Public/SGT_.../..." -> undefined (нет Mods)
+  public get modFolderPath(): string | undefined {
+    const parts = this.path.split(/[\\/]/);
+
+    for (let i = 0; i < parts.length; i++) {
+      if (parts[i].toLowerCase() === "mods" && i + 1 < parts.length) {
+        return parts.slice(0, i + 2).join(path.sep);
+      }
+    }
+    return undefined;
+  }
+
+  // "SGT_.../Mods/SGT_.../meta.lsx" -> "SGT_..."
+  public get modFolder(): string | undefined {
+    const folderPath = this.modFolderPath;
+    return folderPath ? path.basename(folderPath) : undefined;
+  }
 }

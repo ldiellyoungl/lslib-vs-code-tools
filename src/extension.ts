@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 
+import { DivineService } from "@/divine";
 import { DivineController } from "@/divine";
 import { LocalizationController } from "@/localization";
 import { CommonFilesController } from "@/common";
@@ -7,12 +8,13 @@ import { MetaLsxController } from "@/meta-lsx";
 import { GlossaryController } from "@/glossary";
 
 // TODO Experemental
-// import { PakController } from "@/editors&viewers";
-// import { DivineService } from "@/divine";
-// import { LsfxController } from "@/editors&viewers/converterProvider";
+import { LsfxController } from "@/editors&viewers/converterProvider";
 
 export function activate(context: vscode.ExtensionContext) {
-  context.subscriptions.push(new DivineController());
+  const divineService = new DivineService();
+  context.subscriptions.push(divineService);
+
+  context.subscriptions.push(new DivineController(divineService));
 
   context.subscriptions.push(new MetaLsxController());
 
@@ -24,7 +26,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   // TODO Experemental
   // context.subscriptions.push(new PakController(context));
-  // context.subscriptions.push(new LsfxController(context, new DivineService()));
+  context.subscriptions.push(new LsfxController(context, divineService));
 }
 
 export function deactivate() {}

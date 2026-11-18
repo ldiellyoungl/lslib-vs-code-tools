@@ -23,9 +23,9 @@ export type CommandKey =
   | "glossary.termin.add"
   | "glossary.termin.show"
   | "glossary.termin.alias.add"
-  | "divineCli.extractPak"
-  | "divineCli.createPak"
-  | "divineCli.convert-resource"
+  | "divineCli.extractPaks"
+  | "divineCli.createPaks"
+  | "divineCli.convert-resources"
   | "divineCli.convert-loca"
   | "common.editor.context.insertVersion64"
   | "common.editor.context.insertUUID"
@@ -85,20 +85,20 @@ export const commands = {
    */
   glossaryTerminAliasAdd: "glossary.termin.alias.add",
   /**
-   * Extract .pak
-   * @value `divineCli.extractPak`
+   * Extract pak(s)
+   * @value `divineCli.extractPaks`
    */
-  divineCliExtractPak: "divineCli.extractPak",
+  divineCliExtractPaks: "divineCli.extractPaks",
   /**
-   * Create .pak
-   * @value `divineCli.createPak`
+   * Create pak(s)
+   * @value `divineCli.createPaks`
    */
-  divineCliCreatePak: "divineCli.createPak",
+  divineCliCreatePaks: "divineCli.createPaks",
   /**
    * Convert resource(s)
-   * @value `divineCli.convert-resource`
+   * @value `divineCli.convert-resources`
    */
-  divineCliConvertResource: "divineCli.convert-resource",
+  divineCliConvertResources: "divineCli.convert-resources",
   /**
    * Convert localization(s)
    * @value `divineCli.convert-loca`
@@ -140,6 +140,7 @@ export type ConfigKey =
   | "divineCli.args.game"
   | "divineCli.args.compressionMethod"
   | "divineCli.args.logLevel"
+  | "divineCli.progressLocation"
   | "metalsx.diagnostics.enabled"
   | "metalsx.inlayhints.version.enabled"
   | "metalsx.codelens.moduleInfo.enabled"
@@ -157,6 +158,7 @@ export interface ConfigKeyTypeMap {
   "divineCli.args.game": ("dos" | "dosee" | "dos2" | "dos2de" | "bg3"),
   "divineCli.args.compressionMethod": ("zlib" | "zlibfast" | "lz4" | "lz4hc" | "none"),
   "divineCli.args.logLevel": ("off" | "fatal" | "error" | "warn" | "info" | "debug" | "trace" | "all"),
+  "divineCli.progressLocation": ("Notification" | "Window"),
   "metalsx.diagnostics.enabled": boolean,
   "metalsx.inlayhints.version.enabled": boolean,
   "metalsx.codelens.moduleInfo.enabled": boolean,
@@ -175,6 +177,7 @@ export interface ConfigShorthandMap {
   divineCliArgsGame: "divineCli.args.game",
   divineCliArgsCompressionMethod: "divineCli.args.compressionMethod",
   divineCliArgsLogLevel: "divineCli.args.logLevel",
+  divineCliProgressLocation: "divineCli.progressLocation",
   metalsxDiagnosticsEnabled: "metalsx.diagnostics.enabled",
   metalsxInlayhintsVersionEnabled: "metalsx.inlayhints.version.enabled",
   metalsxCodelensModuleInfoEnabled: "metalsx.codelens.moduleInfo.enabled",
@@ -193,6 +196,7 @@ export interface ConfigShorthandTypeMap {
   divineCliArgsGame: ("dos" | "dosee" | "dos2" | "dos2de" | "bg3"),
   divineCliArgsCompressionMethod: ("zlib" | "zlibfast" | "lz4" | "lz4hc" | "none"),
   divineCliArgsLogLevel: ("off" | "fatal" | "error" | "warn" | "info" | "debug" | "trace" | "all"),
+  divineCliProgressLocation: ("Notification" | "Window"),
   metalsxDiagnosticsEnabled: boolean,
   metalsxInlayhintsVersionEnabled: boolean,
   metalsxCodelensModuleInfoEnabled: boolean,
@@ -247,6 +251,16 @@ export const configs = {
     key: "divineCli.args.logLevel",
     default: "info",
   } as ConfigItem<"divineCli.args.logLevel">,
+  /**
+   *
+   * @key `divineCli.progressLocation`
+   * @default `"Notification"`
+   * @type `string`
+   */
+  divineCliProgressLocation: {
+    key: "divineCli.progressLocation",
+    default: "Notification",
+  } as ConfigItem<"divineCli.progressLocation">,
   /**
    * Enable diagnostics
    * @key `metalsx.diagnostics.enabled`
@@ -385,6 +399,7 @@ export interface NestedConfigs {
       "compressionMethod": ("zlib" | "zlibfast" | "lz4" | "lz4hc" | "none"),
       "logLevel": ("off" | "fatal" | "error" | "warn" | "info" | "debug" | "trace" | "all"),
     },
+    "progressLocation": ("Notification" | "Window"),
   },
   "metalsx": {
     "diagnostics": {

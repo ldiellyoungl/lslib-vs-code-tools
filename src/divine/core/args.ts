@@ -13,8 +13,8 @@ export type Action =
   | "convert-loca"
   | "build-vt";
 
-// TODO Отдать пользователю
-export const RESOURCE_FORMATS = ["lsf", "lsx", "lsv", "lsfx"] as const;
+// TODO Отдать пользователю ПИЗДЕЦ lsj = это как раз json не нужен парсер никакой епта
+export const RESOURCE_FORMATS = ["lsx", "lsf", "lsfx", "lsj", "lsb"];
 
 export type Format = (typeof RESOURCE_FORMATS)[number];
 

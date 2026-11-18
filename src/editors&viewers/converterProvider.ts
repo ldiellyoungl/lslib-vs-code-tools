@@ -2,52 +2,32 @@ import * as vscode from "vscode";
 import * as path from "node:path";
 import * as fs from "node:fs";
 
-import { DivineService, createDivineArgs } from "@/divine/core";
+import { DivineService } from "@/divine/core";
 import { Format } from "@/divine/core/args";
-import { getFileExtension } from "@/utils/files";
+import { PathInfo } from "@/utils/files";
 
 export interface ConverterConfig {
-  /** Уникальный viewType для регистрации */
   viewType: string;
-  /** Отображаемое имя редактора */
   displayName: string;
-  /** Расширения без точки, которые перехватывает этот редактор: ["lsfx", "lsf"] */
   extensions: string[];
-  /** Формат, в который конвертируем для редактирования (всегда "lsx") */
-  editableFormat: Format;
 }
 
-/**
- * Состояние одного временного .lsx-документа.
- * Живёт ровно столько, сколько открыта его вкладка.
- */
 interface TempDocumentState {
-  /** URI исходного .lsfx/.lsf */
   sourceUri: vscode.Uri;
-  /** Формат исходного файла */
   sourceFormat: Format;
-  /** Слушатель сохранения временного .lsx */
+  tempFormat: Format;
   saveListener: vscode.Disposable;
 }
 
 export class BinaryConverterProvider
   implements vscode.CustomReadonlyEditorProvider
 {
-  /**
-   * Активные временные документы: ключ — fsPath временного .lsx.
-   * Запись удаляется в onDidCloseTextDocument, когда вкладка .lsx закрывается.
-   */
   private tempDocuments = new Map<string, TempDocumentState>();
-
-  /**
-   * Слушатель закрытия текстовых документов — общий на провайдер,
-   * регистрируется один раз в конструкторе и живёт до dispose провайдера.
-   */
   private readonly closeListener: vscode.Disposable;
 
   constructor(
     private readonly context: vscode.ExtensionContext,
-    private readonly divineService: DivineService,
+    private readonly service: DivineService,
     private readonly config: ConverterConfig,
   ) {
     this.closeListener = vscode.workspace.onDidCloseTextDocument((doc) =>
@@ -56,12 +36,6 @@ export class BinaryConverterProvider
     this.context.subscriptions.push(this.closeListener);
   }
 
-  // ---------------------------------------------------------------- lifecycle
-
-  /**
-   * Вызывается, когда закрывается любой текстовый документ.
-   * Если это временный .lsx — удаляем файл и отписываем слушатель сохранения.
-   */
   private async handleDocumentClosed(doc: vscode.TextDocument): Promise<void> {
     const key = doc.uri.fsPath;
     const state = this.tempDocuments.get(key);
@@ -82,8 +56,9 @@ export class BinaryConverterProvider
   ): void {
     panel.webview.options = { enableScripts: true };
 
-    const sourceExt = getFileExtension(document.uri.fsPath);
-    const sourceFormat = sourceExt as Format;
+    const { extName } = new PathInfo(document.uri);
+    // Приводим к нижнему регистру для надежности
+    const sourceFormat = extName.toLowerCase() as Format;
 
     panel.webview.html = this.getHtml(
       path.basename(document.uri.fsPath),
@@ -93,28 +68,25 @@ export class BinaryConverterProvider
     const messageListener = panel.webview.onDidReceiveMessage(
       async (message) => {
         if (message.command === "editAsLsx") {
-          await this.openAsLsx(document.uri, sourceFormat);
+          await this.openAsEditable(document.uri, sourceFormat, "lsx");
+        }
+        if (message.command === "editAsLsj") {
+          await this.openAsEditable(document.uri, sourceFormat, "lsj");
         }
       },
       undefined,
       this.context.subscriptions,
     );
 
-    // Панель может закрыться, а .lsx останется открытым — поэтому здесь
-    // чистим только подписку на сообщения. Временный .lsx и его слушатель
-    // сохранения живут до закрытия вкладки .lsx.
     panel.onDidDispose(() => {
       messageListener.dispose();
     });
   }
 
-  /**
-   * Конвертирует .lsfx/.lsf → .lsx и открывает его в текстовом редакторе.
-   * Если временный документ уже открыт — просто показывает его.
-   */
-  private async openAsLsx(
+  private async openAsEditable(
     sourceUri: vscode.Uri,
     sourceFormat: Format,
+    targetFormat: "lsx" | "lsj",
   ): Promise<{ tempUri: vscode.Uri } | undefined> {
     const tempDir = this.context.storageUri;
     if (!tempDir) {
@@ -127,9 +99,7 @@ export class BinaryConverterProvider
     try {
       await vscode.workspace.fs.createDirectory(tempDir);
     } catch (err: any) {
-      vscode.window.showErrorMessage(
-        `Не удалось создать папку для временных файлов: ${err.message}`,
-      );
+      vscode.window.showErrorMessage(`Ошибка создания папки: ${err.message}`);
       return undefined;
     }
 
@@ -137,12 +107,9 @@ export class BinaryConverterProvider
       sourceUri.fsPath,
       path.extname(sourceUri.fsPath),
     );
-    const tempUri = vscode.Uri.joinPath(
-      tempDir,
-      `${baseName}.${this.config.editableFormat}`,
-    );
+    const tempUri = vscode.Uri.joinPath(tempDir, `${baseName}.${targetFormat}`);
 
-    // Если этот временный документ уже открыт — просто показываем его
+    // Проверка уже открытого документа
     const existing = this.tempDocuments.get(tempUri.fsPath);
     if (existing) {
       const openDoc = vscode.workspace.textDocuments.find(
@@ -155,7 +122,6 @@ export class BinaryConverterProvider
         });
         return { tempUri };
       }
-      // Документ числится в карте, но уже не открыт — подчистим
       existing.saveListener.dispose();
       this.tempDocuments.delete(tempUri.fsPath);
     }
@@ -163,15 +129,30 @@ export class BinaryConverterProvider
     await this.safeDelete(tempUri);
 
     try {
-      const args = createDivineArgs(sourceUri.fsPath, "convert-resource", {
-        destination: tempUri.fsPath,
-        inputFormat: sourceFormat,
-        outputFormat: this.config.editableFormat,
-      });
-      await this.divineService.runCommand(args);
+      // ВАЖНО: Для inputFormat используем 'lsf' для всех бинарных форматов (lsf, lsfx, lsb),
+      // так как CLI может не понимать 'lsfx' как флаг формата, но понимает расширение файла.
+      // Если CLI строго требует точного совпадения, возможно, придется использовать 'lsf' всегда.
+      const inputFormatForCli: Format =
+        sourceFormat === "lsf" ||
+        sourceFormat === "lsfx" ||
+        sourceFormat === "lsb"
+          ? "lsf"
+          : sourceFormat;
+
+      const args = this.service.createDivineArgs(
+        sourceUri.fsPath,
+        "convert-resource",
+        {
+          destination: tempUri.fsPath,
+          inputFormat: inputFormatForCli,
+          outputFormat: targetFormat,
+        },
+      );
+
+      await this.service.runCommand({ args });
     } catch (err: any) {
       vscode.window.showErrorMessage(
-        `Ошибка конвертации в ${this.config.editableFormat.toUpperCase()}: ${err.message}`,
+        `Ошибка конвертации в ${targetFormat.toUpperCase()}: ${err.message}`,
       );
       return undefined;
     }
@@ -180,23 +161,26 @@ export class BinaryConverterProvider
     try {
       doc = await vscode.workspace.openTextDocument(tempUri);
     } catch (err: any) {
-      vscode.window.showErrorMessage(
-        `Не удалось открыть ${tempUri.fsPath}: ${err.message}`,
-      );
+      vscode.window.showErrorMessage(`Не удалось открыть файл: ${err.message}`);
       return undefined;
     }
 
-    // Слушатель сохранения — часть состояния документа, а не панели
     const saveListener = vscode.workspace.onDidSaveTextDocument(
       async (savedDoc) => {
         if (savedDoc.uri.fsPath !== tempUri.fsPath) return;
-        await this.convertBack(savedDoc.uri, sourceUri, sourceFormat);
+        await this.convertBack(
+          savedDoc.uri,
+          sourceUri,
+          sourceFormat,
+          targetFormat,
+        );
       },
     );
 
     this.tempDocuments.set(tempUri.fsPath, {
       sourceUri,
       sourceFormat,
+      tempFormat: targetFormat,
       saveListener,
     });
 
@@ -208,22 +192,36 @@ export class BinaryConverterProvider
     return { tempUri };
   }
 
-  /**
-   * Конвертирует отредактированный .lsx обратно в исходный формат
-   * и перезаписывает исходный .lsfx/.lsf.
-   */
   private async convertBack(
     editedUri: vscode.Uri,
     originalUri: vscode.Uri,
     sourceFormat: Format,
+    editedFormat: Format,
   ): Promise<void> {
     try {
-      const args = createDivineArgs(editedUri.fsPath, "convert-resource", {
-        destination: originalUri.fsPath,
-        inputFormat: this.config.editableFormat,
-        outputFormat: sourceFormat,
-      });
-      await this.divineService.runCommand(args);
+      // При обратной конвертации:
+      // inputFormat - это формат редактируемого файла (lsx или lsj)
+      // outputFormat - должен соответствовать исходному бинарному формату.
+      // Но так как CLI не понимает 'lsfx' во флагах, снова используем 'lsf' для всех бинарных выходных форматов,
+      // полагаясь на расширение файла в destination.
+      const outputFormatForCli: Format =
+        sourceFormat === "lsf" ||
+        sourceFormat === "lsfx" ||
+        sourceFormat === "lsb"
+          ? "lsf"
+          : sourceFormat;
+
+      const args = this.service.createDivineArgs(
+        editedUri.fsPath,
+        "convert-resource",
+        {
+          destination: originalUri.fsPath,
+          inputFormat: editedFormat,
+          outputFormat: outputFormatForCli,
+        },
+      );
+
+      await this.service.runCommand({ args });
 
       vscode.window.showInformationMessage(
         `Файл ${path.basename(originalUri.fsPath)} обновлён.`,
@@ -235,19 +233,15 @@ export class BinaryConverterProvider
     }
   }
 
-  // ---------------------------------------------------------------- cleanup
-
   private async safeDelete(uri: vscode.Uri): Promise<void> {
     try {
       if (fs.existsSync(uri.fsPath)) {
         await fs.promises.unlink(uri.fsPath);
       }
     } catch {
-      // Не критично
+      // Игнорируем ошибки удаления
     }
   }
-
-  // ---------------------------------------------------------------- webview
 
   private getHtml(fileName: string, sourceFormat: Format): string {
     const safeName = fileName
@@ -259,12 +253,7 @@ export class BinaryConverterProvider
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-    }
     body {
       font-family: var(--vscode-font-family);
       color: var(--vscode-editor-foreground);
@@ -272,30 +261,20 @@ export class BinaryConverterProvider
       display: flex;
       align-items: center;
       justify-content: center;
+      height: 100vh;
+      margin: 0;
     }
     .container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
       text-align: center;
-      gap: 12px;
-    }
-    h1 {
-      font-size: 1.4em;
-      margin: 0;
-    }
-    .meta {
-      color: var(--vscode-descriptionForeground);
-      margin: 0;
     }
     button {
       background: var(--vscode-button-background);
       color: var(--vscode-button-foreground);
       border: none;
-      padding: 6px 14px;
-      border-radius: 2px;
+      padding: 8px 16px;
+      margin: 5px;
       cursor: pointer;
-      font-family: var(--vscode-font-family);
+      border-radius: 2px;
     }
     button:hover {
       background: var(--vscode-button-hoverBackground);
@@ -304,15 +283,15 @@ export class BinaryConverterProvider
 </head>
 <body>
   <div class="container">
-    <h1>${safeName}</h1>
-    <p class="meta">Бинарный файл (${sourceFormat.toUpperCase()}) — можно отредактировать как LSX</p>
-    <button id="editBtn">Редактировать как LSX</button>
+    <h2>${safeName}</h2>
+    <p>Бинарный файл (${sourceFormat.toUpperCase()})</p>
+    <button id="btnLsx">Открыть как LSX</button>
+    <button id="btnLsj">Открыть как LSJ</button>
   </div>
   <script>
     const vscode = acquireVsCodeApi();
-    document.getElementById('editBtn').addEventListener('click', () => {
-      vscode.postMessage({ command: 'editAsLsx' });
-    });
+    document.getElementById('btnLsx').onclick = () => vscode.postMessage({ command: 'editAsLsx' });
+    document.getElementById('btnLsj').onclick = () => vscode.postMessage({ command: 'editAsLsj' });
   </script>
 </body>
 </html>`;
@@ -330,9 +309,8 @@ export class LsfxController implements vscode.Disposable {
   ) {
     const config = {
       viewType: LSFX_VIEW_TYPE,
-      displayName: "LSLib LSFX/LSF Editor",
-      extensions: ["lsfx", "lsf", "lsb", "loca"],
-      editableFormat: "lsx" as const,
+      displayName: "LSLib Editor",
+      extensions: ["lsf", "lsfx", "lsb"],
     };
 
     this.disposables.push(
