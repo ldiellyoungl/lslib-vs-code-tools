@@ -55,7 +55,7 @@
     "views": {
       "explorer": [
         {
-          "id": "glossary",
+          "id": "glossaryView",
           "name": "Glossary",
           "icon": "list-flat"
         }

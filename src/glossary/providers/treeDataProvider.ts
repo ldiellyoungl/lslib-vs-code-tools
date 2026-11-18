@@ -3,90 +3,56 @@ import * as fs from "fs";
 import * as path from "path";
 import { getWorkspaceRootUri } from "@/utils/files";
 
-export class NodeDependenciesProvider implements vscode.TreeDataProvider<Dependency> {
-  private workspaceRoot: string;
+export class GlossaryFilesProvider implements vscode.TreeDataProvider<GlossaryFile> {
+  private workspaceRoot: string | undefined = getWorkspaceRootUri()?.path;
 
-  constructor() {
-    const workSpaceUri = getWorkspaceRootUri();
+  constructor() {}
 
-    if (workSpaceUri !== undefined) {
-      this.workspaceRoot = workSpaceUri.path;
-    } else {
-      this.workspaceRoot = "/";
-    }
-  }
-
-  getTreeItem(element: Dependency): vscode.TreeItem {
+  getTreeItem(element: GlossaryFile): vscode.TreeItem {
     return element;
   }
 
-  getChildren(element?: Dependency): Thenable<Dependency[]> {
+  getChildren(element?: GlossaryFile): Thenable<GlossaryFile[]> {
     if (!this.workspaceRoot) {
-      vscode.window.showInformationMessage("No dependency in empty workspace");
       return Promise.resolve([]);
     }
 
+    // Если элемент передан, значит мы внутри подпапки (если нужна рекурсия)
+    // Пока реализуем только корневой уровень .glossary
     if (element) {
-      return Promise.resolve(
-        this.getDepsInPackageJson(
-          path.join(
-            this.workspaceRoot,
-            "node_modules",
-            element.label,
-            "package.json",
-          ),
-        ),
-      );
-    } else {
-      const packageJsonPath = path.join(this.workspaceRoot, "package.json");
-      if (this.pathExists(packageJsonPath)) {
-        return Promise.resolve(this.getDepsInPackageJson(packageJsonPath));
-      } else {
-        vscode.window.showInformationMessage("Workspace has no package.json");
-        return Promise.resolve([]);
-      }
+      return Promise.resolve([]);
     }
+
+    const glossaryPath = path.join(this.workspaceRoot, ".glossary");
+
+    if (!this.pathExists(glossaryPath)) {
+      return Promise.resolve([]);
+    }
+
+    return Promise.resolve(this.getFilesInDirectory(glossaryPath));
   }
 
-  /**
-   * Given the path to package.json, read all its dependencies and devDependencies.
-   */
-  private getDepsInPackageJson(packageJsonPath: string): Dependency[] {
-    if (this.pathExists(packageJsonPath)) {
-      const toDep = (moduleName: string, version: string): Dependency => {
-        if (
-          this.pathExists(
-            path.join(this.workspaceRoot, "node_modules", moduleName),
-          )
-        ) {
-          return new Dependency(
-            moduleName,
-            version,
-            vscode.TreeItemCollapsibleState.Collapsed,
-          );
-        } else {
-          return new Dependency(
-            moduleName,
-            version,
-            vscode.TreeItemCollapsibleState.None,
-          );
-        }
-      };
+  private getFilesInDirectory(dirPath: string): GlossaryFile[] {
+    try {
+      const files = fs.readdirSync(dirPath);
 
-      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
+      return files.map((fileName) => {
+        const filePath = path.join(dirPath, fileName);
+        const isDirectory = fs.statSync(filePath).isDirectory();
 
-      const deps = packageJson.dependencies
-        ? Object.keys(packageJson.dependencies).map((dep) =>
-            toDep(dep, packageJson.dependencies[dep]),
-          )
-        : [];
-      const devDeps = packageJson.devDependencies
-        ? Object.keys(packageJson.devDependencies).map((dep) =>
-            toDep(dep, packageJson.devDependencies[dep]),
-          )
-        : [];
-      return deps.concat(devDeps);
-    } else {
+        // Создаем URI для файла
+        const uri = vscode.Uri.file(filePath);
+
+        return new GlossaryFile(
+          fileName,
+          uri,
+          isDirectory
+            ? vscode.TreeItemCollapsibleState.Collapsed
+            : vscode.TreeItemCollapsibleState.None,
+        );
+      });
+    } catch (e) {
+      console.error("Error reading glossary directory:", e);
       return [];
     }
   }
@@ -94,21 +60,36 @@ export class NodeDependenciesProvider implements vscode.TreeDataProvider<Depende
   private pathExists(p: string): boolean {
     try {
       fs.accessSync(p);
-    } catch (err) {
+      return true;
+    } catch {
       return false;
     }
-    return true;
   }
 }
 
-class Dependency extends vscode.TreeItem {
+class GlossaryFile extends vscode.TreeItem {
   constructor(
     public readonly label: string,
-    private version: string,
+    public readonly resourceUri: vscode.Uri, // Важно для интеграции с VS Code
     public readonly collapsibleState: vscode.TreeItemCollapsibleState,
   ) {
     super(label, collapsibleState);
-    this.tooltip = `${this.label}-${this.version}`;
-    this.description = this.version;
+
+    this.tooltip = this.resourceUri.fsPath;
+    this.description = path.extname(this.resourceUri.fsPath); // Показываем расширение
+
+    // Иконка для файлов (можно настроить под свои нужды)
+    if (collapsibleState === vscode.TreeItemCollapsibleState.None) {
+      this.iconPath = vscode.ThemeIcon.File;
+    } else {
+      this.iconPath = vscode.ThemeIcon.Folder;
+    }
+
+    // Команда при клике (открыть файл)
+    this.command = {
+      command: "vscode.open",
+      title: "Open File",
+      arguments: [this.resourceUri],
+    };
   }
 }

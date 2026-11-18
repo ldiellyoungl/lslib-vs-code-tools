@@ -9,6 +9,7 @@ import { GlossaryController } from "@/glossary";
 
 // TODO Experemental
 import { LsfxController } from "@/editors&viewers/converterProvider";
+import { GlossaryFilesProvider } from "./glossary/providers/treeDataProvider";
 
 export function activate(context: vscode.ExtensionContext) {
   const divineService = new DivineService();
@@ -27,6 +28,9 @@ export function activate(context: vscode.ExtensionContext) {
   // TODO Experemental
   // context.subscriptions.push(new PakController(context));
   context.subscriptions.push(new LsfxController(context, divineService));
+
+  const provider = new GlossaryFilesProvider();
+  vscode.window.registerTreeDataProvider("glossaryView", provider);
 }
 
 export function deactivate() {}
