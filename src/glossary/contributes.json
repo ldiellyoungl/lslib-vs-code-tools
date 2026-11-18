@@ -52,6 +52,15 @@
         "enablement": "config.glossary.enabled"
       }
     ],
+    "views": {
+      "explorer": [
+        {
+          "id": "glossary",
+          "name": "Glossary",
+          "icon": "list-flat"
+        }
+      ]
+    },
     "menus": {
       "explorer/context": [
         {

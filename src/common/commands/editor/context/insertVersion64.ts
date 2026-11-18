@@ -1,9 +1,19 @@
 import * as vscode from "vscode";
-import {
-  parseVersionString,
-  encodeVersion64,
-  showInput,
-} from "@/utils/version64";
+import { Version } from "@/utils/version64";
+
+export function showInput(value?: string) {
+  return vscode.window.showInputBox({
+    prompt: vscode.l10n.t("Enter version"),
+    placeHolder: "1.2.3",
+    value,
+    validateInput: (value) => {
+      if (Version.parse(value) === null) {
+        return vscode.l10n.t("Invalid format");
+      }
+      return null;
+    },
+  });
+}
 
 export async function insertVersion64() {
   const editor = vscode.window.activeTextEditor;
@@ -11,15 +21,11 @@ export async function insertVersion64() {
 
   const input = await showInput("1.0");
   if (!input) return;
-  const parsed = parseVersionString(input);
+
+  const parsed = Version.parse(input);
   if (!parsed) return;
 
-  const newEncoded = encodeVersion64(
-    parsed.major,
-    parsed.minor,
-    parsed.revision,
-    parsed.build,
-  );
+  const newEncoded = parsed.encode();
 
   await editor.edit((editBuilder) => {
     editBuilder.replace(editor.selection, newEncoded);

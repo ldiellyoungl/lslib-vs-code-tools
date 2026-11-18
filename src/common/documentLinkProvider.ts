@@ -1,6 +1,8 @@
 import * as vscode from "vscode";
 import * as path from "node:path";
-import { getModRootPath, getFileExtension, findFile } from "@/utils/files";
+import { findFile } from "@/utils/files";
+
+// TODO Переделать
 
 const VALID_EXTENSIONS = [
   "gr2",

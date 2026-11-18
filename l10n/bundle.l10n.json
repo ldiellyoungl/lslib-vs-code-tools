@@ -1,6 +1,4 @@
 {
-  "Enter version": "Enter version",
-  "Invalid format": "Invalid format",
   "Invelid UUID": "Invelid UUID",
   "UUID is valid but not v4 version specification": "UUID is valid but not v4 version specification",
   "Invalid version format": "Invalid version format",
@@ -32,5 +30,7 @@
   "Convert into .{0}": "Convert into .{0}",
   "Select target format": "Select target format",
   "Convert loca(s)": "Convert loca(s)",
-  "open": "open"
+  "open": "open",
+  "Enter version": "Enter version",
+  "Invalid format": "Invalid format"
 }

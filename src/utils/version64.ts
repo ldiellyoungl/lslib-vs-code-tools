@@ -1,19 +1,3 @@
-import * as vscode from "vscode";
-
-export function showInput(value?: string) {
-  return vscode.window.showInputBox({
-    prompt: vscode.l10n.t("Enter version"),
-    placeHolder: "1.2.3",
-    value,
-    validateInput: (value) => {
-      if (Version.parse(value) === null) {
-        return vscode.l10n.t("Invalid format");
-      }
-      return null;
-    },
-  });
-}
-
 export class Version {
   private static readonly MAX_INT64 = 9223372036854775807n;
 

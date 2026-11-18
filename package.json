@@ -346,6 +346,15 @@
         "category": "Общее"
       }
     ],
+    "views": {
+      "explorer": [
+        {
+          "id": "glossary",
+          "name": "Glossary",
+          "icon": "list-flat"
+        }
+      ]
+    },
     "menus": {
       "explorer/context": [
         {

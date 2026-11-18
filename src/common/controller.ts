@@ -30,16 +30,17 @@ export class CommonFilesController implements vscode.Disposable {
   }
 
   private registerCommand() {
-    this.disposables.push(
-      vscode.commands.registerCommand(
-        meta.commands.commonEditorContextInsertVersion64,
-        () => insertVersion64(),
-      ),
-      vscode.commands.registerCommand(
-        meta.commands.commonEditorContextInsertUUID,
-        () => insertUUID(),
-      ),
+    const insertVersion64Command = vscode.commands.registerCommand(
+      meta.commands.commonEditorContextInsertVersion64,
+      () => insertVersion64(),
     );
+
+    const insertUUIDCommand = vscode.commands.registerCommand(
+      meta.commands.commonEditorContextInsertUUID,
+      () => insertUUID(),
+    );
+
+    this.disposables.push(insertVersion64Command, insertUUIDCommand);
   }
 
   dispose() {
